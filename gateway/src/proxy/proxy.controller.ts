@@ -1,5 +1,6 @@
-import { Controller, All, Req, Res, UseInterceptors } from '@nestjs/common';
+import { Controller, All, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { firstValueFrom } from 'rxjs';
 import { ProxyService } from './proxy.service';
 import { ValidatedUser } from '../auth/jwt.strategy';
 
@@ -8,15 +9,23 @@ export class ProxyController {
   constructor(private proxyService: ProxyService) {}
 
   @All('*')
-  async proxy(@Req() req: Request, @Res() res: Response) {
+  async proxy(@Req() req: Request, @Res() res: Response): Promise<void> {
     const user = req.user as ValidatedUser;
 
     try {
-      const response = await this.proxyService.forward(req, user).toPromise();
-      res.status(response.status).json(response.data);
-    } catch (error: any) {
-      const status = error.response?.status || 500;
-      const data = error.response?.data || { error: 'GATEWAY_ERROR', message: error.message };
+      const response = await firstValueFrom(this.proxyService.forward(req, user));
+      if (response && response.status && response.data !== undefined) {
+        res.status(response.status).json(response.data);
+      } else {
+        res.status(500).json({ error: 'GATEWAY_ERROR', message: 'Invalid response from backend' });
+      }
+    } catch (error: unknown) {
+      const axiosError = error as any;
+      const status = axiosError?.response?.status || 500;
+      const data = axiosError?.response?.data || {
+        error: 'GATEWAY_ERROR',
+        message: axiosError?.message || 'Unknown error'
+      };
       res.status(status).json(data);
     }
   }

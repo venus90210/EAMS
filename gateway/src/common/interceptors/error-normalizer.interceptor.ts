@@ -2,6 +2,7 @@ import {
   Injectable,
   NestInterceptor,
   ExecutionContext,
+  CallHandler,
   BadRequestException,
   NotFoundException,
   ForbiddenException,
@@ -14,7 +15,7 @@ import { AxiosError } from 'axios';
 
 @Injectable()
 export class ErrorNormalizerInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       catchError((error) => {
         if (error instanceof AxiosError) {

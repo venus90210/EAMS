@@ -14,7 +14,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate          # Flyway gestiona el schema — JPA solo valida
+      ddl-auto: update            # Crear/actualizar schema (temporal para prueba)
     show-sql: false
     properties:
       hibernate:

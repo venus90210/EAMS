@@ -1,12 +1,12 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useActivities } from '@/hooks/useActivities'
 import { useOfflineStatus } from '@/hooks/useOfflineStatus'
 import { ActivityCard } from '@/components/activities/ActivityCard'
+
+export const dynamic = 'force-dynamic'
 
 export default function ActivitiesPage() {
   const router = useRouter()
