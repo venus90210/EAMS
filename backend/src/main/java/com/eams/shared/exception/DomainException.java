@@ -37,4 +37,8 @@ public class DomainException extends RuntimeException {
     public static DomainException unprocessable(String errorCode, String message) {
         return new DomainException(errorCode, message, HttpStatus.UNPROCESSABLE_ENTITY);
     }
+
+    public static DomainException unauthorized(String errorCode, String message) {
+        return new DomainException(errorCode, message, HttpStatus.UNAUTHORIZED);
+    }
 }

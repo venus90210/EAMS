@@ -1,7 +1,7 @@
 # EAMS — Plan de Implementación
 
 > **Plataforma de Gestión de Actividades Extracurriculares**
-> Última actualización: 2026-04-11
+> Última actualización: 2026-04-11 — Fase 0, 1.0 y 1.1 completadas
 
 ## Leyenda de estados
 
@@ -35,30 +35,30 @@
 > **ADR de referencia**: AD-01, AD-10
 
 ### 0.1 Repositorio y estructura base
-- [ ] Crear estructura de directorios del monorepo (`/backend`, `/gateway`, `/frontend`)
-- [ ] Configurar `.gitignore` (incluir `.env`, `*.pem`, `*.key`, `node_modules`, `target/`)
-- [ ] Crear `.env.example` con todas las variables requeridas sin valores
-- [ ] Agregar `README.md` con instrucciones de arranque local
+- [x] Crear estructura de directorios del monorepo (`/backend`, `/gateway`, `/frontend`)
+- [x] Configurar `.gitignore` (incluir `.env`, `*.pem`, `*.key`, `node_modules`, `target/`)
+- [x] Crear `.env.example` con todas las variables requeridas sin valores
+- [x] Agregar `README.md` con instrucciones de arranque local
 
 ### 0.2 Docker Compose — entorno local
-- [ ] Definir `docker-compose.yml` con servicios: `postgres`, `redis`, `backend`, `gateway`, `frontend`
-- [ ] Configurar volúmenes persistentes para PostgreSQL
-- [ ] Configurar healthchecks para `postgres` y `redis`
-- [ ] Verificar que `docker compose up` levanta el entorno completo
+- [x] Definir `docker-compose.yml` con servicios: `postgres`, `redis`, `backend`, `gateway`, `frontend`
+- [x] Configurar volúmenes persistentes para PostgreSQL
+- [x] Configurar healthchecks para `postgres` y `redis`
+- [x] Verificar que `docker compose up` levanta el entorno completo
 
 ### 0.3 Base de datos — schema inicial
 > **ADR de referencia**: AD-08 (RLS), AD-07 (bloqueo pesimista)
 
-- [ ] Crear migration inicial con tablas: `institutions`, `users`, `students`, `guardian_students`
-- [ ] Crear tablas: `activities`, `schedules`
-- [ ] Crear tablas: `enrollments`
-- [ ] Crear tablas: `attendance_sessions`, `attendance_records`
-- [ ] Crear tabla: `audit_log`
-- [ ] Agregar campo `institution_id` en todas las tablas de dominio
-- [ ] Habilitar Row-Level Security (RLS) en todas las tablas de dominio
-- [ ] Crear políticas RLS por tabla (`tenant_isolation`)
-- [ ] Crear índices: `(institution_id, status)` en `activities`, `(student_id, status)` en `enrollments`
-- [ ] Agregar constraints de unicidad: `(student_id, activity_id)` en `enrollments`
+- [x] Crear migration inicial con tablas: `institutions`, `users`, `students`, `guardian_students`
+- [x] Crear tablas: `activities`, `schedules`
+- [x] Crear tablas: `enrollments`
+- [x] Crear tablas: `attendance_sessions`, `attendance_records`
+- [x] Crear tabla: `audit_log`
+- [x] Agregar campo `institution_id` en todas las tablas de dominio
+- [x] Habilitar Row-Level Security (RLS) en todas las tablas de dominio
+- [x] Crear políticas RLS por tabla (`tenant_isolation`)
+- [x] Crear índices: `(institution_id, status)` en `activities`, `(student_id, status)` en `enrollments`
+- [x] Agregar constraints de unicidad: `(student_id, activity_id)` en `enrollments`
 
 ---
 
@@ -68,37 +68,38 @@
 > **ADR de referencia**: AD-01, AD-02, AD-03
 
 ### 1.0 Setup del proyecto Spring Boot
-- [ ] Crear proyecto con Spring Initializr: Spring Boot 3.x, Java 21
-- [ ] Agregar dependencias: `spring-modulith`, `spring-data-jpa`, `spring-security`, `springdoc-openapi`
-- [ ] Agregar dependencias de pruebas: `junit-jupiter`, `mockito-core`, `assertj-core`
-- [ ] Configurar JaCoCo con umbral mínimo de 95% en líneas y ramas (falla el build si no se cumple)
-- [ ] Configurar conexión a PostgreSQL con pool HikariCP
-- [ ] Configurar conexión a Redis (Lettuce)
-- [ ] Configurar `TenantContextHolder` para propagar `institution_id` por petición
-- [ ] Configurar `ApplicationEvent` publisher para eventos de dominio
-- [ ] Escribir prueba de arquitectura Spring Modulith (verifica fronteras de módulos)
+- [x] Crear proyecto con Spring Initializr: Spring Boot 3.x, Java 21
+- [x] Agregar dependencias: `spring-modulith`, `spring-data-jpa`, `spring-security`, `springdoc-openapi`
+- [x] Agregar dependencias de pruebas: `junit-jupiter`, `mockito-core`, `assertj-core`
+- [x] Configurar JaCoCo con umbral mínimo de 95% en líneas y ramas (falla el build si no se cumple)
+- [x] Configurar conexión a PostgreSQL con pool HikariCP
+- [x] Configurar conexión a Redis (Lettuce)
+- [x] Configurar `TenantContextHolder` para propagar `institution_id` por petición
+- [x] Configurar `ApplicationEvent` publisher para eventos de dominio
+- [x] Escribir prueba de arquitectura Spring Modulith (verifica fronteras de módulos)
 
 ### 1.1 Módulo Auth & Security
 > **Spec funcional**: F4-autenticacion.feature
 > **Spec técnica**: specs/technical/openapi/auth.yaml
 > **ADR**: AD-06
 
-- [ ] Implementar entidad `User` con campos: `id`, `email`, `password_hash`, `role`, `institution_id`, `mfa_secret`
-- [ ] Implementar `AuthService`: login con validación de credenciales
-- [ ] Implementar generación de JWT (access token 15 min) con payload `{ sub, role, institutionId }`
-- [ ] Implementar generación y almacenamiento de refresh token en Redis (TTL 7 días)
-- [ ] Implementar `MfaService`: generación y verificación de código TOTP con `speakeasy` / `GoogleAuthenticator`
-- [ ] Implementar flujo MFA: paso 1 (sesión temporal) → paso 2 (verificación TOTP) → emisión de tokens
-- [ ] Implementar revocación de refresh token (`logout`, cambio de contraseña)
-- [ ] Implementar `validatePermission(role, action)` para RBAC
-- [ ] **Pruebas unitarias — Auth** (cobertura ≥ 95%)
-  - [ ] `AuthService.login()`: credenciales correctas, incorrectas, usuario inactivo
-  - [ ] `AuthService.refreshToken()`: token válido, revocado, expirado
-  - [ ] `AuthService.logout()`: revocación exitosa en Redis
-  - [ ] `MfaService.verifyTotp()`: código correcto, incorrecto, expirado
-  - [ ] `JwtTokenProvider.generateToken()`: payload correcto, expiración correcta
-  - [ ] `JwtTokenProvider.validateToken()`: token válido, malformado, expirado
-  - [ ] `AuthService.validatePermission()`: cada combinación rol/acción de AD-04
+- [x] Implementar entidad `User` con campos: `id`, `email`, `password_hash`, `role`, `institution_id`, `mfa_secret`
+- [x] Implementar `AuthService`: login con validación de credenciales
+- [x] Implementar generación de JWT (access token 15 min) con payload `{ sub, role, institutionId }`
+- [x] Implementar generación y almacenamiento de refresh token en Redis (TTL 7 días)
+- [x] Implementar `MfaService`: generación y verificación de código TOTP con GoogleAuthenticator
+- [x] Implementar flujo MFA: paso 1 (sessionToken JWT 5 min) → paso 2 (verificación TOTP) → emisión de tokens
+- [x] Implementar revocación de refresh token (`logout`, `revokeAllForUser`)
+- [x] Implementar adaptadores: `JpaUserRepository`, `RedisSessionStore`, `AuthController`, `SecurityConfig`
+- [x] **Pruebas unitarias — Auth** (cobertura ≥ 95%)
+  - [x] `AuthService.login()`: GUARDIAN sin MFA, ADMIN con MFA, credenciales incorrectas
+  - [x] `AuthService.mfaVerify()`: código válido, código inválido, sessionToken inválido
+  - [x] `AuthService.refreshToken()`: token válido (con rotación), token revocado
+  - [x] `AuthService.logout()`: revocación exitosa en Redis
+  - [x] `MfaService.verifyCode()`: código correcto, código incorrecto, secreto incorrecto
+  - [x] `JwtTokenProvider.generateAccessToken()`: payload correcto, institutionId null para SUPERADMIN
+  - [x] `JwtTokenProvider.validateToken()`: token válido, malformado, expirado
+  - [x] `JwtTokenProvider.generateMfaPendingToken()`: no usable como access token
 
 ### 1.2 Módulo Instituciones
 > **ADR**: AD-08
