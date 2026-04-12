@@ -1,31 +1,23 @@
 {
   "permissions": {
     "allow": [
-      "Bash(gh repo:*)",
-      "WebFetch(domain:github.com)",
+      "Bash(gh pr:*)",
       "Bash(git fetch:*)",
       "Bash(git checkout:*)",
-      "Bash(git add:*)",
-      "Bash(git commit -m ':*)",
-      "Bash(git push:*)",
-      "Bash(git branch:*)",
-      "Bash(gh pr create --base develop --head feature/specification_project --title 'feat: especificaciones funcionales, técnicas y plan de implementación' --body ':*)",
-      "Bash(brew install:*)",
-      "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")",
       "Bash(git pull:*)",
-      "Bash(gh pr:*)",
-      "Bash(mvn --version)",
-      "Bash(java -version)",
-      "Bash(mvn help:evaluate -Dexpression=lombok.version -q -DforceStdout)",
-      "Bash(mvn test:*)",
-      "Bash(mvn dependency:get -Dartifact=org.projectlombok:lombok:1.18.38 -q)",
-      "Bash(mvn dependency:get -Dartifact=org.projectlombok:lombok:1.18.40 -q)",
-      "Bash(grep -v \"^\\\\[ERROR\\\\] $\")",
-      "Bash(mvn -pl backend test -Dgroups=unit -Dtest=UserResponseSecurityTest)",
-      "Bash(./mvnw clean:*)",
+      "Bash(git push:*)",
+      "Bash(find /Users/angelica/workspace/EAMS/backend -name \"JpaEnrollmentRepository.java\" -exec cat {} \\\\;)",
       "Bash(mvn clean:*)",
-      "Bash(mvn test-compile:*)",
-      "Bash(mvn -X test -Dtest=EnrollmentServiceTest)"
+      "Bash(mvn test:*)",
+      "Read(//var/run/**)",
+      "Bash(DOCKER_HOST=unix:///var/run/docker.sock mvn test -Pintegration -Dtest=EnrollmentConcurrencyIT -Djacoco.skip=true)",
+      "Bash(docker info:*)",
+      "Bash(pkill -f \"Docker\")",
+      "Bash(open /Applications/Docker.app)",
+      "Bash(git add:*)"
+    ],
+    "additionalDirectories": [
+      "/Users/angelica/workspace/EAMS/.claude"
     ]
   }
 }

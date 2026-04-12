@@ -49,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @Tag("integration")
 @DisplayName("IT-01 — Inscripción concurrente sin sobrecupo")
-class EnrollmentConcurrencyIT extends BaseIntegrationTest {
+public class EnrollmentConcurrencyIT extends BaseIntegrationTest {
 
     @Autowired
     private JpaInstitutionRepository institutionRepository;

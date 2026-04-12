@@ -1,0 +1,247 @@
+{
+  "info": {
+    "_postman_id": "eams-collection-0001",
+    "name": "EAMS API - Local",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8082" },
+    { "key": "backendUrl", "value": "http://localhost:8082" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "sessionToken", "value": "" },
+    { "key": "institutionId", "value": "" },
+    { "key": "userRole", "value": "" },
+    { "key": "studentId", "value": "" },
+    { "key": "activityId", "value": "" },
+    { "key": "enrollmentId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": [ "{{baseUrl}}" ], "path": [ "auth", "login" ] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.mfaRequired) {",
+                  "  pm.environment.set('sessionToken', res.sessionToken);",
+                  "  pm.test('MFA required', function(){ pm.expect(res.mfaRequired).to.be.true; });",
+                  "} else if (res.tokens) {",
+                  "  pm.environment.set('accessToken', res.tokens.accessToken);",
+                  "  pm.environment.set('refreshToken', res.tokens.refreshToken);",
+                  "  pm.test('Logged in', function(){ pm.expect(res.tokens.accessToken).to.be.a('string'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "MFA Verify",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"sessionToken\": \"{{sessionToken}}\",\n  \"code\": \"123456\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/mfa/verify", "host": [ "{{baseUrl}}" ], "path": [ "auth", "mfa", "verify" ] }
+          },
+          "event": [ { "listen": "test", "script": { "exec": [
+            "var res = pm.response.json();",
+            "if (res.accessToken || res.refreshToken || res.tokens) {",
+            "  // TokenPair may be wrapped as { tokens: {...} } or returned directly",
+            "  var tokens = res.tokens || res;",
+            "  if (tokens.accessToken) pm.environment.set('accessToken', tokens.accessToken);",
+            "  if (tokens.refreshToken) pm.environment.set('refreshToken', tokens.refreshToken);",
+            "}"
+          ] } } ]
+        },
+        {
+          "name": "Refresh",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/refresh", "host": [ "{{baseUrl}}" ], "path": [ "auth", "refresh" ] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/logout", "host": [ "{{baseUrl}}" ], "path": [ "auth", "logout" ] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Activities",
+      "item": [
+        {
+          "name": "Create Activity",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "X-Institution-Id", "value": "{{institutionId}}" }, { "key": "X-User-Role", "value": "{{userRole}}" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Fútbol Juvenil\",\n  \"description\": \"Actividad de fútbol para estudiantes\",\n  \"totalSpots\": 20,\n  \"schedule\": { \"dayOfWeek\": \"MONDAY\", \"startTime\": \"16:00:00\", \"endTime\": \"18:00:00\" },\n  \"institutionId\": \"{{institutionId}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/activities", "host": [ "{{baseUrl}}" ], "path": [ "activities" ] }
+          },
+          "event": [ { "listen": "test", "script": { "exec": [ "var res = pm.response.json(); if (res && res.id) pm.environment.set('activityId', res.id); pm.test('Activity created', function(){ pm.expect(pm.response.code).to.be.oneOf([201,200]); });" ] } } ]
+        },
+        {
+          "name": "List Activities",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "X-Institution-Id", "value": "{{institutionId}}" }, { "key": "X-User-Role", "value": "{{userRole}}" } ],
+            "url": { "raw": "{{baseUrl}}/activities", "host": [ "{{baseUrl}}" ], "path": [ "activities" ] }
+          }
+        },
+        {
+          "name": "Get Activity",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "X-Institution-Id", "value": "{{institutionId}}" }, { "key": "X-User-Role", "value": "{{userRole}}" } ],
+            "url": { "raw": "{{baseUrl}}/activities/{{activityId}}", "host": [ "{{baseUrl}}" ], "path": [ "activities", "{{activityId}}" ] }
+          }
+        },
+        {
+          "name": "Get Available Spots",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "X-Institution-Id", "value": "{{institutionId}}" }, { "key": "X-User-Role", "value": "{{userRole}}" } ],
+            "url": { "raw": "{{baseUrl}}/activities/{{activityId}}/spots", "host": [ "{{baseUrl}}" ], "path": [ "activities", "{{activityId}}", "spots" ] }
+          }
+        }
+        ,
+        {
+          "name": "Update Activity (basic)",
+          "request": {
+            "method": "PATCH",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "X-Institution-Id", "value": "{{institutionId}}" }, { "key": "X-User-Role", "value": "{{userRole}}" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Fútbol Juvenil - Grupo A\",\n  \"description\": \"Actualizado desde Postman\"\n}" },
+            "url": { "raw": "{{baseUrl}}/activities/{{activityId}}", "host": [ "{{baseUrl}}" ], "path": [ "activities", "{{activityId}}" ] }
+          }
+        },
+        {
+          "name": "Publish Activity",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "X-Institution-Id", "value": "{{institutionId}}" }, { "key": "X-User-Role", "value": "{{userRole}}" } ],
+            "url": { "raw": "{{baseUrl}}/activities/{{activityId}}/publish", "host": [ "{{baseUrl}}" ], "path": [ "activities", "{{activityId}}", "publish" ] }
+          }
+        },
+        {
+          "name": "Update Total Spots",
+          "request": {
+            "method": "PATCH",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "X-Institution-Id", "value": "{{institutionId}}" }, { "key": "X-User-Role", "value": "{{userRole}}" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"totalSpots\": 25\n}" },
+            "url": { "raw": "{{baseUrl}}/activities/{{activityId}}/spots", "host": [ "{{baseUrl}}" ], "path": [ "activities", "{{activityId}}", "spots" ] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Enrollments",
+      "item": [
+        {
+          "name": "Create Enrollment (expected 201)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "X-Institution-Id", "value": "{{institutionId}}" }, { "key": "X-User-Role", "value": "{{userRole}}" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"activityId\": \"{{activityId}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/enrollments", "host": [ "{{baseUrl}}" ], "path": [ "enrollments" ] }
+          },
+          "event": [ { "listen": "test", "script": { "exec": [ "var res = pm.response.json(); if (res && res.id) pm.environment.set('enrollmentId', res.id); pm.test('Enrollment created', function(){ pm.expect(pm.response.code).to.equal(201); });" ] } } ]
+        },
+        {
+          "name": "Create Enrollment (duplicate attempt)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "X-Institution-Id", "value": "{{institutionId}}" }, { "key": "X-User-Role", "value": "{{userRole}}" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"activityId\": \"{{activityId}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/enrollments", "host": [ "{{baseUrl}}" ], "path": [ "enrollments" ] }
+          },
+          "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Duplicate enrollment => conflict or 409', function(){ pm.expect(pm.response.code).to.be.oneOf([200,201,409]); });" ] } } ]
+        },
+        {
+          "name": "Create Enrollment",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "X-Institution-Id", "value": "{{institutionId}}" }, { "key": "X-User-Role", "value": "{{userRole}}" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"activityId\": \"{{activityId}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/enrollments", "host": [ "{{baseUrl}}" ], "path": [ "enrollments" ] }
+          },
+          "event": [ { "listen": "test", "script": { "exec": [
+            "var res = pm.response.json();",
+            "if (res && res.id) pm.environment.set('enrollmentId', res.id);",
+            "pm.test('Enrollment created or conflict handled', function(){ pm.expect(pm.response.code).to.be.oneOf([201,409]); });"
+          ] } } ]
+        },
+        {
+          "name": "Cancel Enrollment",
+          "request": {
+            "method": "DELETE",
+            "header": [ { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "X-Institution-Id", "value": "{{institutionId}}" }, { "key": "X-User-Role", "value": "{{userRole}}" } ],
+            "url": { "raw": "{{baseUrl}}/enrollments/{{enrollmentId}}", "host": [ "{{baseUrl}}" ], "path": [ "enrollments", "{{enrollmentId}}" ] }
+          }
+        },
+        {
+          "name": "List By Student",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "X-Institution-Id", "value": "{{institutionId}}" }, { "key": "X-User-Role", "value": "{{userRole}}" } ],
+            "url": { "raw": "{{baseUrl}}/enrollments/student/{{studentId}}", "host": [ "{{baseUrl}}" ], "path": [ "enrollments", "student", "{{studentId}}" ] }
+          }
+        },
+        {
+          "name": "List By Activity",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "X-Institution-Id", "value": "{{institutionId}}" }, { "key": "X-User-Role", "value": "{{userRole}}" } ],
+            "url": { "raw": "{{baseUrl}}/enrollments/activity/{{activityId}}", "host": [ "{{baseUrl}}" ], "path": [ "enrollments", "activity", "{{activityId}}" ] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "item": [
+        {
+          "name": "Open Session",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "X-Institution-Id", "value": "{{institutionId}}" }, { "key": "X-User-Role", "value": "{{userRole}}" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"activityId\": \"{{activityId}}\",\n  \"date\": \"2026-04-12\"\n}" },
+            "url": { "raw": "{{baseUrl}}/attendance/sessions", "host": [ "{{baseUrl}}" ], "path": [ "attendance", "sessions" ] }
+          }
+        },
+        {
+          "name": "Record Attendance",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "X-Institution-Id", "value": "{{institutionId}}" }, { "key": "X-User-Role", "value": "{{userRole}}" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"sessionId\": \"\",\n  \"studentId\": \"{{studentId}}\",\n  \"present\": true\n}" },
+            "url": { "raw": "{{baseUrl}}/attendance/records", "host": [ "{{baseUrl}}" ], "path": [ "attendance", "records" ] }
+          }
+        }
+      ]
+    }
+  ]
+}
