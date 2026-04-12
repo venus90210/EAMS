@@ -1,0 +1,187 @@
+openapi: 3.1.0
+info:
+  title: EAMS — Auth & Security
+  version: 1.0.0
+  description: Autenticacion JWT, MFA y gestion de sesiones
+
+tags:
+  - name: auth
+    description: Login, logout y renovacion de tokens
+
+paths:
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Iniciar sesion
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/mfa/verify:
+    post:
+      tags: [auth]
+      summary: Verificar codigo MFA (TOTP)
+      description: Obligatorio para roles con privilegios de escritura (TEACHER, ADMIN, SUPERADMIN)
+      operationId: verifyMfa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MfaVerifyRequest'
+      responses:
+        '200':
+          description: MFA verificado — tokens emitidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: Renovar access token con refresh token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Nuevo access token emitido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Cerrar sesion y revocar refresh token
+      operationId: logout
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Sesion cerrada y token revocado
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: admin@colegio.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+
+    LoginResponse:
+      type: object
+      properties:
+        mfaRequired:
+          type: boolean
+          description: true si el rol requiere verificacion MFA
+        sessionToken:
+          type: string
+          description: Token temporal para completar el flujo MFA (solo si mfaRequired=true)
+        tokens:
+          $ref: '#/components/schemas/TokenPair'
+          description: Presente solo si mfaRequired=false
+
+    MfaVerifyRequest:
+      type: object
+      required: [sessionToken, code]
+      properties:
+        sessionToken:
+          type: string
+        code:
+          type: string
+          minLength: 6
+          maxLength: 6
+          example: "123456"
+
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+
+    TokenPair:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT valido por 15 minutos
+        refreshToken:
+          type: string
+          description: Token revocable almacenado en Redis, valido 7 dias
+        expiresIn:
+          type: integer
+          example: 900
+          description: Segundos de vida del access token
+
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          enum:
+            - INVALID_CREDENTIALS
+            - MFA_INVALID
+            - TOKEN_REVOKED
+            - TOKEN_EXPIRED
+            - INSUFFICIENT_ROLE
+            - INSTITUTION_MISMATCH
+        message:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Credenciales invalidas o token revocado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

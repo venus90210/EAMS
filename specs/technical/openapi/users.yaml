@@ -1,0 +1,296 @@
+openapi: 3.1.0
+info:
+  title: EAMS — Modulo Usuarios
+  version: 1.0.0
+  description: Gestion de usuarios, roles y asociacion acudiente-estudiante
+
+tags:
+  - name: users
+    description: CRUD de usuarios y asociaciones
+  - name: students
+    description: Gestion de estudiantes y sus acudientes
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  /users:
+    post:
+      tags: [users]
+      summary: Registrar nuevo usuario
+      description: Solo ADMIN y SUPERADMIN pueden crear docentes y administradores. Los acudientes pueden auto-registrarse.
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+      responses:
+        '201':
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Email ya registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/{userId}:
+    get:
+      tags: [users]
+      summary: Obtener perfil de usuario
+      operationId: getUserProfile
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Perfil del usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [users]
+      summary: Actualizar datos del usuario
+      operationId: updateUser
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Usuario actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /users/students/link:
+    post:
+      tags: [students]
+      summary: Asociar estudiante con acudiente
+      description: Solo ADMIN puede crear y vincular estudiantes a sus acudientes
+      operationId: linkStudentToGuardian
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkStudentRequest'
+      responses:
+        '201':
+          description: Asociacion creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/guardians/{guardianId}/students:
+    get:
+      tags: [students]
+      summary: Listar estudiantes de un acudiente
+      operationId: getStudentsByGuardian
+      parameters:
+        - name: guardianId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lista de estudiantes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudentResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /users/bulk:
+    post:
+      tags: [users]
+      summary: Carga masiva de usuarios desde CSV
+      description: Solo ADMIN y SUPERADMIN. Permite cargar listas de estudiantes y acudientes.
+      operationId: bulkLoadUsers
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '202':
+          description: Archivo recibido — procesamiento asincrono
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+
+    RegisterUserRequest:
+      type: object
+      required: [email, password, role, institutionId]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        role:
+          $ref: '#/components/schemas/UserRole'
+        institutionId:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        institutionId:
+          type: string
+          format: uuid
+          nullable: true
+        firstName:
+          type: string
+        lastName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    LinkStudentRequest:
+      type: object
+      required: [guardianId, studentFirstName, studentLastName]
+      properties:
+        guardianId:
+          type: string
+          format: uuid
+        studentFirstName:
+          type: string
+        studentLastName:
+          type: string
+        grade:
+          type: string
+
+    StudentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        grade:
+          type: string
+        institutionId:
+          type: string
+          format: uuid
+        guardianId:
+          type: string
+          format: uuid
+
+    UserRole:
+      type: string
+      enum: [GUARDIAN, TEACHER, ADMIN, SUPERADMIN]
+
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Datos de entrada invalidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Sin permisos suficientes
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
