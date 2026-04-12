@@ -1,7 +1,7 @@
 # EAMS — Plan de Implementación
 
 > **Plataforma de Gestión de Actividades Extracurriculares**
-> Última actualización: 2026-04-11 — Fase 0, 1.0 y 1.1 completadas
+> Última actualización: 2026-04-12 — Fases 0, 1.0, 1.1, 1.2, 1.3, 1.4 y 1.5 completadas
 
 ## Leyenda de estados
 
@@ -104,50 +104,56 @@
 ### 1.2 Módulo Instituciones
 > **ADR**: AD-08
 
-- [ ] Implementar entidad `Institution` con campos: `id`, `name`, `email_domain`, `created_at`
-- [ ] Implementar `InstitutionService`: CRUD, validación de dominio único
-- [ ] Implementar `InstitutionContextProvider`: extrae y propaga `institution_id` al `TenantContextHolder`
-- [ ] Restringir creación de instituciones a rol `SUPERADMIN`
-- [ ] **Pruebas unitarias — Instituciones** (cobertura ≥ 95%)
-  - [ ] `InstitutionService.create()`: dominio único, dominio duplicado (409)
-  - [ ] `InstitutionService.update()`: solo SUPERADMIN, institución no encontrada
-  - [ ] `InstitutionContextProvider.resolve()`: extracción correcta del `institution_id`
+- [x] Implementar entidad `Institution` con campos: `id`, `name`, `email_domain`, `created_at`
+- [x] Implementar `InstitutionService`: CRUD, validación de dominio único
+- [x] Implementar `InstitutionContextProvider`: resuelve institución activa y valida acceso cross-tenant
+- [x] Restringir creación de instituciones a rol `SUPERADMIN` (en controller vía TenantContext)
+- [x] Adaptadores: `JpaInstitutionRepository`, `InstitutionController` (POST/GET/PATCH)
+- [x] `shared/package-info.java` marcado como `@ApplicationModule(Type.OPEN)` (Spring Modulith)
+- [x] **Pruebas unitarias — Instituciones** (cobertura ≥ 95%)
+  - [x] `InstitutionService.create()`: dominio único → 201, duplicado → 409 EMAIL_DOMAIN_TAKEN
+  - [x] `InstitutionService.update()`: campos actualizables, NOT_FOUND, dominio duplicado, mismo dominio sin check
+  - [x] `InstitutionService.findById()`: existente, no encontrado → 404
+  - [x] `InstitutionService.findAll()`: lista completa, lista vacía
+  - [x] `InstitutionContextProvider.requireCurrentInstitution()`: contexto válido, sin contexto → 403, not in DB → 404
+  - [x] `InstitutionContextProvider.assertAccessTo()`: misma institución, SUPERADMIN global, mismatch → 403
 
 ### 1.3 Módulo Usuarios
 > **Spec técnica**: specs/technical/openapi/users.yaml
 
-- [ ] Implementar entidad `Student` con campos: `id`, `first_name`, `last_name`, `grade`, `institution_id`, `guardian_id`
-- [ ] Implementar `UserService`: registro, actualización, obtención de perfil
-- [ ] Implementar `linkStudentToGuardian(guardianId, studentData)`
-- [ ] Implementar `getStudentsByGuardian(guardianId)` con validación de institución
-- [ ] Implementar carga masiva desde CSV (`bulkLoad`)
-- [ ] Validar que todo usuario (excepto SUPERADMIN) tenga `institution_id` obligatorio
-- [ ] **Pruebas unitarias — Usuarios** (cobertura ≥ 95%)
-  - [ ] `UserService.register()`: email nuevo, email duplicado (409), rol no permitido
-  - [ ] `UserService.linkStudentToGuardian()`: vinculación exitosa, acudiente inexistente, ya vinculado
-  - [ ] `UserService.getStudentsByGuardian()`: padre ve solo sus hijos, filtro por institución
-  - [ ] `UserService.bulkLoad()`: CSV válido, CSV con filas inválidas (reporte de errores parciales)
+- [x] Implementar entidad `Student` con campos: `id`, `first_name`, `last_name`, `grade`, `institution_id`, `guardian_id`
+- [x] Implementar `UserManagementService`: registro, actualización, obtención de perfil (en módulo `auth`)
+- [x] Implementar `linkStudentToGuardian(guardianId, studentData)`
+- [x] Implementar `getStudentsByGuardian(guardianId)` con validación de institución
+- [x] Implementar carga masiva desde CSV (`bulkLoad`)
+- [x] Validar que todo usuario (excepto SUPERADMIN) tenga `institution_id` obligatorio
+- [x] `shared.user.UserLookupPort` — permite al módulo `users` validar guardianId sin depender de `auth.domain`
+- [x] **Pruebas unitarias — Usuarios** (cobertura ≥ 95%)
+  - [x] `UserManagementService.register()`: email nuevo, email duplicado (409), rol no permitido
+  - [x] `StudentService.linkStudentToGuardian()`: vinculación exitosa, acudiente inexistente, ya vinculado
+  - [x] `StudentService.getStudentsByGuardian()`: padre ve solo sus hijos, filtro por institución
+  - [x] `StudentService.bulkLoad()`: CSV válido, CSV con filas inválidas (reporte de errores parciales)
 
 ### 1.4 Módulo Actividades
 > **Spec funcional**: F5-estado-actividad.feature
 > **Spec técnica**: specs/technical/openapi/activities.yaml
 > **ADR**: AD-05 (caché Redis)
 
-- [ ] Implementar entidad `Activity`: `id`, `name`, `description`, `status`, `total_spots`, `available_spots`, `institution_id`
-- [ ] Implementar entidad `Schedule` (tabla informativa — no valida conflictos)
-- [ ] Implementar `ActivityService`: crear (DRAFT), publicar (DRAFT→PUBLISHED), cambiar estado
-- [ ] Implementar regla: `total_spots` inmutable; solo ADMIN puede modificarlo con registro en `audit_log`
-- [ ] Implementar `getAvailableSpots(activityId)` con caché Redis (TTL 30s)
-- [ ] Implementar invalidación de caché al cambiar estado o cupos
-- [ ] Implementar filtro por rol: GUARDIAN ve solo PUBLISHED de su institución
-- [ ] Publicar evento `ActivityStatusChanged` al deshabilitar/habilitar
-- [ ] **Pruebas unitarias — Actividades** (cobertura ≥ 95%)
-  - [ ] `ActivityService.create()`: datos válidos → DRAFT, campos obligatorios faltantes (400)
-  - [ ] `ActivityService.publish()`: DRAFT→PUBLISHED válido, PUBLISHED→PUBLISHED (409)
-  - [ ] `ActivityService.updateStatus()`: PUBLISHED→DISABLED, DISABLED→PUBLISHED, institución incorrecta (403)
-  - [ ] `ActivityService.update()`: ADMIN modifica `total_spots` + audit log, TEACHER intenta (403)
-  - [ ] `ActivityService.listForRole()`: GUARDIAN ve solo PUBLISHED, TEACHER/ADMIN ven todos
-  - [ ] `ActivityService.getAvailableSpots()`: retorna desde caché, retorna desde BD cuando caché vacío
+- [x] Implementar entidad `Activity`: `id`, `name`, `description`, `status`, `total_spots`, `available_spots`, `institution_id`
+- [x] Implementar entidad `Schedule` (tabla informativa — no valida conflictos)
+- [x] Implementar `ActivityService`: crear (DRAFT), publicar (DRAFT→PUBLISHED), cambiar estado
+- [x] Implementar regla: `total_spots` inmutable; solo ADMIN puede modificarlo (sin audit_log aún — Fase posterior)
+- [x] Implementar `getAvailableSpots(activityId)` con caché Redis (TTL 30s)
+- [x] Implementar invalidación de caché al cambiar estado o cupos
+- [x] Implementar filtro por rol: GUARDIAN ve solo PUBLISHED de su institución
+- [ ] Publicar evento `ActivityStatusChanged` al deshabilitar/habilitar (Fase 1.7 — Notificaciones)
+- [x] **Pruebas unitarias — Actividades** (cobertura ≥ 95%)
+  - [x] `ActivityService.create()`: datos válidos → DRAFT, GUARDIAN intenta crear (403)
+  - [x] `ActivityService.publish()`: DRAFT→PUBLISHED válido, PUBLISHED→PUBLISHED (409)
+  - [x] `ActivityService.updateStatus()`: PUBLISHED→DISABLED, DISABLED→PUBLISHED, institución incorrecta (403)
+  - [x] `ActivityService.update()`: ADMIN modifica `total_spots`, TEACHER intenta (403)
+  - [x] `ActivityService.listForRole()`: GUARDIAN ve solo PUBLISHED, TEACHER ven todos, SUPERADMIN sin restricción
+  - [x] `ActivityService.getAvailableSpots()`: retorna desde caché, retorna desde BD cuando caché vacío
 
 ### 1.5 Módulo Inscripciones
 > **Spec funcional**: F1-inscripcion.feature
@@ -419,6 +425,81 @@
 - [ ] Verificar que refresh token revocado no permite renovación (cubierto por IT-03)
 - [ ] Verificar que roles sin permiso reciben 403 (tabla de AD-04)
 - [ ] Verificar HTTPS en producción y cabeceras de seguridad
+
+### 4.9 Hardening y análisis de seguridad
+> **Objetivo**: Evaluar y cerrar vulnerabilidades OWASP Top 10 + análisis de dependencias
+
+#### 4.9.1 Análisis de vulnerabilidades de código
+- [ ] **SQL Injection**: Verificar que todas las queries dinámicas usan parámetros (JPA + Hibernate)
+  - Automatizar: `mvn dependency-check` en CI/CD para detectar CVEs en dependencias
+  - Manual: Revisar `@Query` personalizadas en `SpringDataXyzRepository`
+  
+- [ ] **Inyección XSS / Input Validation**:
+  - Validaciones existentes: `@NotBlank`, `@Email`, `@Size` en DTOs
+  - Falta: Sanitización de campos libres (`grade`, `observation`, `topics_covered`)
+  - Acción: Agregar sanitizador (ej. OWASP ESAPI) a campos de texto libre antes de persistir
+  - Tests: `StudentServiceTest`, `AttendanceServiceTest` verifican que input malicioso es rechazado
+
+- [ ] **Broken Authentication**:
+  - Verificar: Tokens JWT expirados son rechazados (test en `JwtTokenProviderTest`)
+  - Verificar: `mfaSecret` nunca se expone en `UserResponse` (test en `UserManagementServiceTest`)
+  - Verificar: `passwordHash` nunca se expone en respuestas HTTP
+
+- [ ] **Sensitive Data Exposure**:
+  - Auditar DTOs (`UserResponse`, `StudentResponse`) — no deben contener `passwordHash`, `mfaSecret`
+  - Verificar logs: no guardar tokens, contraseñas o datos de usuario en texto claro
+  - Implementar: Maskeo en logs de `Authorization` headers y credenciales (4.9.3)
+
+- [ ] **RBAC — Coverage completo**:
+  - Actualmente: Tests en `InstitutionContextProviderTest` y `StudentController`
+  - Falta: Test sistemático de cada endpoint con cada rol (matriz de permisos AD-04)
+  - Nueva clase: `RbacComplianceTest` — matriz rol/endpoint que valida 403 si no autorizado
+  - Incluir: SUPERADMIN bypass en `getStudentsByGuardian`, acceso cross-institution bloqueado
+
+- [ ] **Rate Limiting y DoS Prevention**:
+  - Verificado en gateway NestJS (Fase 2.3 — `ThrottlerModule`)
+  - Falta: Test de integración verificando que límite de 100 req/min se cumple
+
+- [ ] **Dependency Vulnerabilities**:
+  - Agregar a CI/CD: `mvn org.owasp:dependency-check-maven:check`
+  - Umbral: Bloquear deploy si hay vulnerabilidades de severidad CRITICAL o HIGH
+  - Frequencia: Ejecutar en cada merge a `develop`
+
+#### 4.9.2 Secrets Management & Credentials
+- [ ] Verificar que `.env.example` NO contiene valores reales (solo placeholders)
+- [ ] Verificar que archivos sensibles están en `.gitignore`: `.env`, `*.pem`, `*.key`, `secrets/`
+- [ ] Documentar: Dónde guardar secretos en local (`.env`) vs. producción (Doppler/AWS)
+- [ ] Tests: No hardcodear secretos en tests — usar variables de entorno o mocks
+
+#### 4.9.3 Logging & Monitoring seguro
+- [ ] Configurar que logs NO contengan:
+  - Tokens JWT, refresh tokens, mfaSecret
+  - Contraseñas, hashes, datos personales (email, teléfono completo)
+  - Números de identificación completos
+- [ ] Implementar: Mascarador de logs (ej. Spring Cloud Config Server, logback filters)
+- [ ] Verificar: Logs centralizados (Fase 5) filtran datos sensibles antes de transmitir
+
+#### 4.9.4 Headers de seguridad HTTP
+- [ ] Verificar en `SecurityConfig`:
+  - `Strict-Transport-Security: max-age=31536000; includeSubDomains`
+  - `X-Content-Type-Options: nosniff`
+  - `X-Frame-Options: DENY`
+  - `Content-Security-Policy: default-src 'self'`
+  - `X-XSS-Protection: 1; mode=block`
+- [ ] Tests: Verificar que `SecurityHeadersTest` valida presencia de estos headers
+
+#### 4.9.5 CORS y HTTPS
+- [ ] Verificar `SecurityConfig`: CORS solo permite orígenes whitelistados (no `*`)
+- [ ] Verificar: `https://` en producción (forzar redirect HTTP → HTTPS)
+- [ ] Certificados: TLS 1.2+ (sin SSLv3, TLS 1.0, TLS 1.1)
+
+#### 4.9.6 Auditoría de cambios sensibles
+- [ ] Tabla `audit_log`: Ya existe en migration inicial
+- [ ] Implementar: Listeners que registren:
+  - Cambios en roles de usuario (escalada de privilegios)
+  - Creación/eliminación de instituciones (solo SUPERADMIN)
+  - Cambios en `available_spots` (auditar con `total_spots` original)
+- [ ] Tests: `AuditLogTest` verifica que cada evento sensible genera un registro
 
 ---
 

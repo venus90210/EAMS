@@ -13,7 +13,19 @@
       "Bash(brew install:*)",
       "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")",
       "Bash(git pull:*)",
-      "Bash(gh pr:*)"
+      "Bash(gh pr:*)",
+      "Bash(mvn --version)",
+      "Bash(java -version)",
+      "Bash(mvn help:evaluate -Dexpression=lombok.version -q -DforceStdout)",
+      "Bash(mvn test:*)",
+      "Bash(mvn dependency:get -Dartifact=org.projectlombok:lombok:1.18.38 -q)",
+      "Bash(mvn dependency:get -Dartifact=org.projectlombok:lombok:1.18.40 -q)",
+      "Bash(grep -v \"^\\\\[ERROR\\\\] $\")",
+      "Bash(mvn -pl backend test -Dgroups=unit -Dtest=UserResponseSecurityTest)",
+      "Bash(./mvnw clean:*)",
+      "Bash(mvn clean:*)",
+      "Bash(mvn test-compile:*)",
+      "Bash(mvn -X test -Dtest=EnrollmentServiceTest)"
     ]
   }
 }

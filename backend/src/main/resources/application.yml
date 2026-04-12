@@ -34,6 +34,12 @@ spring:
       port: ${SPRING_REDIS_PORT:6379}
       password: ${SPRING_REDIS_PASSWORD:}
 
+  # ── File Upload — OWASP A06 (Vulnerable Components) ─────────────────────
+  servlet:
+    multipart:
+      max-file-size: 10MB         # Límite por archivo (prevenir DoS)
+      max-request-size: 20MB      # Límite por request (prevenir DoS)
+
 # ── JWT ───────────────────────────────────────────────────────────────────
 jwt:
   secret: ${JWT_SECRET}

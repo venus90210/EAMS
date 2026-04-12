@@ -44,6 +44,9 @@ public class User {
     @Column(name = "institution_id")
     private UUID institutionId;
 
+    @Column(name = "phone")
+    private String phone;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -69,11 +72,20 @@ public class User {
                               UUID institutionId,
                               PasswordEncoder encoder) {
         User user = new User();
+        user.id = UUID.randomUUID(); // generado en dominio; JPA lo respeta si ya no es null
         user.email = email.toLowerCase().strip();
         user.passwordHash = encoder.encode(rawPassword);
         user.role = role;
         user.institutionId = institutionId;
         return user;
+    }
+
+    // ── Actualización de perfil ─────────────────────────────────────────────
+
+    public void updateProfile(String firstName, String lastName, String phone) {
+        if (firstName != null && !firstName.isBlank()) this.firstName = firstName.strip();
+        if (lastName  != null && !lastName.isBlank())  this.lastName  = lastName.strip();
+        if (phone     != null && !phone.isBlank())     this.phone     = phone.strip();
     }
 
     // ── Comportamiento de dominio ───────────────────────────────────────────
