@@ -232,40 +232,40 @@
 > **ADR de referencia**: AD-04, AD-06
 
 ### 2.0 Setup del proyecto NestJS
-- [ ] Crear proyecto NestJS con TypeScript
-- [ ] Instalar dependencias: `@nestjs/jwt`, `@nestjs/passport`, `passport-jwt`, `@nestjs/throttler`
-- [ ] Instalar dependencias de pruebas: `@nestjs/testing`, `jest`, `jest-mock-extended`
-- [ ] Configurar Jest con umbral de cobertura ≥ 95% (líneas, ramas, funciones, sentencias)
-- [ ] Configurar módulo de configuración con variables de entorno
+- [x] Crear proyecto NestJS con TypeScript
+- [x] Instalar dependencias: `@nestjs/jwt`, `@nestjs/passport`, `passport-jwt`, `@nestjs/throttler`
+- [x] Instalar dependencias de pruebas: `@nestjs/testing`, `jest`, `jest-mock-extended`
+- [x] Configurar Jest con umbral de cobertura ≥ 95% (líneas, ramas, funciones, sentencias)
+- [x] Configurar módulo de configuración con variables de entorno
 
 ### 2.1 Autenticación JWT
-- [ ] Implementar `JwtStrategy` (Passport): extrae y valida token del header `Authorization: Bearer`
-- [ ] Implementar `JwtAuthGuard`: guard aplicado globalmente
-- [ ] Implementar extracción de `role` e `institutionId` del payload JWT
+- [x] Implementar `JwtStrategy` (Passport): extrae y valida token del header `Authorization: Bearer`
+- [x] Implementar `JwtAuthGuard`: guard aplicado globalmente
+- [x] Implementar extracción de `role` e `institutionId` del payload JWT
 
 ### 2.2 Control de acceso basado en roles (RBAC)
-- [ ] Implementar decorador `@Roles(...roles)`
-- [ ] Implementar `RolesGuard`: verifica que el rol del token tenga permiso para el endpoint
-- [ ] Aplicar política de roles por módulo según tabla de AD-04
-- [ ] Retornar HTTP 403 con `INSUFFICIENT_ROLE` ante acceso no autorizado
+- [x] Implementar decorador `@Roles(...roles)`
+- [x] Implementar `RolesGuard`: verifica que el rol del token tenga permiso para el endpoint
+- [x] Aplicar política de roles por módulo según tabla de AD-04
+- [x] Retornar HTTP 403 con `INSUFFICIENT_ROLE` ante acceso no autorizado
 
 ### 2.3 Rate limiting y CORS
-- [ ] Configurar `ThrottlerModule`: límite por IP y por usuario (ej. 100 req/min)
-- [ ] Configurar CORS con whitelist de orígenes permitidos
-- [ ] Configurar headers de seguridad (Helmet)
+- [x] Configurar `ThrottlerModule`: límite por IP y por usuario (ej. 100 req/min)
+- [x] Configurar CORS con whitelist de orígenes permitidos
+- [x] Configurar headers de seguridad (Helmet)
 
 ### 2.4 Enrutamiento al backend
-- [ ] Implementar proxy inverso hacia el backend Spring Boot
-- [ ] Inyectar `institution_id` y `user_id` como headers internos hacia el backend
-- [ ] Manejar errores de backend y normalizar respuestas de error
+- [x] Implementar proxy inverso hacia el backend Spring Boot
+- [x] Inyectar `institution_id` y `user_id` como headers internos hacia el backend
+- [x] Manejar errores de backend y normalizar respuestas de error
 
 ### 2.5 Pruebas unitarias — API Gateway (cobertura ≥ 95%)
-- [ ] `JwtAuthGuard.canActivate()`: token válido, expirado, malformado, ausente → 401
-- [ ] `RolesGuard.canActivate()`: cada combinación rol/endpoint de la tabla AD-04
-- [ ] `RolesGuard.canActivate()`: rol insuficiente → 403 INSUFFICIENT_ROLE
-- [ ] `ThrottlerGuard`: request dentro del límite, request excedido → 429
-- [ ] `ProxyService.forward()`: inyección correcta de headers `institution_id` y `user_id`
-- [ ] `ErrorNormalizerInterceptor`: mapeo correcto de errores 4xx y 5xx del backend
+- [x] `JwtAuthGuard.canActivate()`: token válido, expirado, malformado, ausente → 401
+- [x] `RolesGuard.canActivate()`: cada combinación rol/endpoint de la tabla AD-04
+- [x] `RolesGuard.canActivate()`: rol insuficiente → 403 INSUFFICIENT_ROLE
+- [x] `ThrottlerGuard`: request dentro del límite, request excedido → 429
+- [x] `ProxyService.forward()`: inyección correcta de headers `institution_id` y `user_id`
+- [x] `ErrorNormalizerInterceptor`: mapeo correcto de errores 4xx y 5xx del backend
 
 ---
 
