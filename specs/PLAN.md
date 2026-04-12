@@ -1,7 +1,7 @@
 # EAMS — Plan de Implementación
 
 > **Plataforma de Gestión de Actividades Extracurriculares**
-> Última actualización: 2026-04-12 — Fases 0, 1.0-1.7, 2.0-2.5, 3.0-3.8 completadas | PR #14 abierto
+> Última actualización: 2026-04-12 — Fases 0, 1.0-1.7, 2.0-2.5, 3.0-3.8, 4.0-4.4 completadas
 
 ## Leyenda de estados
 
@@ -365,46 +365,46 @@
 > **Referencia completa**: [specs/technical/testing-strategy.md](technical/testing-strategy.md)
 
 ### 4.0 Setup de pruebas de integración
-- [ ] Agregar dependencias: `testcontainers-postgresql`, `testcontainers-junit-jupiter`, `wiremock-jre8`
-- [ ] Crear clase base `BaseIntegrationTest` con Testcontainers (PostgreSQL + Redis)
-- [ ] Crear script `init-rls.sql` que aplica las políticas RLS en el contenedor de prueba
-- [ ] Separar pruebas unitarias (`@Tag("unit")`) e integración (`@Tag("integration")`) en Maven Surefire
-- [ ] Configurar CI para correr integration tests solo si las unitarias pasan
+- [x] Agregar dependencias: `testcontainers-postgresql`, `testcontainers-junit-jupiter`, `wiremock-jre8`
+- [x] Crear clase base `BaseIntegrationTest` con Testcontainers (PostgreSQL + Redis)
+- [x] Crear script `init-rls.sql` que aplica las políticas RLS en el contenedor de prueba
+- [x] Separar pruebas unitarias (`@Tag("unit")`) e integración (`@Tag("integration")`) en Maven Surefire
+- [x] Configurar CI para correr integration tests solo si las unitarias pasan
 
 ### 4.1 IT-01 — Inscripción concurrente sin sobrecupo
 > **ADR**: AD-07 | **RF**: RF05 | **Clase**: `EnrollmentConcurrencyIT`
 
-- [ ] Crear actividad con exactamente 1 cupo en PostgreSQL real (Testcontainers)
-- [ ] Lanzar 10 hilos simultáneos con `ExecutorService` intentando inscribir
-- [ ] Verificar que exactamente 1 inscripción es exitosa (HTTP 201)
-- [ ] Verificar que `available_spots = 0` al final (nunca negativo)
-- [ ] Verificar que 9 peticiones retornan HTTP 409 SPOT_EXHAUSTED
+- [x] Crear actividad con exactamente 1 cupo en PostgreSQL real (Testcontainers)
+- [x] Lanzar 10 hilos simultáneos con `ExecutorService` intentando inscribir
+- [x] Verificar que exactamente 1 inscripción es exitosa (HTTP 201)
+- [x] Verificar que `available_spots = 0` al final (nunca negativo)
+- [x] Verificar que 9 peticiones retornan HTTP 409 SPOT_EXHAUSTED
 
 ### 4.2 IT-02 — Aislamiento entre instituciones con RLS
 > **ADR**: AD-08 | **RNF**: RNF06, RNF09 | **Clase**: `TenantIsolationIT`
 
-- [ ] Crear inst-A e inst-B con datos propios en PostgreSQL real
-- [ ] Ejecutar query sin filtro `WHERE institution_id` desde sesión de inst-A
-- [ ] Verificar que RLS impide ver datos de inst-B (resultado vacío, no error)
-- [ ] Repetir para tablas: `activities`, `enrollments`, `attendance_sessions`, `users`
-- [ ] Verificar que Superadmin puede acceder a todas las instituciones
+- [x] Crear inst-A e inst-B con datos propios en PostgreSQL real
+- [x] Ejecutar query sin filtro `WHERE institution_id` desde sesión de inst-A
+- [x] Verificar que RLS impide ver datos de inst-B (resultado vacío, no error)
+- [x] Repetir para tablas: `activities`, `enrollments`, `attendance_sessions`, `users`
+- [x] Verificar que Superadmin puede acceder a todas las instituciones
 
 ### 4.3 IT-03 — Revocación de refresh token en Redis
 > **ADR**: AD-06 | **RNF**: RNF04, RNF06 | **Clase**: `TokenRevocationIT`
 
-- [ ] Generar refresh token y almacenar en Redis real (Testcontainers)
-- [ ] Llamar a POST /auth/logout → verificar DELETE en Redis
-- [ ] Intentar POST /auth/refresh con el token revocado → verificar HTTP 401 TOKEN_REVOKED
-- [ ] Verificar que el TTL natural del token no permite usarlo tras revocación
+- [x] Generar refresh token y almacenar en Redis real (Testcontainers)
+- [x] Llamar a POST /auth/logout → verificar DELETE en Redis
+- [x] Intentar POST /auth/refresh con el token revocado → verificar HTTP 401 TOKEN_REVOKED
+- [x] Verificar que el TTL natural del token no permite usarlo tras revocación
 
 ### 4.4 IT-04 — Flujo completo de notificación asíncrona
 > **ADR**: AD-09 | **RF**: RF07 | **Clase**: `NotificationFlowIT`
 
-- [ ] Configurar WireMock como servidor SMTP stub
-- [ ] Ejecutar una inscripción completa en Spring Boot con Redis real
-- [ ] Verificar que el evento `EnrollmentConfirmed` llega a la cola de Redis en <1s
-- [ ] Verificar que el Worker consume el evento y llama al endpoint WireMock en <60s
-- [ ] Verificar idempotencia: reencolar el mismo evento no genera un segundo email
+- [x] Configurar WireMock como servidor SMTP stub
+- [x] Ejecutar una inscripción completa en Spring Boot con Redis real
+- [x] Verificar que el evento `EnrollmentConfirmed` llega a la cola de Redis en <1s
+- [x] Verificar que el Worker consume el evento y llama al endpoint WireMock en <60s
+- [x] Verificar idempotencia: reencolar el mismo evento no genera un segundo email
 
 ### 4.5 Pruebas de contrato (OpenAPI)
 - [ ] Instalar y configurar Dredd para validar el backend contra `main.yaml`
