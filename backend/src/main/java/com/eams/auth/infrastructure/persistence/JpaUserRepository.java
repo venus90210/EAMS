@@ -2,6 +2,7 @@ package com.eams.auth.infrastructure.persistence;
 
 import com.eams.auth.domain.User;
 import com.eams.auth.domain.UserRepository;
+import com.eams.shared.user.UserLookupPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -10,11 +11,12 @@ import java.util.UUID;
 
 /**
  * Adaptador JPA del puerto de salida UserRepository (AD-03).
- * Delega en SpringDataUserRepository y expone solo la interfaz del dominio.
+ * También implementa UserLookupPort (shared) para que el módulo 'users'
+ * pueda verificar la existencia de un guardianId sin depender de auth.domain.
  */
 @Repository
 @RequiredArgsConstructor
-public class JpaUserRepository implements UserRepository {
+public class JpaUserRepository implements UserRepository, UserLookupPort {
 
     private final SpringDataUserRepository spring;
 
@@ -36,5 +38,10 @@ public class JpaUserRepository implements UserRepository {
     @Override
     public boolean existsByEmail(String email) {
         return spring.existsByEmail(email);
+    }
+
+    @Override
+    public boolean existsById(UUID userId) {
+        return spring.existsById(userId);
     }
 }
