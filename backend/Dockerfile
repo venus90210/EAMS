@@ -16,6 +16,9 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
 # Usuario no root por seguridad (RNF04)
 RUN addgroup -S eams && adduser -S eams -G eams
 USER eams

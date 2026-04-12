@@ -21,5 +21,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=15s --timeout=5s --retries=5 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
-# Start
-CMD ["npm", "run", "start"]
+# Start production
+CMD ["npm", "run", "start:prod"]
