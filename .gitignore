@@ -1,0 +1,60 @@
+# ── Secretos y entorno ─────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p12
+secrets/
+
+# ── Java / Maven ────────────────────────────────────────────────────────────
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ── Node / npm ──────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# ── Next.js ─────────────────────────────────────────────────────────────────
+.next/
+out/
+build/
+.vercel
+
+# ── NestJS / TypeScript ─────────────────────────────────────────────────────
+dist/
+*.tsbuildinfo
+
+# ── Cobertura de pruebas ────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+jacoco.exec
+jacoco/
+
+# ── IDEs ────────────────────────────────────────────────────────────────────
+.idea/
+*.iml
+*.iws
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Docker ──────────────────────────────────────────────────────────────────
+.docker/
+
+# ── Logs ────────────────────────────────────────────────────────────────────
+logs/
+*.log
