@@ -32,7 +32,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                .anyRequest().authenticated()
+                // Security perimeter is enforced at the API Gateway (AD-04).
+                // Backend trusts all forwarded requests with X-User-Role header.
+                .anyRequest().permitAll()
             );
 
         return http.build();

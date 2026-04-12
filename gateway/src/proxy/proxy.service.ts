@@ -23,13 +23,17 @@ export class ProxyService {
   }
 
   forward(request: Request, user: ValidatedUser): Observable<AxiosResponse> {
-    const targetUrl = `${this.backendUrl}${request.path}`;
+    // Strip /api prefix: gateway exposes /api/*, backend has controllers at /*
+    const backendPath = request.path.replace(/^\/api/, '');
+    const targetUrl = `${this.backendUrl}${backendPath}`;
 
     const headers = { ...request.headers };
     delete headers.authorization;
     delete headers.host;
 
+    // Inject validated user identity for the backend's TenantFilter
     headers['X-User-Id'] = user.userId;
+    headers['X-User-Role'] = user.role;
     if (user.institutionId) {
       headers['X-Institution-Id'] = user.institutionId;
     }
