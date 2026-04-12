@@ -10,7 +10,7 @@ export interface AuthContextType {
   loading: boolean
   error: string | null
   isAuthenticated: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<string | null>
   mfaVerify: (sessionToken: string, code: string) => Promise<void>
   logout: () => Promise<void>
   refreshSilently: () => Promise<void>
@@ -49,9 +49,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   /**
-   * Login with email and password
+   * Decode JWT payload without verification (client-side only for UX)
    */
-  const login = useCallback(async (email: string, password: string) => {
+  const decodeToken = (token: string): User | null => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      return {
+        id: payload.sub,
+        email: '',
+        role: payload.role as Role,
+        institutionId: payload.institutionId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * Login with email and password.
+   * Returns sessionToken if MFA is required, null otherwise.
+   */
+  const login = useCallback(async (email: string, password: string): Promise<string | null> => {
     try {
       setError(null)
       const response = await apiClient.post<LoginResponse>('/auth/login', {
@@ -59,16 +79,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
       })
 
-      if (response.data.mfaRequired) {
-        // MFA required - caller should handle MFA flow
-        return
+      if (response.data.mfaRequired && response.data.sessionToken) {
+        return response.data.sessionToken
       }
 
       if (response.data.tokens) {
         authService.storeTokens(response.data.tokens)
-        // Note: Fetch user info should be done after tokens are stored
-        // This can be done via an additional call or as part of login response
+        const decoded = decodeToken(response.data.tokens.accessToken)
+        if (decoded) setUser(decoded)
       }
+
+      return null
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed')
       throw err

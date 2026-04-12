@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '@/hooks/useAuth'
-import { LoginResponse } from '@/types'
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -37,29 +36,15 @@ export function LoginForm({ onMfaRequired, onSuccess }: LoginFormProps) {
       setIsLoading(true)
       setError(null)
 
-      // Call API to login
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
+      const sessionToken = await login(data.email, data.password)
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Login failed')
-      }
-
-      const result = await response.json() as LoginResponse
-
-      if (result.mfaRequired && result.sessionToken) {
-        // MFA required - notify parent component
-        onMfaRequired?.(result.sessionToken)
+      if (sessionToken) {
+        onMfaRequired?.(sessionToken)
       } else {
-        // Login successful
         onSuccess?.()
       }
     } catch (err: any) {
-      setError(err.message || 'Login failed')
+      setError(err.response?.data?.message || err.message || 'Login failed')
     } finally {
       setIsLoading(false)
     }
