@@ -1,7 +1,7 @@
 # EAMS — Plan de Implementación
 
 > **Plataforma de Gestión de Actividades Extracurriculares**
-> Última actualización: 2026-04-12 — Fases 0, 1.0, 1.1, 1.2, 1.3 y 1.4 completadas
+> Última actualización: 2026-04-12 — Fases 0, 1.0, 1.1, 1.2, 1.3, 1.4 y 1.5 completadas
 
 ## Leyenda de estados
 
