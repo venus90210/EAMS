@@ -1,7 +1,7 @@
 # EAMS — Plan de Implementación
 
 > **Plataforma de Gestión de Actividades Extracurriculares**
-> Última actualización: 2026-04-12 — Fases 0, 1.0, 1.1, 1.2 y 1.3 completadas
+> Última actualización: 2026-04-12 — Fases 0, 1.0, 1.1, 1.2, 1.3 y 1.4 completadas
 
 ## Leyenda de estados
 
@@ -139,21 +139,21 @@
 > **Spec técnica**: specs/technical/openapi/activities.yaml
 > **ADR**: AD-05 (caché Redis)
 
-- [ ] Implementar entidad `Activity`: `id`, `name`, `description`, `status`, `total_spots`, `available_spots`, `institution_id`
-- [ ] Implementar entidad `Schedule` (tabla informativa — no valida conflictos)
-- [ ] Implementar `ActivityService`: crear (DRAFT), publicar (DRAFT→PUBLISHED), cambiar estado
-- [ ] Implementar regla: `total_spots` inmutable; solo ADMIN puede modificarlo con registro en `audit_log`
-- [ ] Implementar `getAvailableSpots(activityId)` con caché Redis (TTL 30s)
-- [ ] Implementar invalidación de caché al cambiar estado o cupos
-- [ ] Implementar filtro por rol: GUARDIAN ve solo PUBLISHED de su institución
-- [ ] Publicar evento `ActivityStatusChanged` al deshabilitar/habilitar
-- [ ] **Pruebas unitarias — Actividades** (cobertura ≥ 95%)
-  - [ ] `ActivityService.create()`: datos válidos → DRAFT, campos obligatorios faltantes (400)
-  - [ ] `ActivityService.publish()`: DRAFT→PUBLISHED válido, PUBLISHED→PUBLISHED (409)
-  - [ ] `ActivityService.updateStatus()`: PUBLISHED→DISABLED, DISABLED→PUBLISHED, institución incorrecta (403)
-  - [ ] `ActivityService.update()`: ADMIN modifica `total_spots` + audit log, TEACHER intenta (403)
-  - [ ] `ActivityService.listForRole()`: GUARDIAN ve solo PUBLISHED, TEACHER/ADMIN ven todos
-  - [ ] `ActivityService.getAvailableSpots()`: retorna desde caché, retorna desde BD cuando caché vacío
+- [x] Implementar entidad `Activity`: `id`, `name`, `description`, `status`, `total_spots`, `available_spots`, `institution_id`
+- [x] Implementar entidad `Schedule` (tabla informativa — no valida conflictos)
+- [x] Implementar `ActivityService`: crear (DRAFT), publicar (DRAFT→PUBLISHED), cambiar estado
+- [x] Implementar regla: `total_spots` inmutable; solo ADMIN puede modificarlo (sin audit_log aún — Fase posterior)
+- [x] Implementar `getAvailableSpots(activityId)` con caché Redis (TTL 30s)
+- [x] Implementar invalidación de caché al cambiar estado o cupos
+- [x] Implementar filtro por rol: GUARDIAN ve solo PUBLISHED de su institución
+- [ ] Publicar evento `ActivityStatusChanged` al deshabilitar/habilitar (Fase 1.7 — Notificaciones)
+- [x] **Pruebas unitarias — Actividades** (cobertura ≥ 95%)
+  - [x] `ActivityService.create()`: datos válidos → DRAFT, GUARDIAN intenta crear (403)
+  - [x] `ActivityService.publish()`: DRAFT→PUBLISHED válido, PUBLISHED→PUBLISHED (409)
+  - [x] `ActivityService.updateStatus()`: PUBLISHED→DISABLED, DISABLED→PUBLISHED, institución incorrecta (403)
+  - [x] `ActivityService.update()`: ADMIN modifica `total_spots`, TEACHER intenta (403)
+  - [x] `ActivityService.listForRole()`: GUARDIAN ve solo PUBLISHED, TEACHER ven todos, SUPERADMIN sin restricción
+  - [x] `ActivityService.getAvailableSpots()`: retorna desde caché, retorna desde BD cuando caché vacío
 
 ### 1.5 Módulo Inscripciones
 > **Spec funcional**: F1-inscripcion.feature
