@@ -1,7 +1,7 @@
 # EAMS — Plan de Implementación
 
 > **Plataforma de Gestión de Actividades Extracurriculares**
-> Última actualización: 2026-04-12 — Fases 0, 1.0, 1.1, 1.2, 1.3, 1.4 y 1.5 completadas
+> Última actualización: 2026-04-12 — Fases 0, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6 y 1.7 completadas
 
 ## Leyenda de estados
 
@@ -187,40 +187,42 @@
 ### 1.6 Módulo Asistencia
 > **Spec funcional**: F2-asistencia.feature
 > **Spec técnica**: specs/technical/openapi/attendance.yaml
+> **Status**: ✅ COMPLETADO
 
-- [ ] Implementar entidad `AttendanceSession`: `id`, `activity_id`, `date`, `topics_covered`, `recorded_at`
-- [ ] Implementar entidad `AttendanceRecord`: `id`, `session_id`, `student_id`, `present`, `observation`, `recorded_at`
-- [ ] Implementar `AttendanceService.openSession()`: validar fecha = hoy (CalendarPort), validar docente asignado
-- [ ] Implementar `recordAttendance()`: dentro de ventana 24h, máximo 3 toques por estudiante (RF13)
-- [ ] Implementar `addObservation()`: dentro de ventana 24h → error 403 EDIT_WINDOW_EXPIRED si expiró
-- [ ] Implementar `getAttendanceByStudent()` con filtro por acudiente (solo sus hijos)
-- [ ] Publicar evento `ObservationPublished` al agregar observación
-- [ ] **Pruebas unitarias — Asistencia** (cobertura ≥ 95%)
-  - [ ] `AttendanceService.openSession()`: fecha hoy → 201, fecha pasada → 422 INVALID_DATE
-  - [ ] `AttendanceService.openSession()`: docente no asignado → 403, sesión duplicada → 409
-  - [ ] `AttendanceService.recordAttendance()`: dentro de ventana → 200, fuera de ventana → 403
-  - [ ] `AttendanceService.addObservation()`: dentro de ventana → 200, fuera de ventana → 403 EDIT_WINDOW_EXPIRED
-  - [ ] `EditWindowPolicy.isEditable()`: exactamente en límite de 24h (boundary), 24h + 1s (expirado)
-  - [ ] `AttendanceService.getByStudent()`: acudiente ve solo sus hijos, admin ve todos
+- [x] Implementar entidad `AttendanceSession`: `id`, `activity_id`, `date`, `topics_covered`, `recorded_at`
+- [x] Implementar entidad `AttendanceRecord`: `id`, `session_id`, `student_id`, `present`, `observation`, `recorded_at`
+- [x] Implementar `AttendanceService.openSession()`: validar fecha = hoy (CalendarPort), validar docente asignado
+- [x] Implementar `recordAttendance()`: dentro de ventana 24h, máximo 3 toques por estudiante (RF13)
+- [x] Implementar `addObservation()`: dentro de ventana 24h → error 403 EDIT_WINDOW_EXPIRED si expiró
+- [x] Implementar `getAttendanceByStudent()` con filtro por acudiente (solo sus hijos)
+- [x] Publicar evento `ObservationPublished` al agregar observación
+- [x] **Pruebas unitarias — Asistencia** (cobertura ≥ 95%)
+  - [x] `AttendanceService.openSession()`: fecha hoy → 201, fecha pasada → 422 INVALID_DATE
+  - [x] `AttendanceService.openSession()`: docente no asignado → 403, sesión duplicada → 409
+  - [x] `AttendanceService.recordAttendance()`: dentro de ventana → 200, fuera de ventana → 403
+  - [x] `AttendanceService.addObservation()`: dentro de ventana → 200, fuera de ventana → 403 EDIT_WINDOW_EXPIRED
+  - [x] `EditWindowPolicy.isEditable()`: exactamente en límite de 24h (boundary), 24h + 1s (expirado)
+  - [x] `AttendanceService.getByStudent()`: acudiente ve solo sus hijos, admin ve todos
 
 ### 1.7 Módulo Notificaciones
 > **ADR**: AD-09
+> **Status**: ✅ COMPLETADO
 
-- [ ] Implementar listener de `EnrollmentConfirmed` → encola email de confirmación
-- [ ] Implementar listener de `SpotExhausted` → encola email de notificación
-- [ ] Implementar listener de `ObservationPublished` → encola email al acudiente
-- [ ] Implementar listener de `ActivityStatusChanged` → encola emails a acudientes afectados
-- [ ] Implementar Worker de Notificaciones: consume cola Redis (BullMQ / Spring Scheduler)
-- [ ] Implementar despacho de email vía SMTP / API transaccional (Resend / SendGrid)
-- [ ] Garantizar idempotencia: deduplicación por ID de evento en Redis
-- [ ] Configurar política de reintentos: 3 intentos con backoff exponencial
-- [ ] **Pruebas unitarias — Notificaciones** (cobertura ≥ 95%)
-  - [ ] `NotificationListener.onEnrollmentConfirmed()`: evento encolado correctamente en Redis
-  - [ ] `NotificationListener.onSpotExhausted()`: evento encolado correctamente
-  - [ ] `NotificationListener.onObservationPublished()`: contiene email del acudiente correcto
-  - [ ] `NotificationListener.onActivityStatusChanged()`: encola un email por cada acudiente afectado
-  - [ ] `NotificationWorker.processEmail()`: envío exitoso, fallo con reintento, idempotencia (sin duplicados)
-- [ ] Prueba de integración: email encolado en <1s tras publicación de `EnrollmentConfirmed`
+- [x] Implementar listener de `EnrollmentConfirmed` → encola email de confirmación
+- [x] Implementar listener de `SpotExhausted` → encola email de notificación
+- [x] Implementar listener de `ObservationPublished` → encola email al acudiente
+- [x] Implementar listener de `ActivityStatusChanged` → encola emails a acudientes afectados
+- [x] Implementar Worker de Notificaciones: consume cola Redis (BullMQ / Spring Scheduler)
+- [x] Implementar despacho de email vía SMTP / API transaccional (Resend / SendGrid)
+- [x] Garantizar idempotencia: deduplicación por ID de evento en Redis
+- [x] Configurar política de reintentos: 3 intentos con backoff exponencial
+- [x] **Pruebas unitarias — Notificaciones** (cobertura ≥ 95%)
+  - [x] `NotificationListener.onEnrollmentConfirmed()`: evento encolado correctamente en Redis
+  - [x] `NotificationListener.onSpotExhausted()`: evento encolado correctamente
+  - [x] `NotificationListener.onObservationPublished()`: contiene email del acudiente correcto
+  - [x] `NotificationListener.onActivityStatusChanged()`: encola un email por cada acudiente afectado
+  - [x] `NotificationWorker.processEmail()`: envío exitoso, fallo con reintento, idempotencia (sin duplicados)
+- [~] Prueba de integración: email encolado en <1s tras publicación de `EnrollmentConfirmed` (deferred to IT-04)
 
 ---
 
