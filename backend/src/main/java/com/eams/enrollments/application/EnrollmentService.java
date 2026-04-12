@@ -7,12 +7,15 @@ import com.eams.activities.domain.ActivityStatus;
 import com.eams.enrollments.domain.Enrollment;
 import com.eams.enrollments.domain.EnrollmentRepository;
 import com.eams.enrollments.domain.EnrollmentStatus;
+import com.eams.shared.events.EnrollmentConfirmedEvent;
+import com.eams.shared.events.SpotExhaustedEvent;
 import com.eams.shared.exception.DomainException;
 import com.eams.shared.tenant.TenantContextHolder;
 import com.eams.users.domain.Student;
 import com.eams.users.domain.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +41,7 @@ public class EnrollmentService {
     private final ActivityRepository activityRepository;
     private final StudentRepository studentRepository;
     private final ActivityCachePort activityCachePort;
+    private final ApplicationEventPublisher eventPublisher;
 
     // ── Inscribir ────────────────────────────────────────────────────────────
 
@@ -113,7 +117,24 @@ public class EnrollmentService {
         // Invalidar caché de disponibilidad
         activityCachePort.invalidate(activityId);
 
-        // TODO: Publicar evento EnrollmentConfirmed (Phase 1.7 — Notificaciones)
+        // Publicar evento EnrollmentConfirmed (Phase 1.7 — Notificaciones)
+        eventPublisher.publishEvent(new EnrollmentConfirmedEvent(
+                saved.getId(),
+                studentId,
+                activityId,
+                activity.getName(),
+                activity.getInstitutionId()
+        ));
+
+        // Si cupos llegaron a 0, publicar evento SpotExhausted
+        if (lockedActivity.getAvailableSpots() == 0) {
+            eventPublisher.publishEvent(new SpotExhaustedEvent(
+                    activityId,
+                    activity.getName(),
+                    activity.getInstitutionId()
+            ));
+        }
+
         log.debug("Estudiante {} inscrito exitosamente en actividad {}", studentId, activityId);
 
         return saved;

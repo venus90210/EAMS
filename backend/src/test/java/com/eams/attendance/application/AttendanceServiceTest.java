@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.lang.reflect.Field;
 import java.time.LocalDate;
@@ -40,6 +41,9 @@ class AttendanceServiceTest {
     @Mock
     private EditWindowPolicy editWindowPolicy;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     private AttendanceService attendanceService;
 
     private UUID activityId;
@@ -56,7 +60,8 @@ class AttendanceServiceTest {
         attendanceService = new AttendanceService(
                 sessionRepository,
                 recordRepository,
-                editWindowPolicy
+                editWindowPolicy,
+                eventPublisher
         );
 
         activityId = UUID.randomUUID();

@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.lang.reflect.Field;
 import java.time.DayOfWeek;
@@ -50,6 +51,9 @@ class EnrollmentServiceTest {
     @Mock
     private ActivityCachePort activityCachePort;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     private EnrollmentService enrollmentService;
 
     private UUID studentId;
@@ -68,7 +72,8 @@ class EnrollmentServiceTest {
                 enrollmentRepository,
                 activityRepository,
                 studentRepository,
-                activityCachePort
+                activityCachePort,
+                eventPublisher
         );
 
         studentId = UUID.randomUUID();

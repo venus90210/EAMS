@@ -25,7 +25,9 @@
       "Bash(./mvnw clean:*)",
       "Bash(mvn clean:*)",
       "Bash(mvn test-compile:*)",
-      "Bash(mvn -X test -Dtest=EnrollmentServiceTest)"
+      "Bash(mvn -X test -Dtest=EnrollmentServiceTest)",
+      "Bash(mvn -f backend clean test -Dgroups=unit)",
+      "Bash(mvn verify:*)"
     ]
   }
 }

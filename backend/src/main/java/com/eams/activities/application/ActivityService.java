@@ -4,9 +4,11 @@ import com.eams.activities.domain.Activity;
 import com.eams.activities.domain.ActivityCachePort;
 import com.eams.activities.domain.ActivityRepository;
 import com.eams.activities.domain.ActivityStatus;
+import com.eams.shared.events.ActivityStatusChangedEvent;
 import com.eams.shared.exception.DomainException;
 import com.eams.shared.tenant.TenantContextHolder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,6 +30,7 @@ public class ActivityService {
 
     private final ActivityRepository activityRepository;
     private final ActivityCachePort cachePort;
+    private final ApplicationEventPublisher eventPublisher;
 
     // ── Crear ────────────────────────────────────────────────────────────────
 
@@ -183,7 +186,13 @@ public class ActivityService {
         cachePort.invalidate(activityId);  // Invalidar caché tras cambio de estado
         Activity saved = activityRepository.save(activity);
 
-        // TODO: Publicar evento ActivityStatusChanged para notificaciones (Fase 1.7)
+        // Publicar evento ActivityStatusChanged para notificaciones (Fase 1.7)
+        eventPublisher.publishEvent(new ActivityStatusChangedEvent(
+                activityId,
+                saved.getName(),
+                saved.getStatus().name(),
+                saved.getInstitutionId()
+        ));
 
         return saved;
     }

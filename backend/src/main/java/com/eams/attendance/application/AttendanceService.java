@@ -5,10 +5,12 @@ import com.eams.attendance.domain.AttendanceRecordRepository;
 import com.eams.attendance.domain.AttendanceSession;
 import com.eams.attendance.domain.AttendanceSessionRepository;
 import com.eams.attendance.domain.EditWindowPolicy;
+import com.eams.shared.events.ObservationPublishedEvent;
 import com.eams.shared.exception.DomainException;
 import com.eams.shared.tenant.TenantContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,7 @@ public class AttendanceService {
     private final AttendanceSessionRepository sessionRepository;
     private final AttendanceRecordRepository recordRepository;
     private final EditWindowPolicy editWindowPolicy;
+    private final ApplicationEventPublisher eventPublisher;
 
     // ── Apertura de sesión ───────────────────────────────────────────────────
 
@@ -159,7 +162,15 @@ public class AttendanceService {
         record.updateObservation(observation);
         AttendanceRecord saved = recordRepository.save(record);
 
-        // TODO: Publicar evento ObservationPublished (Phase 1.7 — Notificaciones)
+        // Publicar evento ObservationPublished (Phase 1.7 — Notificaciones)
+        UUID institutionId = TenantContextHolder.requireContext().institutionId();
+        eventPublisher.publishEvent(new ObservationPublishedEvent(
+                recordId,
+                saved.getStudentId(),
+                observation,
+                session.getDate(),
+                institutionId
+        ));
         log.debug("Observación agregada al registro: {}", recordId);
         return saved;
     }

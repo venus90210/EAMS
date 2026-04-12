@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 
 import java.time.DayOfWeek;
@@ -29,6 +30,7 @@ class ActivityServiceTest {
 
     @Mock private ActivityRepository activityRepository;
     @Mock private ActivityCachePort cachePort;
+    @Mock private ApplicationEventPublisher eventPublisher;
 
     private ActivityService service;
     private final UUID institutionId = UUID.randomUUID();
@@ -36,7 +38,7 @@ class ActivityServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new ActivityService(activityRepository, cachePort);
+        service = new ActivityService(activityRepository, cachePort, eventPublisher);
     }
 
     @AfterEach
