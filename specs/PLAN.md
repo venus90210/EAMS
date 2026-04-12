@@ -14,6 +14,21 @@
 
 ---
 
+## Política de calidad — Pruebas unitarias
+
+> **Cobertura mínima requerida: 95%** (líneas y ramas) en los tres contenedores.
+> Referencia completa: [specs/technical/testing-strategy.md](technical/testing-strategy.md)
+
+| Contenedor      | Framework       | Herramienta cobertura | Umbral  |
+|-----------------|-----------------|-----------------------|---------|
+| Backend         | JUnit 5 + Mockito | JaCoCo              | ≥ 95%   |
+| API Gateway     | Jest + @nestjs/testing | Jest coverage  | ≥ 95%   |
+| Frontend        | Jest + React Testing Library | Jest coverage | ≥ 95% |
+
+**Regla de CI/CD**: ningún PR puede mergearse si alguno de los tres reportes de cobertura queda por debajo del 95%.
+
+---
+
 ## Fase 0 — Infraestructura y scaffolding
 
 > **Objetivo**: tener el entorno local funcionando con los tres contenedores levantados.
@@ -55,6 +70,8 @@
 ### 1.0 Setup del proyecto Spring Boot
 - [ ] Crear proyecto con Spring Initializr: Spring Boot 3.x, Java 21
 - [ ] Agregar dependencias: `spring-modulith`, `spring-data-jpa`, `spring-security`, `springdoc-openapi`
+- [ ] Agregar dependencias de pruebas: `junit-jupiter`, `mockito-core`, `assertj-core`
+- [ ] Configurar JaCoCo con umbral mínimo de 95% en líneas y ramas (falla el build si no se cumple)
 - [ ] Configurar conexión a PostgreSQL con pool HikariCP
 - [ ] Configurar conexión a Redis (Lettuce)
 - [ ] Configurar `TenantContextHolder` para propagar `institution_id` por petición
@@ -74,7 +91,14 @@
 - [ ] Implementar flujo MFA: paso 1 (sesión temporal) → paso 2 (verificación TOTP) → emisión de tokens
 - [ ] Implementar revocación de refresh token (`logout`, cambio de contraseña)
 - [ ] Implementar `validatePermission(role, action)` para RBAC
-- [ ] Escribir pruebas unitarias del módulo Auth (camino feliz + errores de F4)
+- [ ] **Pruebas unitarias — Auth** (cobertura ≥ 95%)
+  - [ ] `AuthService.login()`: credenciales correctas, incorrectas, usuario inactivo
+  - [ ] `AuthService.refreshToken()`: token válido, revocado, expirado
+  - [ ] `AuthService.logout()`: revocación exitosa en Redis
+  - [ ] `MfaService.verifyTotp()`: código correcto, incorrecto, expirado
+  - [ ] `JwtTokenProvider.generateToken()`: payload correcto, expiración correcta
+  - [ ] `JwtTokenProvider.validateToken()`: token válido, malformado, expirado
+  - [ ] `AuthService.validatePermission()`: cada combinación rol/acción de AD-04
 
 ### 1.2 Módulo Instituciones
 > **ADR**: AD-08
@@ -83,7 +107,10 @@
 - [ ] Implementar `InstitutionService`: CRUD, validación de dominio único
 - [ ] Implementar `InstitutionContextProvider`: extrae y propaga `institution_id` al `TenantContextHolder`
 - [ ] Restringir creación de instituciones a rol `SUPERADMIN`
-- [ ] Escribir pruebas unitarias del módulo Instituciones
+- [ ] **Pruebas unitarias — Instituciones** (cobertura ≥ 95%)
+  - [ ] `InstitutionService.create()`: dominio único, dominio duplicado (409)
+  - [ ] `InstitutionService.update()`: solo SUPERADMIN, institución no encontrada
+  - [ ] `InstitutionContextProvider.resolve()`: extracción correcta del `institution_id`
 
 ### 1.3 Módulo Usuarios
 > **Spec técnica**: specs/technical/openapi/users.yaml
@@ -94,7 +121,11 @@
 - [ ] Implementar `getStudentsByGuardian(guardianId)` con validación de institución
 - [ ] Implementar carga masiva desde CSV (`bulkLoad`)
 - [ ] Validar que todo usuario (excepto SUPERADMIN) tenga `institution_id` obligatorio
-- [ ] Escribir pruebas unitarias del módulo Usuarios
+- [ ] **Pruebas unitarias — Usuarios** (cobertura ≥ 95%)
+  - [ ] `UserService.register()`: email nuevo, email duplicado (409), rol no permitido
+  - [ ] `UserService.linkStudentToGuardian()`: vinculación exitosa, acudiente inexistente, ya vinculado
+  - [ ] `UserService.getStudentsByGuardian()`: padre ve solo sus hijos, filtro por institución
+  - [ ] `UserService.bulkLoad()`: CSV válido, CSV con filas inválidas (reporte de errores parciales)
 
 ### 1.4 Módulo Actividades
 > **Spec funcional**: F5-estado-actividad.feature
@@ -109,7 +140,13 @@
 - [ ] Implementar invalidación de caché al cambiar estado o cupos
 - [ ] Implementar filtro por rol: GUARDIAN ve solo PUBLISHED de su institución
 - [ ] Publicar evento `ActivityStatusChanged` al deshabilitar/habilitar
-- [ ] Escribir pruebas unitarias del módulo Actividades (incluyendo transiciones de estado inválidas)
+- [ ] **Pruebas unitarias — Actividades** (cobertura ≥ 95%)
+  - [ ] `ActivityService.create()`: datos válidos → DRAFT, campos obligatorios faltantes (400)
+  - [ ] `ActivityService.publish()`: DRAFT→PUBLISHED válido, PUBLISHED→PUBLISHED (409)
+  - [ ] `ActivityService.updateStatus()`: PUBLISHED→DISABLED, DISABLED→PUBLISHED, institución incorrecta (403)
+  - [ ] `ActivityService.update()`: ADMIN modifica `total_spots` + audit log, TEACHER intenta (403)
+  - [ ] `ActivityService.listForRole()`: GUARDIAN ve solo PUBLISHED, TEACHER/ADMIN ven todos
+  - [ ] `ActivityService.getAvailableSpots()`: retorna desde caché, retorna desde BD cuando caché vacío
 
 ### 1.5 Módulo Inscripciones
 > **Spec funcional**: F1-inscripcion.feature
@@ -128,8 +165,17 @@
 - [ ] Implementar `cancelEnrollment()`: status → CANCELLED + `available_spots + 1` en misma transacción
 - [ ] Implementar `getEnrollmentsByStudent()` con filtro por rol
 - [ ] Implementar `getEnrollmentsByActivity()` (solo TEACHER asignado o ADMIN)
-- [ ] Escribir pruebas de integración con concurrencia (simular race condition, verificar 0% sobrecupo)
-- [ ] Escribir pruebas unitarias del módulo Inscripciones (todos los escenarios de F1)
+- [ ] **Pruebas unitarias — Inscripciones** (cobertura ≥ 95%)
+  - [ ] `EnrollmentService.enroll()`: cupo disponible → 201, cupo agotado → 409 SPOT_EXHAUSTED
+  - [ ] `EnrollmentService.enroll()`: duplicado → 409 ALREADY_ENROLLED
+  - [ ] `EnrollmentService.enroll()`: enrollment activo existente → 409 ACTIVE_ENROLLMENT_EXISTS
+  - [ ] `EnrollmentService.enroll()`: padre no responsable del estudiante → 403
+  - [ ] `EnrollmentService.enroll()`: actividad no publicada → 409
+  - [ ] `EnrollmentService.cancelEnrollment()`: cancelación exitosa + cupo liberado
+  - [ ] `EnrollmentService.cancelEnrollment()`: enrollment no encontrado → 404
+  - [ ] `EnrollmentService.getByStudent()`: padre ve solo sus hijos, admin ve todos
+  - [ ] `EnrollmentService.getByActivity()`: docente asignado, docente no asignado → 403
+- [ ] Pruebas de integración con concurrencia: simular race condition, verificar 0% sobrecupo (SELECT FOR UPDATE)
 
 ### 1.6 Módulo Asistencia
 > **Spec funcional**: F2-asistencia.feature
@@ -142,7 +188,13 @@
 - [ ] Implementar `addObservation()`: dentro de ventana 24h → error 403 EDIT_WINDOW_EXPIRED si expiró
 - [ ] Implementar `getAttendanceByStudent()` con filtro por acudiente (solo sus hijos)
 - [ ] Publicar evento `ObservationPublished` al agregar observación
-- [ ] Escribir pruebas unitarias del módulo Asistencia (ventana 24h, validación de fecha, permisos)
+- [ ] **Pruebas unitarias — Asistencia** (cobertura ≥ 95%)
+  - [ ] `AttendanceService.openSession()`: fecha hoy → 201, fecha pasada → 422 INVALID_DATE
+  - [ ] `AttendanceService.openSession()`: docente no asignado → 403, sesión duplicada → 409
+  - [ ] `AttendanceService.recordAttendance()`: dentro de ventana → 200, fuera de ventana → 403
+  - [ ] `AttendanceService.addObservation()`: dentro de ventana → 200, fuera de ventana → 403 EDIT_WINDOW_EXPIRED
+  - [ ] `EditWindowPolicy.isEditable()`: exactamente en límite de 24h (boundary), 24h + 1s (expirado)
+  - [ ] `AttendanceService.getByStudent()`: acudiente ve solo sus hijos, admin ve todos
 
 ### 1.7 Módulo Notificaciones
 > **ADR**: AD-09
@@ -155,7 +207,13 @@
 - [ ] Implementar despacho de email vía SMTP / API transaccional (Resend / SendGrid)
 - [ ] Garantizar idempotencia: deduplicación por ID de evento en Redis
 - [ ] Configurar política de reintentos: 3 intentos con backoff exponencial
-- [ ] Escribir prueba de integración: verificar que email se encola en <1s tras `EnrollmentConfirmed`
+- [ ] **Pruebas unitarias — Notificaciones** (cobertura ≥ 95%)
+  - [ ] `NotificationListener.onEnrollmentConfirmed()`: evento encolado correctamente en Redis
+  - [ ] `NotificationListener.onSpotExhausted()`: evento encolado correctamente
+  - [ ] `NotificationListener.onObservationPublished()`: contiene email del acudiente correcto
+  - [ ] `NotificationListener.onActivityStatusChanged()`: encola un email por cada acudiente afectado
+  - [ ] `NotificationWorker.processEmail()`: envío exitoso, fallo con reintento, idempotencia (sin duplicados)
+- [ ] Prueba de integración: email encolado en <1s tras publicación de `EnrollmentConfirmed`
 
 ---
 
@@ -167,6 +225,8 @@
 ### 2.0 Setup del proyecto NestJS
 - [ ] Crear proyecto NestJS con TypeScript
 - [ ] Instalar dependencias: `@nestjs/jwt`, `@nestjs/passport`, `passport-jwt`, `@nestjs/throttler`
+- [ ] Instalar dependencias de pruebas: `@nestjs/testing`, `jest`, `jest-mock-extended`
+- [ ] Configurar Jest con umbral de cobertura ≥ 95% (líneas, ramas, funciones, sentencias)
 - [ ] Configurar módulo de configuración con variables de entorno
 
 ### 2.1 Autenticación JWT
@@ -190,6 +250,14 @@
 - [ ] Inyectar `institution_id` y `user_id` como headers internos hacia el backend
 - [ ] Manejar errores de backend y normalizar respuestas de error
 
+### 2.5 Pruebas unitarias — API Gateway (cobertura ≥ 95%)
+- [ ] `JwtAuthGuard.canActivate()`: token válido, expirado, malformado, ausente → 401
+- [ ] `RolesGuard.canActivate()`: cada combinación rol/endpoint de la tabla AD-04
+- [ ] `RolesGuard.canActivate()`: rol insuficiente → 403 INSUFFICIENT_ROLE
+- [ ] `ThrottlerGuard`: request dentro del límite, request excedido → 429
+- [ ] `ProxyService.forward()`: inyección correcta de headers `institution_id` y `user_id`
+- [ ] `ErrorNormalizerInterceptor`: mapeo correcto de errores 4xx y 5xx del backend
+
 ---
 
 ## Fase 3 — Frontend: Next.js PWA
@@ -200,6 +268,8 @@
 ### 3.0 Setup del proyecto Next.js
 - [ ] Crear proyecto Next.js con TypeScript y App Router
 - [ ] Instalar `next-pwa`, configurar Service Worker
+- [ ] Instalar dependencias de pruebas: `jest`, `@testing-library/react`, `@testing-library/user-event`, `msw`
+- [ ] Configurar Jest con umbral de cobertura ≥ 95% (líneas, ramas, funciones, sentencias)
 - [ ] Crear `manifest.json` con iconos e información de la app
 - [ ] Verificar instalación como PWA en Android Chrome
 
@@ -256,6 +326,26 @@
 - [ ] Mostrar advertencia cuando el caché supera las 48 horas
 - [ ] Ocultar acciones de escritura en modo offline
 
+### 3.8 Pruebas unitarias — Frontend (cobertura ≥ 95%)
+
+**Hooks**
+- [ ] `useAuth()`: login exitoso, MFA requerido, error de credenciales, logout, renovación silenciosa de token
+- [ ] `useEnrollment()`: inscripción exitosa, cupo agotado (409), duplicado (409), modo offline bloqueado
+- [ ] `useOfflineStatus()`: online, offline, reconexión automática, caché expirado (>48h)
+- [ ] `useActivities()`: carga desde API, carga desde caché cuando está offline
+
+**Componentes**
+- [ ] `<LoginForm />`: submit válido, validación de campos vacíos, flujo de pantalla MFA
+- [ ] `<EnrollmentForm />`: selección hijo/actividad, confirmación, manejo de errores 409 y 403
+- [ ] `<AttendanceList />`: toggle presente/ausente, límite de 3 toques por estudiante, campo observación
+- [ ] `<OfflineBanner />`: visible en offline, oculto en online, advertencia cuando caché >48h
+- [ ] `<ActivityCard />`: muestra cupos disponibles, estado deshabilitado, acción bloqueada offline
+
+**Servicios / utils**
+- [ ] `authService`: almacenamiento seguro de tokens, renovación antes de expiración, revocación al logout
+- [ ] `apiClient`: inyección de Bearer token, manejo de 401 (dispara refresh), propagación de 403
+- [ ] `cacheService`: lectura de caché, verificación de expiración 48h, escritura y limpieza
+
 ---
 
 ## Fase 4 — Pruebas e integración
@@ -293,7 +383,13 @@
 > **ADR de referencia**: AD-10
 
 - [ ] Configurar secretos en Doppler (o AWS Secrets Manager)
-- [ ] Crear pipeline CI/CD: lint → tests → build → deploy
+- [ ] Crear pipeline CI/CD con los siguientes jobs en orden:
+  - [ ] `lint` — análisis estático de código
+  - [ ] `test:backend` — JUnit + JaCoCo (bloquea si cobertura < 95%)
+  - [ ] `test:gateway` — Jest (bloquea si cobertura < 95%)
+  - [ ] `test:frontend` — Jest + RTL (bloquea si cobertura < 95%)
+  - [ ] `build` — solo si los tres jobs de test pasan
+  - [ ] `deploy` — solo si el build es exitoso
 - [ ] Desplegar PostgreSQL + Redis en proveedor cloud
 - [ ] Desplegar backend, gateway y frontend en contenedores
 - [ ] Configurar TLS / HTTPS
@@ -304,13 +400,14 @@
 
 ## Matriz de trazabilidad: Tareas ↔ Specs
 
-| Tarea clave                          | Feature / ADR                        | RF / RNF       |
-|--------------------------------------|--------------------------------------|----------------|
-| SELECT FOR UPDATE en inscripción     | F1-inscripcion · AD-07               | RF04, RF05     |
-| Ventana de edición 24h (asistencia)  | F2-asistencia                        | RF13           |
-| Service Worker caché 48h             | F3-consulta-offline · AD-05          | RNF08          |
-| MFA para roles de escritura          | F4-autenticacion · AD-06             | RNF04          |
-| RLS por institution_id               | AD-08                                | RNF06, RNF09   |
-| Email asíncrono desacoplado          | AD-09                                | RF07           |
-| RBAC en API Gateway                  | F4-autenticacion · AD-04             | RNF05          |
-| Secretos en vault                    | AD-10                                | RNF04          |
+| Tarea clave                          | Feature / ADR                        | RF / RNF       | Prueba unitaria requerida |
+|--------------------------------------|--------------------------------------|----------------|---------------------------|
+| SELECT FOR UPDATE en inscripción     | F1-inscripcion · AD-07               | RF04, RF05     | `EnrollmentService.enroll()` — race condition |
+| Ventana de edición 24h (asistencia)  | F2-asistencia                        | RF13           | `EditWindowPolicy.isEditable()` — boundary test |
+| Service Worker caché 48h             | F3-consulta-offline · AD-05          | RNF08          | `useOfflineStatus()`, `cacheService` |
+| MFA para roles de escritura          | F4-autenticacion · AD-06             | RNF04          | `MfaService.verifyTotp()` |
+| RLS por institution_id               | AD-08                                | RNF06, RNF09   | Prueba de integración de aislamiento RLS |
+| Email asíncrono desacoplado          | AD-09                                | RF07           | `NotificationWorker.processEmail()` — idempotencia |
+| RBAC en API Gateway                  | F4-autenticacion · AD-04             | RNF05          | `RolesGuard.canActivate()` — tabla completa AD-04 |
+| Secretos en vault                    | AD-10                                | RNF04          | N/A (infraestructura) |
+| Cobertura ≥ 95% en CI/CD            | testing-strategy.md                  | —              | Gate en pipeline: bloquea deploy si no se cumple |
