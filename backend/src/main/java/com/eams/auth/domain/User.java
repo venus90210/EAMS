@@ -69,6 +69,7 @@ public class User {
                               UUID institutionId,
                               PasswordEncoder encoder) {
         User user = new User();
+        user.id = UUID.randomUUID(); // generado en dominio; JPA lo respeta si ya no es null
         user.email = email.toLowerCase().strip();
         user.passwordHash = encoder.encode(rawPassword);
         user.role = role;

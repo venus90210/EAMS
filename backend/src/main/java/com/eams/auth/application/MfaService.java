@@ -1,6 +1,7 @@
 package com.eams.auth.application;
 
 import com.warrenstrange.googleauth.GoogleAuthenticator;
+import com.warrenstrange.googleauth.GoogleAuthenticatorConfig;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
 import lombok.extern.slf4j.Slf4j;
@@ -11,15 +12,21 @@ import org.springframework.stereotype.Service;
  * Usa googleauth que implementa RFC 6238 (TOTP).
  *
  * Roles que requieren MFA: TEACHER, ADMIN, SUPERADMIN.
+ * Ventana de verificación: 3 intervalos (±1 × 30s = 90s tolerancia de reloj).
  */
 @Slf4j
 @Service
 public class MfaService {
 
     private static final String ISSUER = "EAMS";
-    private static final int WINDOW = 1; // ±1 paso de 30s = ventana de 90s
 
-    private final GoogleAuthenticator gauth = new GoogleAuthenticator();
+    // Ventana de 3 intervalos: previo + actual + siguiente (RFC 6238 recomienda ≤1)
+    private static final GoogleAuthenticatorConfig CONFIG =
+            new GoogleAuthenticatorConfig.GoogleAuthenticatorConfigBuilder()
+                    .setWindowSize(3)
+                    .build();
+
+    private final GoogleAuthenticator gauth = new GoogleAuthenticator(CONFIG);
 
     // ── Configuración inicial ────────────────────────────────────────────────
 
@@ -52,7 +59,7 @@ public class MfaService {
      */
     public boolean verifyCode(String secret, int code) {
         try {
-            return gauth.authorize(secret, code, WINDOW);
+            return gauth.authorize(secret, code);
         } catch (Exception e) {
             log.debug("Error verificando código MFA: {}", e.getMessage());
             return false;
