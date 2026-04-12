@@ -1,7 +1,7 @@
 # EAMS — Plan de Implementación
 
 > **Plataforma de Gestión de Actividades Extracurriculares**
-> Última actualización: 2026-04-12 — Fases 0, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6 y 1.7 completadas
+> Última actualización: 2026-04-12 — Fases 0, 1.0-1.7, 2.0-2.5, 3.0-3.8 completadas | PR #14 abierto
 
 ## Leyenda de estados
 
@@ -159,30 +159,31 @@
 > **Spec funcional**: F1-inscripcion.feature
 > **Spec técnica**: specs/technical/openapi/enrollment.yaml
 > **ADR**: AD-07 (SELECT FOR UPDATE)
+> **Status**: ✅ COMPLETADO
 
-- [ ] Implementar entidad `Enrollment`: `id`, `student_id`, `activity_id`, `status`, `enrolled_at`, `cancelled_at`
-- [ ] Implementar `EnrollmentService.enroll()` con:
-  - [ ] Validación: acudiente es responsable del estudiante
-  - [ ] Validación: actividad en estado PUBLISHED
-  - [ ] `SELECT ... FOR UPDATE` sobre `available_spots` (AD-07)
-  - [ ] Verificación: `available_spots > 0` → error 409 SPOT_EXHAUSTED
-  - [ ] Verificación: sin enrollment ACTIVE del estudiante → error 409
-  - [ ] INSERT enrollment + UPDATE `available_spots - 1` en la misma transacción `@Transactional`
-  - [ ] Publicar evento `EnrollmentConfirmed`
-- [ ] Implementar `cancelEnrollment()`: status → CANCELLED + `available_spots + 1` en misma transacción
-- [ ] Implementar `getEnrollmentsByStudent()` con filtro por rol
-- [ ] Implementar `getEnrollmentsByActivity()` (solo TEACHER asignado o ADMIN)
-- [ ] **Pruebas unitarias — Inscripciones** (cobertura ≥ 95%)
-  - [ ] `EnrollmentService.enroll()`: cupo disponible → 201, cupo agotado → 409 SPOT_EXHAUSTED
-  - [ ] `EnrollmentService.enroll()`: duplicado → 409 ALREADY_ENROLLED
-  - [ ] `EnrollmentService.enroll()`: enrollment activo existente → 409 ACTIVE_ENROLLMENT_EXISTS
-  - [ ] `EnrollmentService.enroll()`: padre no responsable del estudiante → 403
-  - [ ] `EnrollmentService.enroll()`: actividad no publicada → 409
-  - [ ] `EnrollmentService.cancelEnrollment()`: cancelación exitosa + cupo liberado
-  - [ ] `EnrollmentService.cancelEnrollment()`: enrollment no encontrado → 404
-  - [ ] `EnrollmentService.getByStudent()`: padre ve solo sus hijos, admin ve todos
-  - [ ] `EnrollmentService.getByActivity()`: docente asignado, docente no asignado → 403
-- [ ] Pruebas de integración con concurrencia: simular race condition, verificar 0% sobrecupo (SELECT FOR UPDATE)
+- [x] Implementar entidad `Enrollment`: `id`, `student_id`, `activity_id`, `status`, `enrolled_at`, `cancelled_at`
+- [x] Implementar `EnrollmentService.enroll()` con:
+  - [x] Validación: acudiente es responsable del estudiante
+  - [x] Validación: actividad en estado PUBLISHED
+  - [x] `SELECT ... FOR UPDATE` sobre `available_spots` (AD-07)
+  - [x] Verificación: `available_spots > 0` → error 409 SPOT_EXHAUSTED
+  - [x] Verificación: sin enrollment ACTIVE del estudiante → error 409
+  - [x] INSERT enrollment + UPDATE `available_spots - 1` en la misma transacción `@Transactional`
+  - [x] Publicar evento `EnrollmentConfirmed`
+- [x] Implementar `cancelEnrollment()`: status → CANCELLED + `available_spots + 1` en misma transacción
+- [x] Implementar `getEnrollmentsByStudent()` con filtro por rol
+- [x] Implementar `getEnrollmentsByActivity()` (solo TEACHER asignado o ADMIN)
+- [x] **Pruebas unitarias — Inscripciones** (cobertura ≥ 95%)
+  - [x] `EnrollmentService.enroll()`: cupo disponible → 201, cupo agotado → 409 SPOT_EXHAUSTED
+  - [x] `EnrollmentService.enroll()`: duplicado → 409 ALREADY_ENROLLED
+  - [x] `EnrollmentService.enroll()`: enrollment activo existente → 409 ACTIVE_ENROLLMENT_EXISTS
+  - [x] `EnrollmentService.enroll()`: padre no responsable del estudiante → 403
+  - [x] `EnrollmentService.enroll()`: actividad no publicada → 409
+  - [x] `EnrollmentService.cancelEnrollment()`: cancelación exitosa + cupo liberado
+  - [x] `EnrollmentService.cancelEnrollment()`: enrollment no encontrado → 404
+  - [x] `EnrollmentService.getByStudent()`: padre ve solo sus hijos, admin ve todos
+  - [x] `EnrollmentService.getByActivity()`: docente asignado, docente no asignado → 403
+- [x] Pruebas de integración con concurrencia: simular race condition, verificar 0% sobrecupo (SELECT FOR UPDATE)
 
 ### 1.6 Módulo Asistencia
 > **Spec funcional**: F2-asistencia.feature
@@ -273,14 +274,15 @@
 
 > **Objetivo**: interfaz para los 4 roles con soporte offline de 48 horas.
 > **ADR de referencia**: AD-05
+> **Status**: ✅ COMPLETADO (PR #14)
 
 ### 3.0 Setup del proyecto Next.js
-- [ ] Crear proyecto Next.js con TypeScript y App Router
-- [ ] Instalar `next-pwa`, configurar Service Worker
-- [ ] Instalar dependencias de pruebas: `jest`, `@testing-library/react`, `@testing-library/user-event`, `msw`
-- [ ] Configurar Jest con umbral de cobertura ≥ 95% (líneas, ramas, funciones, sentencias)
-- [ ] Crear `manifest.json` con iconos e información de la app
-- [ ] Verificar instalación como PWA en Android Chrome
+- [x] Crear proyecto Next.js con TypeScript y App Router
+- [x] Instalar `next-pwa`, configurar Service Worker
+- [x] Instalar dependencias de pruebas: `jest`, `@testing-library/react`, `@testing-library/user-event`, `msw`
+- [x] Configurar Jest con umbral de cobertura ≥ 95% (líneas, ramas, funciones, sentencias)
+- [x] Crear `manifest.json` con iconos e información de la app
+- [x] Verificar instalación como PWA en Android Chrome
 
 ### 3.1 Autenticación y sesión
 > **Spec funcional**: F4-autenticacion.feature
