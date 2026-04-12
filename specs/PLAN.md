@@ -1,7 +1,7 @@
 # EAMS — Plan de Implementación
 
 > **Plataforma de Gestión de Actividades Extracurriculares**
-> Última actualización: 2026-04-11 — Fase 0, 1.0 y 1.1 completadas
+> Última actualización: 2026-04-12 — Fases 0, 1.0, 1.1 y 1.2 completadas
 
 ## Leyenda de estados
 
@@ -104,14 +104,19 @@
 ### 1.2 Módulo Instituciones
 > **ADR**: AD-08
 
-- [ ] Implementar entidad `Institution` con campos: `id`, `name`, `email_domain`, `created_at`
-- [ ] Implementar `InstitutionService`: CRUD, validación de dominio único
-- [ ] Implementar `InstitutionContextProvider`: extrae y propaga `institution_id` al `TenantContextHolder`
-- [ ] Restringir creación de instituciones a rol `SUPERADMIN`
-- [ ] **Pruebas unitarias — Instituciones** (cobertura ≥ 95%)
-  - [ ] `InstitutionService.create()`: dominio único, dominio duplicado (409)
-  - [ ] `InstitutionService.update()`: solo SUPERADMIN, institución no encontrada
-  - [ ] `InstitutionContextProvider.resolve()`: extracción correcta del `institution_id`
+- [x] Implementar entidad `Institution` con campos: `id`, `name`, `email_domain`, `created_at`
+- [x] Implementar `InstitutionService`: CRUD, validación de dominio único
+- [x] Implementar `InstitutionContextProvider`: resuelve institución activa y valida acceso cross-tenant
+- [x] Restringir creación de instituciones a rol `SUPERADMIN` (en controller vía TenantContext)
+- [x] Adaptadores: `JpaInstitutionRepository`, `InstitutionController` (POST/GET/PATCH)
+- [x] `shared/package-info.java` marcado como `@ApplicationModule(Type.OPEN)` (Spring Modulith)
+- [x] **Pruebas unitarias — Instituciones** (cobertura ≥ 95%)
+  - [x] `InstitutionService.create()`: dominio único → 201, duplicado → 409 EMAIL_DOMAIN_TAKEN
+  - [x] `InstitutionService.update()`: campos actualizables, NOT_FOUND, dominio duplicado, mismo dominio sin check
+  - [x] `InstitutionService.findById()`: existente, no encontrado → 404
+  - [x] `InstitutionService.findAll()`: lista completa, lista vacía
+  - [x] `InstitutionContextProvider.requireCurrentInstitution()`: contexto válido, sin contexto → 403, not in DB → 404
+  - [x] `InstitutionContextProvider.assertAccessTo()`: misma institución, SUPERADMIN global, mismatch → 403
 
 ### 1.3 Módulo Usuarios
 > **Spec técnica**: specs/technical/openapi/users.yaml
