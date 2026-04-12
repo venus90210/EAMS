@@ -1,0 +1,9 @@
+# Perfil de desarrollo local
+spring:
+  jpa:
+    show-sql: true
+
+logging:
+  level:
+    com.eams: DEBUG
+    org.springframework.security: DEBUG
