@@ -21,7 +21,11 @@
       "Bash(mvn dependency:get -Dartifact=org.projectlombok:lombok:1.18.38 -q)",
       "Bash(mvn dependency:get -Dartifact=org.projectlombok:lombok:1.18.40 -q)",
       "Bash(grep -v \"^\\\\[ERROR\\\\] $\")",
-      "Bash(mvn -pl backend test -Dgroups=unit -Dtest=UserResponseSecurityTest)"
+      "Bash(mvn -pl backend test -Dgroups=unit -Dtest=UserResponseSecurityTest)",
+      "Bash(./mvnw clean:*)",
+      "Bash(mvn clean:*)",
+      "Bash(mvn test-compile:*)",
+      "Bash(mvn -X test -Dtest=EnrollmentServiceTest)"
     ]
   }
 }
