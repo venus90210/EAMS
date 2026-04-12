@@ -1,0 +1,10 @@
+node_modules
+dist
+*.tsbuildinfo
+.git
+*.md
+test
+coverage
+docker-entrypoint.sh
+Dockerfile
+.dockerignore
