@@ -1,7 +1,7 @@
 # EAMS — Plan de Implementación
 
 > **Plataforma de Gestión de Actividades Extracurriculares**
-> Última actualización: 2026-04-12 — Fases 0, 1.0, 1.1 y 1.2 completadas
+> Última actualización: 2026-04-12 — Fases 0, 1.0, 1.1, 1.2 y 1.3 completadas
 
 ## Leyenda de estados
 
@@ -121,17 +121,18 @@
 ### 1.3 Módulo Usuarios
 > **Spec técnica**: specs/technical/openapi/users.yaml
 
-- [ ] Implementar entidad `Student` con campos: `id`, `first_name`, `last_name`, `grade`, `institution_id`, `guardian_id`
-- [ ] Implementar `UserService`: registro, actualización, obtención de perfil
-- [ ] Implementar `linkStudentToGuardian(guardianId, studentData)`
-- [ ] Implementar `getStudentsByGuardian(guardianId)` con validación de institución
-- [ ] Implementar carga masiva desde CSV (`bulkLoad`)
-- [ ] Validar que todo usuario (excepto SUPERADMIN) tenga `institution_id` obligatorio
-- [ ] **Pruebas unitarias — Usuarios** (cobertura ≥ 95%)
-  - [ ] `UserService.register()`: email nuevo, email duplicado (409), rol no permitido
-  - [ ] `UserService.linkStudentToGuardian()`: vinculación exitosa, acudiente inexistente, ya vinculado
-  - [ ] `UserService.getStudentsByGuardian()`: padre ve solo sus hijos, filtro por institución
-  - [ ] `UserService.bulkLoad()`: CSV válido, CSV con filas inválidas (reporte de errores parciales)
+- [x] Implementar entidad `Student` con campos: `id`, `first_name`, `last_name`, `grade`, `institution_id`, `guardian_id`
+- [x] Implementar `UserManagementService`: registro, actualización, obtención de perfil (en módulo `auth`)
+- [x] Implementar `linkStudentToGuardian(guardianId, studentData)`
+- [x] Implementar `getStudentsByGuardian(guardianId)` con validación de institución
+- [x] Implementar carga masiva desde CSV (`bulkLoad`)
+- [x] Validar que todo usuario (excepto SUPERADMIN) tenga `institution_id` obligatorio
+- [x] `shared.user.UserLookupPort` — permite al módulo `users` validar guardianId sin depender de `auth.domain`
+- [x] **Pruebas unitarias — Usuarios** (cobertura ≥ 95%)
+  - [x] `UserManagementService.register()`: email nuevo, email duplicado (409), rol no permitido
+  - [x] `StudentService.linkStudentToGuardian()`: vinculación exitosa, acudiente inexistente, ya vinculado
+  - [x] `StudentService.getStudentsByGuardian()`: padre ve solo sus hijos, filtro por institución
+  - [x] `StudentService.bulkLoad()`: CSV válido, CSV con filas inválidas (reporte de errores parciales)
 
 ### 1.4 Módulo Actividades
 > **Spec funcional**: F5-estado-actividad.feature
@@ -424,6 +425,81 @@
 - [ ] Verificar que refresh token revocado no permite renovación (cubierto por IT-03)
 - [ ] Verificar que roles sin permiso reciben 403 (tabla de AD-04)
 - [ ] Verificar HTTPS en producción y cabeceras de seguridad
+
+### 4.9 Hardening y análisis de seguridad
+> **Objetivo**: Evaluar y cerrar vulnerabilidades OWASP Top 10 + análisis de dependencias
+
+#### 4.9.1 Análisis de vulnerabilidades de código
+- [ ] **SQL Injection**: Verificar que todas las queries dinámicas usan parámetros (JPA + Hibernate)
+  - Automatizar: `mvn dependency-check` en CI/CD para detectar CVEs en dependencias
+  - Manual: Revisar `@Query` personalizadas en `SpringDataXyzRepository`
+  
+- [ ] **Inyección XSS / Input Validation**:
+  - Validaciones existentes: `@NotBlank`, `@Email`, `@Size` en DTOs
+  - Falta: Sanitización de campos libres (`grade`, `observation`, `topics_covered`)
+  - Acción: Agregar sanitizador (ej. OWASP ESAPI) a campos de texto libre antes de persistir
+  - Tests: `StudentServiceTest`, `AttendanceServiceTest` verifican que input malicioso es rechazado
+
+- [ ] **Broken Authentication**:
+  - Verificar: Tokens JWT expirados son rechazados (test en `JwtTokenProviderTest`)
+  - Verificar: `mfaSecret` nunca se expone en `UserResponse` (test en `UserManagementServiceTest`)
+  - Verificar: `passwordHash` nunca se expone en respuestas HTTP
+
+- [ ] **Sensitive Data Exposure**:
+  - Auditar DTOs (`UserResponse`, `StudentResponse`) — no deben contener `passwordHash`, `mfaSecret`
+  - Verificar logs: no guardar tokens, contraseñas o datos de usuario en texto claro
+  - Implementar: Maskeo en logs de `Authorization` headers y credenciales (4.9.3)
+
+- [ ] **RBAC — Coverage completo**:
+  - Actualmente: Tests en `InstitutionContextProviderTest` y `StudentController`
+  - Falta: Test sistemático de cada endpoint con cada rol (matriz de permisos AD-04)
+  - Nueva clase: `RbacComplianceTest` — matriz rol/endpoint que valida 403 si no autorizado
+  - Incluir: SUPERADMIN bypass en `getStudentsByGuardian`, acceso cross-institution bloqueado
+
+- [ ] **Rate Limiting y DoS Prevention**:
+  - Verificado en gateway NestJS (Fase 2.3 — `ThrottlerModule`)
+  - Falta: Test de integración verificando que límite de 100 req/min se cumple
+
+- [ ] **Dependency Vulnerabilities**:
+  - Agregar a CI/CD: `mvn org.owasp:dependency-check-maven:check`
+  - Umbral: Bloquear deploy si hay vulnerabilidades de severidad CRITICAL o HIGH
+  - Frequencia: Ejecutar en cada merge a `develop`
+
+#### 4.9.2 Secrets Management & Credentials
+- [ ] Verificar que `.env.example` NO contiene valores reales (solo placeholders)
+- [ ] Verificar que archivos sensibles están en `.gitignore`: `.env`, `*.pem`, `*.key`, `secrets/`
+- [ ] Documentar: Dónde guardar secretos en local (`.env`) vs. producción (Doppler/AWS)
+- [ ] Tests: No hardcodear secretos en tests — usar variables de entorno o mocks
+
+#### 4.9.3 Logging & Monitoring seguro
+- [ ] Configurar que logs NO contengan:
+  - Tokens JWT, refresh tokens, mfaSecret
+  - Contraseñas, hashes, datos personales (email, teléfono completo)
+  - Números de identificación completos
+- [ ] Implementar: Mascarador de logs (ej. Spring Cloud Config Server, logback filters)
+- [ ] Verificar: Logs centralizados (Fase 5) filtran datos sensibles antes de transmitir
+
+#### 4.9.4 Headers de seguridad HTTP
+- [ ] Verificar en `SecurityConfig`:
+  - `Strict-Transport-Security: max-age=31536000; includeSubDomains`
+  - `X-Content-Type-Options: nosniff`
+  - `X-Frame-Options: DENY`
+  - `Content-Security-Policy: default-src 'self'`
+  - `X-XSS-Protection: 1; mode=block`
+- [ ] Tests: Verificar que `SecurityHeadersTest` valida presencia de estos headers
+
+#### 4.9.5 CORS y HTTPS
+- [ ] Verificar `SecurityConfig`: CORS solo permite orígenes whitelistados (no `*`)
+- [ ] Verificar: `https://` en producción (forzar redirect HTTP → HTTPS)
+- [ ] Certificados: TLS 1.2+ (sin SSLv3, TLS 1.0, TLS 1.1)
+
+#### 4.9.6 Auditoría de cambios sensibles
+- [ ] Tabla `audit_log`: Ya existe en migration inicial
+- [ ] Implementar: Listeners que registren:
+  - Cambios en roles de usuario (escalada de privilegios)
+  - Creación/eliminación de instituciones (solo SUPERADMIN)
+  - Cambios en `available_spots` (auditar con `total_spots` original)
+- [ ] Tests: `AuditLogTest` verifica que cada evento sensible genera un registro
 
 ---
 
