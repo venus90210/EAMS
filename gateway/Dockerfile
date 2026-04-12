@@ -11,8 +11,8 @@ RUN npm install --legacy-peer-deps
 # Copiar código
 COPY . .
 
-# Build
-RUN npm run build
+# Make entrypoint executable
+RUN chmod +x docker-entrypoint.sh
 
 # Exponer puerto
 EXPOSE 3000
@@ -21,5 +21,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=15s --timeout=5s --retries=5 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
-# Start production
-CMD ["npm", "run", "start:prod"]
+# Use entrypoint to handle compilation and startup
+ENTRYPOINT ["./docker-entrypoint.sh"]
