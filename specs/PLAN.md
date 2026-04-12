@@ -351,13 +351,56 @@
 ## Fase 4 — Pruebas e integración
 
 > **Objetivo**: validar que la implementación cumple todas las specs funcionales y no funcionales.
+> **Referencia completa**: [specs/technical/testing-strategy.md](technical/testing-strategy.md)
 
-### 4.1 Pruebas de contrato (OpenAPI)
+### 4.0 Setup de pruebas de integración
+- [ ] Agregar dependencias: `testcontainers-postgresql`, `testcontainers-junit-jupiter`, `wiremock-jre8`
+- [ ] Crear clase base `BaseIntegrationTest` con Testcontainers (PostgreSQL + Redis)
+- [ ] Crear script `init-rls.sql` que aplica las políticas RLS en el contenedor de prueba
+- [ ] Separar pruebas unitarias (`@Tag("unit")`) e integración (`@Tag("integration")`) en Maven Surefire
+- [ ] Configurar CI para correr integration tests solo si las unitarias pasan
+
+### 4.1 IT-01 — Inscripción concurrente sin sobrecupo
+> **ADR**: AD-07 | **RF**: RF05 | **Clase**: `EnrollmentConcurrencyIT`
+
+- [ ] Crear actividad con exactamente 1 cupo en PostgreSQL real (Testcontainers)
+- [ ] Lanzar 10 hilos simultáneos con `ExecutorService` intentando inscribir
+- [ ] Verificar que exactamente 1 inscripción es exitosa (HTTP 201)
+- [ ] Verificar que `available_spots = 0` al final (nunca negativo)
+- [ ] Verificar que 9 peticiones retornan HTTP 409 SPOT_EXHAUSTED
+
+### 4.2 IT-02 — Aislamiento entre instituciones con RLS
+> **ADR**: AD-08 | **RNF**: RNF06, RNF09 | **Clase**: `TenantIsolationIT`
+
+- [ ] Crear inst-A e inst-B con datos propios en PostgreSQL real
+- [ ] Ejecutar query sin filtro `WHERE institution_id` desde sesión de inst-A
+- [ ] Verificar que RLS impide ver datos de inst-B (resultado vacío, no error)
+- [ ] Repetir para tablas: `activities`, `enrollments`, `attendance_sessions`, `users`
+- [ ] Verificar que Superadmin puede acceder a todas las instituciones
+
+### 4.3 IT-03 — Revocación de refresh token en Redis
+> **ADR**: AD-06 | **RNF**: RNF04, RNF06 | **Clase**: `TokenRevocationIT`
+
+- [ ] Generar refresh token y almacenar en Redis real (Testcontainers)
+- [ ] Llamar a POST /auth/logout → verificar DELETE en Redis
+- [ ] Intentar POST /auth/refresh con el token revocado → verificar HTTP 401 TOKEN_REVOKED
+- [ ] Verificar que el TTL natural del token no permite usarlo tras revocación
+
+### 4.4 IT-04 — Flujo completo de notificación asíncrona
+> **ADR**: AD-09 | **RF**: RF07 | **Clase**: `NotificationFlowIT`
+
+- [ ] Configurar WireMock como servidor SMTP stub
+- [ ] Ejecutar una inscripción completa en Spring Boot con Redis real
+- [ ] Verificar que el evento `EnrollmentConfirmed` llega a la cola de Redis en <1s
+- [ ] Verificar que el Worker consume el evento y llama al endpoint WireMock en <60s
+- [ ] Verificar idempotencia: reencolar el mismo evento no genera un segundo email
+
+### 4.5 Pruebas de contrato (OpenAPI)
 - [ ] Instalar y configurar Dredd para validar el backend contra `main.yaml`
 - [ ] Ejecutar Dredd en CI contra cada endpoint del backend
 - [ ] Ejecutar `npx @redocly/cli lint specs/technical/openapi/main.yaml` en CI
 
-### 4.2 Pruebas de comportamiento (Gherkin)
+### 4.6 Pruebas de comportamiento (Gherkin)
 - [ ] Configurar Cucumber en el backend (Spring) para correr los `.feature`
 - [ ] Implementar step definitions para F1 (inscripción)
 - [ ] Implementar step definitions para F2 (asistencia)
@@ -365,14 +408,14 @@
 - [ ] Implementar step definitions para F5 (estado de actividad)
 - [ ] Configurar Playwright + Cucumber para F3 (consulta offline en navegador)
 
-### 4.3 Pruebas de rendimiento
+### 4.7 Pruebas de rendimiento
 - [ ] Verificar RF04: disponibilidad de cupos en <1 segundo bajo carga
 - [ ] Verificar RNF09: <3s en 95% de transacciones con 5.000 usuarios simulados (k6 / JMeter)
 - [ ] Verificar RF07: email encolado en <1s, entregado en <60s
 
-### 4.4 Pruebas de seguridad
-- [ ] Verificar aislamiento RLS: usuario de inst-001 no puede ver datos de inst-002
-- [ ] Verificar que refresh token revocado no permite renovación
+### 4.8 Pruebas de seguridad
+- [ ] Verificar aislamiento RLS: usuario de inst-001 no puede ver datos de inst-002 (cubierto por IT-02)
+- [ ] Verificar que refresh token revocado no permite renovación (cubierto por IT-03)
 - [ ] Verificar que roles sin permiso reciben 403 (tabla de AD-04)
 - [ ] Verificar HTTPS en producción y cabeceras de seguridad
 
@@ -400,14 +443,14 @@
 
 ## Matriz de trazabilidad: Tareas ↔ Specs
 
-| Tarea clave                          | Feature / ADR                        | RF / RNF       | Prueba unitaria requerida |
-|--------------------------------------|--------------------------------------|----------------|---------------------------|
-| SELECT FOR UPDATE en inscripción     | F1-inscripcion · AD-07               | RF04, RF05     | `EnrollmentService.enroll()` — race condition |
-| Ventana de edición 24h (asistencia)  | F2-asistencia                        | RF13           | `EditWindowPolicy.isEditable()` — boundary test |
-| Service Worker caché 48h             | F3-consulta-offline · AD-05          | RNF08          | `useOfflineStatus()`, `cacheService` |
-| MFA para roles de escritura          | F4-autenticacion · AD-06             | RNF04          | `MfaService.verifyTotp()` |
-| RLS por institution_id               | AD-08                                | RNF06, RNF09   | Prueba de integración de aislamiento RLS |
-| Email asíncrono desacoplado          | AD-09                                | RF07           | `NotificationWorker.processEmail()` — idempotencia |
-| RBAC en API Gateway                  | F4-autenticacion · AD-04             | RNF05          | `RolesGuard.canActivate()` — tabla completa AD-04 |
-| Secretos en vault                    | AD-10                                | RNF04          | N/A (infraestructura) |
-| Cobertura ≥ 95% en CI/CD            | testing-strategy.md                  | —              | Gate en pipeline: bloquea deploy si no se cumple |
+| Tarea clave                          | Feature / ADR              | RF / RNF     | Prueba unitaria                              | Prueba integración |
+|--------------------------------------|----------------------------|--------------|----------------------------------------------|--------------------|
+| SELECT FOR UPDATE en inscripción     | F1-inscripcion · AD-07     | RF04, RF05   | `EnrollmentService.enroll()` todos los casos | IT-01 concurrencia |
+| Ventana de edición 24h               | F2-asistencia              | RF13         | `EditWindowPolicy.isEditable()` boundary     | —                  |
+| Service Worker caché 48h             | F3-consulta-offline · AD-05| RNF08        | `useOfflineStatus()`, `cacheService`         | —                  |
+| MFA para roles de escritura          | F4-autenticacion · AD-06   | RNF04        | `MfaService.verifyTotp()`                    | IT-03 revocación   |
+| RLS por institution_id               | AD-08                      | RNF06, RNF09 | —                                            | IT-02 aislamiento  |
+| Email asíncrono desacoplado          | AD-09                      | RF07         | `NotificationWorker.processEmail()`          | IT-04 flujo <60s   |
+| RBAC en API Gateway                  | F4-autenticacion · AD-04   | RNF05        | `RolesGuard.canActivate()` tabla AD-04       | —                  |
+| Secretos en vault                    | AD-10                      | RNF04        | N/A (infraestructura)                        | —                  |
+| Cobertura ≥ 95%                      | testing-strategy.md        | —            | Gate CI/CD: bloquea deploy si no se cumple   | Gate CI/CD: 4 IT obligatorias |
