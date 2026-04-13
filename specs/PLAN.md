@@ -360,6 +360,7 @@
 - [ ] Mostrar tiempo de última sincronización: "Modo offline — datos de hace X horas"
 - [ ] Advertencia visual si caché > 48h (naranja badge)
 - [ ] Deshabilitar botones de escritura (Inscribir, Crear, Editar) en offline
+
 - [ ] Implementar `cacheService.getAge(key)` para verificar antigüedad del caché
 
 ### 3.8 Pruebas unitarias — Frontend (cobertura ≥ 95%)
