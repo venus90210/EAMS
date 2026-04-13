@@ -108,11 +108,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
 
       authService.storeTokens(response.data)
+      const decoded = decodeToken(response.data.accessToken)
+      if (decoded) setUser(decoded)
     } catch (err: any) {
       setError(err.response?.data?.message || 'MFA verification failed')
       throw err
     }
-  }, [])
+  }, [decodeToken])
 
   /**
    * Logout
@@ -145,12 +147,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
 
       authService.storeTokens(response.data)
+      const decoded = decodeToken(response.data.accessToken)
+      if (decoded) setUser(decoded)
     } catch (err) {
       authService.clearTokens()
       setUser(null)
       throw err
     }
-  }, [])
+  }, [decodeToken])
 
   const value: AuthContextType = {
     user,
