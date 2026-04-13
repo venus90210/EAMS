@@ -117,7 +117,10 @@
       "Bash(curl -s -X POST http://localhost:3000/api/enrollments -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlMzQ5ZjJlMS1hODkxLTQyOTktYjUzYy1iMjFlZjc2MjU2YzUiLCJyb2xlIjoiR1VBUkRJQU4iLCJpYXQiOjE3NzYwNzczNTAsImV4cCI6MTc3NjA3ODI1MCwiaW5zdGl0dXRpb25JZCI6ImI3MTZmYTExLWVhNDAtNDY4YS05ZGM4LWFlMTMxNDAyYzdmZiJ9.iBqLVdatwEsDP8dChtwlQAYls7AwwP9CSdtfYgGlOjTCj3UXj0E-cSlzHDXw4DbbCY7BMbzyCEMIoqYnsUky_Q' -H 'Content-Type: application/json' -d '{\"studentId\":\"550e8400-e29b-41d4-a716-446655440001\",\"activityId\":\"6d05ed1a-7637-47a7-bb14-d52f25cc4f9f\"}')",
       "Bash(grep -r \"apiClient\\\\.\\\\\\(get\\\\|post\\\\|put\\\\|patch\\\\|delete\\\\\\)\" /Users/angelica/workspace/EAMS/frontend/src/hooks/*.ts)",
       "Bash(curl -s \"http://localhost:3000/api/activities?status=PUBLISHED\")",
-      "Bash(curl -s 'http://localhost:3000/api/activities?status=PUBLISHED' -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlMzQ5ZjJlMS1hODkxLTQyOTktYjUzYy1iMjFlZjc2MjU2YzUiLCJyb2xlIjoiR1VBUkRJQU4iLCJpYXQiOjE3NzYwNzczNTAsImV4cCI6MTc3NjA3ODI1MCwiaW5zdGl0dXRpb25JZCI6ImI3MTZmYTExLWVhNDAtNDY4YS05ZGM4LWFlMTMxNDAyYzdmZiJ9.iBqLVdatwEsDP8dChtwlQAYls7AwwP9CSdtfYgGlOjTCj3UXj0E-cSlzHDXw4DbbCY7BMbzyCEMIoqYnsUky_Q')"
+      "Bash(curl -s 'http://localhost:3000/api/activities?status=PUBLISHED' -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlMzQ5ZjJlMS1hODkxLTQyOTktYjUzYy1iMjFlZjc2MjU2YzUiLCJyb2xlIjoiR1VBUkRJQU4iLCJpYXQiOjE3NzYwNzczNTAsImV4cCI6MTc3NjA3ODI1MCwiaW5zdGl0dXRpb25JZCI6ImI3MTZmYTExLWVhNDAtNDY4YS05ZGM4LWFlMTMxNDAyYzdmZiJ9.iBqLVdatwEsDP8dChtwlQAYls7AwwP9CSdtfYgGlOjTCj3UXj0E-cSlzHDXw4DbbCY7BMbzyCEMIoqYnsUky_Q')",
+      "Bash(curl -s http://localhost:3000/api/enrollments/guardian/e349f2e1-a891-4299-b53c-b21ef76256c5 -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlMzQ5ZjJlMS1hODkxLTQyOTktYjUzYy1iMjFlZjc2MjU2YzUiLCJyb2xlIjoiR1VBUkRJQU4iLCJpYXQiOjE3NzYwNzczNTAsImV4cCI6MTc3NjA3ODI1MCwiaW5zdGl0dXRpb25JZCI6ImI3MTZmYTExLWVhNDAtNDY4YS05ZGM4LWFlMTMxNDAyYzdmZiJ9.iBqLVdatwEsDP8dChtwlQAYls7AwwP9CSdtfYgGlOjTCj3UXj0E-cSlzHDXw4DbbCY7BMbzyCEMIoqYnsUky_Q')",
+      "Bash(jar tf:*)",
+      "Bash(docker restart:*)"
     ],
     "additionalDirectories": [
       "/Users/angelica/workspace/EAMS/.claude",

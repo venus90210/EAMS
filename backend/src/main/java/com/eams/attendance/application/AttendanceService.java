@@ -7,6 +7,8 @@ import com.eams.attendance.domain.AttendanceSessionRepository;
 import com.eams.attendance.domain.EditWindowPolicy;
 import com.eams.shared.exception.DomainException;
 import com.eams.shared.tenant.TenantContextHolder;
+import com.eams.users.domain.Student;
+import com.eams.users.domain.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,7 @@ public class AttendanceService {
     private final AttendanceSessionRepository sessionRepository;
     private final AttendanceRecordRepository recordRepository;
     private final EditWindowPolicy editWindowPolicy;
+    private final StudentRepository studentRepository;
 
     // ── Apertura de sesión ───────────────────────────────────────────────────
 
@@ -196,5 +199,30 @@ public class AttendanceService {
         }
 
         return recordRepository.findBySessionId(sessionId);
+    }
+
+    /**
+     * Lista todos los registros de asistencia de los estudiantes de un acudiente.
+     * Solo GUARDIAN (del acudiente) o ADMIN puede consultar.
+     */
+    public List<AttendanceRecord> getAttendanceByGuardian(UUID guardianId) {
+        String role = TenantContextHolder.requireContext().role();
+
+        // Solo GUARDIAN o ADMIN
+        if (!"GUARDIAN".equals(role) && !"ADMIN".equals(role) && !"SUPERADMIN".equals(role)) {
+            throw DomainException.forbidden("INSUFFICIENT_ROLE",
+                    "Solo GUARDIAN o ADMIN pueden consultar asistencia");
+        }
+
+        // Obtener todos los estudiantes del acudiente
+        List<Student> students = studentRepository.findByGuardianId(guardianId);
+        List<AttendanceRecord> records = new java.util.ArrayList<>();
+
+        // Recolectar registros de asistencia de todos los estudiantes
+        for (Student student : students) {
+            records.addAll(recordRepository.findByStudentId(student.getId()));
+        }
+
+        return records;
     }
 }

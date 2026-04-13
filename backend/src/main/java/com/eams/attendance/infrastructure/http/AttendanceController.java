@@ -81,4 +81,13 @@ public class AttendanceController {
                 .map(AttendanceRecordResponse::from)
                 .toList();
     }
+
+    @GetMapping("/guardians/{guardianId}")
+    public List<AttendanceRecordResponse> getGuardianAttendance(
+            @PathVariable UUID guardianId) {
+        return attendanceService.getAttendanceByGuardian(guardianId)
+                .stream()
+                .map(AttendanceRecordResponse::from)
+                .toList();
+    }
 }

@@ -51,4 +51,13 @@ public class EnrollmentController {
                 .map(EnrollmentResponse::from)
                 .toList();
     }
+
+    @GetMapping("/guardian/{guardianId}")
+    public List<EnrollmentResponse> getEnrollmentsByGuardian(
+            @PathVariable UUID guardianId) {
+        return enrollmentService.getEnrollmentsByGuardian(guardianId)
+                .stream()
+                .map(EnrollmentResponse::from)
+                .toList();
+    }
 }

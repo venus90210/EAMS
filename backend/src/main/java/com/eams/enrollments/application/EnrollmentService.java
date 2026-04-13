@@ -196,4 +196,29 @@ public class EnrollmentService {
 
         return enrollmentRepository.findByActivityId(activityId, status);
     }
+
+    /**
+     * Lista todas las inscripciones de los estudiantes de un acudiente.
+     * Solo GUARDIAN (del acudiente) o ADMIN puede consultar.
+     */
+    public List<Enrollment> getEnrollmentsByGuardian(UUID guardianId) {
+        String role = TenantContextHolder.requireContext().role();
+
+        // Solo GUARDIAN o ADMIN
+        if (!"GUARDIAN".equals(role) && !"ADMIN".equals(role) && !"SUPERADMIN".equals(role)) {
+            throw DomainException.forbidden("INSUFFICIENT_ROLE",
+                    "Solo GUARDIAN o ADMIN pueden consultar inscripciones");
+        }
+
+        // Obtener todos los estudiantes del acudiente
+        List<Student> students = studentRepository.findByGuardianId(guardianId);
+        List<Enrollment> enrollments = new java.util.ArrayList<>();
+
+        // Recolectar inscripciones de todos los estudiantes
+        for (Student student : students) {
+            enrollments.addAll(enrollmentRepository.findByStudentId(student.getId(), null));
+        }
+
+        return enrollments;
+    }
 }

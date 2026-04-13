@@ -8,6 +8,7 @@ import com.eams.attendance.domain.EditWindowPolicy;
 import com.eams.shared.exception.DomainException;
 import com.eams.shared.tenant.TenantContext;
 import com.eams.shared.tenant.TenantContextHolder;
+import com.eams.users.domain.StudentRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -40,6 +41,9 @@ class AttendanceServiceTest {
     @Mock
     private EditWindowPolicy editWindowPolicy;
 
+    @Mock
+    private StudentRepository studentRepository;
+
     private AttendanceService attendanceService;
 
     private UUID activityId;
@@ -56,7 +60,8 @@ class AttendanceServiceTest {
         attendanceService = new AttendanceService(
                 sessionRepository,
                 recordRepository,
-                editWindowPolicy
+                editWindowPolicy,
+                studentRepository
         );
 
         activityId = UUID.randomUUID();
