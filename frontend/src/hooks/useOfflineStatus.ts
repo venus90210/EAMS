@@ -20,6 +20,11 @@ export function useOfflineStatus(): OfflineStatus {
   const [cacheExpired, setCacheExpired] = useState(false)
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') {
+      return
+    }
+
     // Set initial state
     setIsOnline(navigator.onLine)
     const activitiesCacheAge = cacheService.getAge('activities')
