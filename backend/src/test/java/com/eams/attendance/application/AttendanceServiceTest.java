@@ -5,6 +5,7 @@ import com.eams.attendance.domain.AttendanceRecordRepository;
 import com.eams.attendance.domain.AttendanceSession;
 import com.eams.attendance.domain.AttendanceSessionRepository;
 import com.eams.attendance.domain.EditWindowPolicy;
+import com.eams.enrollments.domain.EnrollmentRepository;
 import com.eams.shared.exception.DomainException;
 import com.eams.shared.tenant.TenantContext;
 import com.eams.shared.tenant.TenantContextHolder;
@@ -44,6 +45,9 @@ class AttendanceServiceTest {
     @Mock
     private StudentRepository studentRepository;
 
+    @Mock
+    private EnrollmentRepository enrollmentRepository;
+
     private AttendanceService attendanceService;
 
     private UUID activityId;
@@ -61,7 +65,8 @@ class AttendanceServiceTest {
                 sessionRepository,
                 recordRepository,
                 editWindowPolicy,
-                studentRepository
+                studentRepository,
+                enrollmentRepository
         );
 
         activityId = UUID.randomUUID();

@@ -120,64 +120,163 @@ export default function AdminActivitiesPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-      <header style={{ backgroundColor: 'var(--surface)', borderBottom: `1px solid var(--border)` }}>
-        <div className="max-w-6xl mx-auto px-4 py-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold" style={{ color: 'var(--text)' }}>
-              ⚙️ Administración de actividades
-            </h1>
-            <p style={{ color: 'var(--muted)' }} className="mt-1">
-              Crea, edita y publica tus actividades
-            </p>
+    <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
+      {/* Hero Section */}
+      <section style={{
+        background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
+        color: 'white',
+        padding: '60px 40px',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr auto',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <div>
+              <h1 style={{
+                fontSize: '40px',
+                fontWeight: '900',
+                lineHeight: '1.2',
+                marginBottom: '16px'
+              }}>
+                ADMINISTRACIÓN DE ACTIVIDADES
+              </h1>
+              <p style={{
+                fontSize: '16px',
+                lineHeight: '1.5',
+                opacity: '0.95',
+                marginBottom: '24px'
+              }}>
+                Crea, edita, publica y gestiona todas las actividades extracurriculares de tu institución
+              </p>
+              {!showForm && (
+                <button
+                  onClick={() => setShowForm(true)}
+                  style={{
+                    backgroundColor: 'var(--secondary)',
+                    color: '#000',
+                    padding: '14px 32px',
+                    fontSize: '14px',
+                    fontWeight: '800',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}
+                >
+                  + Nueva actividad
+                </button>
+              )}
+            </div>
+            <div style={{
+              fontSize: '80px',
+              textAlign: 'center',
+              opacity: '0.8',
+              flexShrink: 0
+            }}>
+              ⚙️
+            </div>
           </div>
         </div>
-      </header>
+      </section>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {successMessage && (
-          <div className="mb-6 p-4 rounded-lg" style={{ backgroundColor: '#dcfce7', borderLeft: `4px solid var(--accent)` }}>
-            <p style={{ color: '#166534' }} className="font-medium">
+      {/* Content Section */}
+      <section style={{
+        padding: '80px 40px',
+        background: 'white'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          {/* Success Message */}
+          {successMessage && (
+            <div style={{
+              padding: '16px',
+              borderRadius: 'var(--card-radius)',
+              backgroundColor: '#dcfce7',
+              borderLeft: '4px solid var(--accent)',
+              color: '#166534',
+              fontWeight: '600',
+              marginBottom: '48px'
+            }}>
               ✓ {successMessage}
-            </p>
-          </div>
-        )}
+            </div>
+          )}
 
-        {showForm ? (
-          <div className="mb-8">
-            <ActivityForm
-              activity={editingActivity || undefined}
+          {/* Form Section */}
+          {showForm && (
+            <div style={{
+              marginBottom: '48px',
+              backgroundColor: 'var(--surface)',
+              borderRadius: 'var(--card-radius)',
+              border: '1px solid var(--border)',
+              padding: '40px',
+              boxShadow: 'var(--card-shadow)'
+            }}>
+              <h2 style={{
+                fontSize: '28px',
+                fontWeight: '900',
+                color: 'var(--text)',
+                marginBottom: '32px',
+                margin: '0 0 32px 0'
+              }}>
+                {editingActivity ? '✏️ Editar actividad' : '+ Nueva actividad'}
+              </h2>
+              <ActivityForm
+                activity={editingActivity || undefined}
+                loading={loading}
+                error={error}
+                onSubmit={editingActivity ? handleUpdateActivity : handleCreateActivity}
+                onCancel={handleCancel}
+              />
+            </div>
+          )}
+
+          {/* Activities List Section */}
+          <div>
+            <h2 style={{
+              fontSize: '28px',
+              fontWeight: '900',
+              color: 'var(--text)',
+              marginBottom: '32px',
+              margin: '0 0 32px 0'
+            }}>
+              📚 Actividades existentes
+            </h2>
+            <ActivityManagementList
+              activities={activities}
               loading={loading}
-              error={error}
-              onSubmit={editingActivity ? handleUpdateActivity : handleCreateActivity}
-              onCancel={handleCancel}
+              onEdit={handleEditActivity}
+              onPublish={handlePublishActivity}
+              onDisable={handleDisableActivity}
+              onDelete={handleDeleteActivity}
             />
           </div>
-        ) : (
-          <div className="mb-8">
-            <button
-              onClick={() => setShowForm(true)}
-              className="btn-primary py-3 px-6 text-lg"
-            >
-              + Nueva actividad
-            </button>
-          </div>
-        )}
-
-        <div>
-          <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--text)' }}>
-            📚 Actividades existentes
-          </h2>
-          <ActivityManagementList
-            activities={activities}
-            loading={loading}
-            onEdit={handleEditActivity}
-            onPublish={handlePublishActivity}
-            onDisable={handleDisableActivity}
-            onDelete={handleDeleteActivity}
-          />
         </div>
-      </main>
+      </section>
+
+      {/* Footer */}
+      <footer style={{
+        background: '#1a1a1a',
+        color: 'white',
+        padding: '40px',
+        textAlign: 'center',
+        borderTop: '4px solid var(--primary)'
+      }}>
+        <p style={{ fontSize: '14px', margin: 0 }}>
+          © 2026 EAMS - Sistema de Gestión de Actividades Extracurriculares
+        </p>
+      </footer>
     </div>
   )
 }

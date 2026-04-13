@@ -4,6 +4,7 @@ import com.eams.activities.domain.Activity;
 import com.eams.activities.domain.ActivityCachePort;
 import com.eams.activities.domain.ActivityRepository;
 import com.eams.activities.domain.ActivityStatus;
+import com.eams.enrollments.application.dto.EnrollmentTrackingResponse;
 import com.eams.enrollments.domain.Enrollment;
 import com.eams.enrollments.domain.EnrollmentRepository;
 import com.eams.enrollments.domain.EnrollmentStatus;
@@ -220,5 +221,42 @@ public class EnrollmentService {
         }
 
         return enrollments;
+    }
+
+    /**
+     * Lista todas las inscripciones de los estudiantes de un acudiente con nombres.
+     * Incluye nombres de estudiantes y actividades para seguimiento.
+     */
+    public List<EnrollmentTrackingResponse> getEnrollmentTrackingByGuardian(UUID guardianId) {
+        String role = TenantContextHolder.requireContext().role();
+
+        // Solo GUARDIAN o ADMIN
+        if (!"GUARDIAN".equals(role) && !"ADMIN".equals(role) && !"SUPERADMIN".equals(role)) {
+            throw DomainException.forbidden("INSUFFICIENT_ROLE",
+                    "Solo GUARDIAN o ADMIN pueden consultar inscripciones");
+        }
+
+        // Obtener todos los estudiantes del acudiente
+        List<Student> students = studentRepository.findByGuardianId(guardianId);
+        List<EnrollmentTrackingResponse> trackingResponses = new java.util.ArrayList<>();
+
+        // Recolectar inscripciones de todos los estudiantes
+        for (Student student : students) {
+            List<Enrollment> enrollments = enrollmentRepository.findByStudentId(student.getId(), null);
+            String studentName = student.getFirstName() + " " + student.getLastName();
+
+            for (Enrollment enrollment : enrollments) {
+                Activity activity = activityRepository.findById(enrollment.getActivityId())
+                        .orElseThrow(() -> DomainException.notFound("Actividad no encontrada"));
+
+                trackingResponses.add(EnrollmentTrackingResponse.from(
+                        enrollment,
+                        studentName,
+                        activity.getName()
+                ));
+            }
+        }
+
+        return trackingResponses;
     }
 }

@@ -54,7 +54,8 @@ public class AttendanceRecord {
         record.sessionId = sessionId;
         record.studentId = studentId;
         record.present = present;
-        record.observation = observation != null ? observation.strip() : null;
+        // Guardar como null si está vacío o solo espacios
+        record.observation = (observation != null && !observation.isBlank()) ? observation.strip() : null;
         record.recordedAt = Instant.now();
         return record;
     }
@@ -67,7 +68,8 @@ public class AttendanceRecord {
      * @param newObservation nueva observación
      */
     public void updateObservation(String newObservation) {
-        this.observation = newObservation != null ? newObservation.strip() : null;
+        // Guardar como null si está vacío o solo espacios
+        this.observation = (newObservation != null && !newObservation.isBlank()) ? newObservation.strip() : null;
     }
 
     /**

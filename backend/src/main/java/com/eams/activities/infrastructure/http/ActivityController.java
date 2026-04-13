@@ -50,16 +50,28 @@ public class ActivityController {
     public ActivityResponse createActivity(
             @Valid @RequestBody CreateActivityRequest request) {
         UUID institutionId = TenantContextHolder.requireContext().institutionId();
+        UUID userId = extractUserIdFromSecurityContext();
 
         Activity activity = Activity.create(
                 request.name(),
                 request.description(),
                 request.totalSpots(),
                 request.toSchedule(),
-                institutionId);
+                institutionId,
+                userId);
 
         Activity created = activityService.create(activity);
         return ActivityResponse.from(created);
+    }
+
+    /**
+     * Extrae el userId del JWT token en el Spring Security context.
+     * Temporalmente usa un UUID fijo para pruebas.
+     */
+    private UUID extractUserIdFromSecurityContext() {
+        // TODO: Implementar extracción real del userId del JWT
+        // Por ahora, usamos un UUID temporal para las pruebas
+        return UUID.fromString("9999aaaa-9999-9999-9999-999999999999");
     }
 
     @GetMapping("/{activityId}")

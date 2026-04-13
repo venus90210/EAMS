@@ -126,28 +126,37 @@ export function AttendanceList({
             </div>
 
             {isExpanded && (
-              <div className="border-t border-gray-200 p-4 bg-gray-50">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Observaciones</label>
-                <textarea
-                  value={observations[student.enrollmentId] || ''}
-                  onChange={e =>
-                    setObservations(prev => ({ ...prev, [student.enrollmentId]: e.target.value }))
-                  }
-                  placeholder="Añade notas sobre la asistencia de este estudiante"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
-                  rows={3}
-                />
-                <div className="mt-4 flex gap-2">
+              <div className="border-t border-gray-200 p-4 bg-blue-50">
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    📝 Agregar Observaciones
+                  </label>
+                  <textarea
+                    value={observations[student.enrollmentId] || ''}
+                    onChange={e =>
+                      setObservations(prev => ({ ...prev, [student.enrollmentId]: e.target.value }))
+                    }
+                    placeholder="Ej: Excelente desempeño, participación activa, llegó tarde..."
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    rows={4}
+                    autoFocus
+                  />
+                  <p className="text-xs text-gray-500 mt-2">
+                    💡 Tip: Sé específico (comportamiento, desempeño, ausencia justificada, etc.)
+                  </p>
+                </div>
+
+                <div className="flex gap-2">
                   <button
                     onClick={() => handleSaveObservations(student)}
                     disabled={isLoading || isRecording}
-                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 disabled:bg-gray-400"
+                    className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 transition flex items-center justify-center gap-2"
                   >
-                    {isRecording ? 'Guardando...' : 'Guardar observaciones'}
+                    {isRecording ? '⏳ Guardando...' : '💾 Guardar'}
                   </button>
                   <button
                     onClick={() => setExpandedStudent(null)}
-                    className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md font-medium hover:bg-gray-400"
+                    className="flex-1 bg-gray-300 text-gray-700 py-3 px-4 rounded-lg font-semibold hover:bg-gray-400 transition"
                   >
                     Cerrar
                   </button>

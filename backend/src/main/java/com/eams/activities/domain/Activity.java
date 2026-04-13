@@ -48,6 +48,9 @@ public class Activity {
     @Column(name = "institution_id", nullable = false)
     private UUID institutionId;
 
+    @Column(name = "created_by", nullable = false)
+    private UUID createdBy;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -72,6 +75,15 @@ public class Activity {
                                    Integer totalSpots,
                                    Schedule schedule,
                                    UUID institutionId) {
+        return create(name, description, totalSpots, schedule, institutionId, null);
+    }
+
+    public static Activity create(String name,
+                                   String description,
+                                   Integer totalSpots,
+                                   Schedule schedule,
+                                   UUID institutionId,
+                                   UUID createdBy) {
         Activity a = new Activity();
         a.id                = UUID.randomUUID();
         a.name              = name.strip();
@@ -81,6 +93,7 @@ public class Activity {
         a.availableSpots    = totalSpots;  // Al crear, todos los cupos están disponibles
         a.schedule          = schedule;
         a.institutionId     = institutionId;
+        a.createdBy         = createdBy;
         return a;
     }
 

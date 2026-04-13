@@ -18,17 +18,16 @@ export default function ActivitiesPage() {
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-600">Cargando...</p>
+        <p style={{ color: 'var(--muted)' }}>Cargando...</p>
       </div>
     )
   }
 
-  // If not authenticated in context, but we have a token stored, wait for context to update
   if (!isAuthenticated && authService.getAccessToken()) {
     console.log('[ActivitiesPage] Token exists but context not updated yet, waiting...')
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-600">Cargando sesión...</p>
+        <p style={{ color: 'var(--muted)' }}>Cargando sesión...</p>
       </div>
     )
   }
@@ -44,80 +43,299 @@ export default function ActivitiesPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-      {/* Header */}
-      <header style={{ backgroundColor: 'var(--surface)', borderBottom: `1px solid var(--border)` }}>
-        <div className="max-w-6xl mx-auto px-4 py-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold" style={{ color: 'var(--text)' }}>
-              🎯 Actividades Disponibles
-            </h1>
-            <p style={{ color: 'var(--muted)' }} className="mt-1">
-              Explora y participa en nuestras actividades
-            </p>
-            {fromCache && (
-              <p className="text-sm font-medium mt-2" style={{ color: 'var(--accent)' }}>
-                📴 Datos en caché (sin conexión)
+    <div style={{ backgroundColor: '#f5f5f5' }}>
+      {/* Hero Section - Green */}
+      <section style={{
+        background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
+        color: 'white',
+        padding: '60px 40px',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr auto',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <div>
+              <h1 style={{
+                fontSize: '40px',
+                fontWeight: '900',
+                lineHeight: '1.2',
+                marginBottom: '16px'
+              }}>
+                ACTIVIDADES EXTRACURRICULARES
+              </h1>
+              <p style={{
+                fontSize: '16px',
+                lineHeight: '1.5',
+                opacity: '0.95',
+                marginBottom: '24px'
+              }}>
+                Desarrolla tus talentos y habilidades participando en actividades diseñadas para ti
               </p>
+              {activities.length > 0 && (
+                <button
+                  style={{
+                    backgroundColor: 'var(--secondary)',
+                    color: '#000',
+                    padding: '14px 32px',
+                    fontSize: '14px',
+                    fontWeight: '800',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}
+                >
+                  EXPLORAR ACTIVIDADES
+                </button>
+              )}
+            </div>
+            <div style={{
+              fontSize: '80px',
+              textAlign: 'center',
+              opacity: '0.8',
+              flexShrink: 0
+            }}>
+              🎯
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Status Section */}
+      {activities.length > 0 && (
+        <section style={{
+          background: 'white',
+          padding: '50px 40px',
+          borderBottom: '1px solid var(--border)'
+        }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div style={{
+              textAlign: 'center',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '30px'
+            }}>
+              <div>
+                <div style={{
+                  fontSize: '48px',
+                  fontWeight: '900',
+                  color: 'var(--primary)',
+                  marginBottom: '8px'
+                }}>
+                  {activities.length}
+                </div>
+                <p style={{
+                  color: 'var(--text-light)',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px'
+                }}>
+                  Actividades Disponibles
+                </p>
+              </div>
+              <div>
+                <div style={{
+                  fontSize: '48px',
+                  fontWeight: '900',
+                  color: 'var(--primary)',
+                  marginBottom: '8px'
+                }}>
+                  {activities.reduce((sum, a) => sum + a.availableSpots, 0)}
+                </div>
+                <p style={{
+                  color: 'var(--text-light)',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px'
+                }}>
+                  Cupos Disponibles
+                </p>
+              </div>
+              <div>
+                <div style={{
+                  fontSize: '48px',
+                  fontWeight: '900',
+                  color: isOnline ? 'var(--primary)' : 'var(--warning)',
+                  marginBottom: '8px'
+                }}>
+                  {isOnline ? '✓' : '📴'}
+                </div>
+                <p style={{
+                  color: 'var(--text-light)',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px'
+                }}>
+                  {isOnline ? 'Conexión Activa' : 'Modo Offline'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Activities Section */}
+      {activities.length > 0 && (
+        <section style={{
+          padding: '80px 40px',
+          background: 'white'
+        }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '60px'
+            }}>
+              <h2 style={{
+                fontSize: '36px',
+                fontWeight: '900',
+                color: 'var(--text)',
+                marginBottom: '12px'
+              }}>
+                Nuestras Actividades
+              </h2>
+              <p style={{
+                color: 'var(--primary)',
+                fontSize: '18px',
+                fontWeight: '700'
+              }}>
+                EXPLORA Y PARTICIPA EN LAS QUE TE INTERESEN
+              </p>
+            </div>
+
+            {error && (
+              <div style={{
+                marginBottom: '40px',
+                padding: '24px 32px',
+                borderRadius: '4px',
+                backgroundColor: '#ffebee',
+                borderLeft: '6px solid var(--danger)',
+                color: '#c62828',
+                fontWeight: '600'
+              }}>
+                ⚠️ {error}
+              </div>
+            )}
+
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--muted)' }}>
+                ⏳ Cargando actividades...
+              </div>
+            ) : (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                gap: '32px'
+              }}>
+                {activities.map((activity) => (
+                  <ActivityCard
+                    key={activity.id}
+                    activity={activity}
+                    onEnroll={handleEnroll}
+                    offlineMode={!isOnline}
+                  />
+                ))}
+              </div>
             )}
           </div>
-        </div>
-      </header>
+        </section>
+      )}
 
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {error && (
-          <div className="mb-6 p-4 rounded-lg" style={{ backgroundColor: '#fee', borderLeft: `4px solid var(--error, #dc2626)` }}>
-            <p style={{ color: '#991b1b' }} className="font-medium">
-              ⚠️ {error}
+      {activities.length === 0 && !loading && (
+        <section style={{
+          padding: '100px 40px',
+          textAlign: 'center',
+          background: 'white'
+        }}>
+          <p style={{
+            color: 'var(--muted)',
+            fontSize: '18px',
+            fontWeight: '600'
+          }}>
+            No hay actividades disponibles en este momento
+          </p>
+        </section>
+      )}
+
+      {/* CTA Section */}
+      {activities.length > 0 && (
+        <section style={{
+          background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
+          color: 'white',
+          padding: '80px 40px',
+          textAlign: 'center'
+        }}>
+          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+            <h2 style={{
+              fontSize: '40px',
+              fontWeight: '900',
+              marginBottom: '16px'
+            }}>
+              COMIENZA TU VIAJE
+            </h2>
+            <p style={{
+              fontSize: '18px',
+              opacity: '0.95',
+              marginBottom: '40px',
+              lineHeight: '1.6'
+            }}>
+              Consulta el estado de tus inscripciones y participa en las actividades que te interesan
             </p>
+            <button
+              onClick={() => router.push('/guardian/tracking')}
+              style={{
+                backgroundColor: 'var(--secondary)',
+                color: '#000',
+                padding: '16px 48px',
+                fontSize: '16px',
+                fontWeight: '800',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                textTransform: 'uppercase',
+                letterSpacing: '1px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+            >
+              Ver mis inscripciones
+            </button>
           </div>
-        )}
+        </section>
+      )}
 
-        {loading && !activities.length && (
-          <div className="text-center py-12">
-            <p style={{ color: 'var(--muted)' }}>Cargando actividades...</p>
-          </div>
-        )}
-
-        {activities.length === 0 && !loading && (
-          <div className="text-center py-12">
-            <p style={{ color: 'var(--muted)' }}>No hay actividades disponibles en este momento.</p>
-          </div>
-        )}
-
-        {activities.length > 0 && (
-          <>
-            <div className="mb-8">
-              <p style={{ color: 'var(--muted)' }} className="text-sm">
-                Se encontraron <span className="font-bold" style={{ color: 'var(--primary)' }}>{activities.length}</span> actividad{activities.length !== 1 ? 'es' : ''}
-                {!isOnline && ' (sin conexión)'}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {activities.map((activity) => (
-                <ActivityCard
-                  key={activity.id}
-                  activity={activity}
-                  onEnroll={handleEnroll}
-                  offlineMode={!isOnline}
-                />
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* Navigation */}
-        <div className="mt-12 pt-8" style={{ borderTop: `1px solid var(--border)` }}>
-          <button
-            onClick={() => router.push('/guardian/tracking')}
-            className="btn-secondary"
-          >
-            Ver mis inscripciones →
-          </button>
-        </div>
-      </main>
+      {/* Footer */}
+      <footer style={{
+        background: '#1a1a1a',
+        color: 'white',
+        padding: '40px',
+        textAlign: 'center',
+        borderTop: `4px solid var(--primary)`
+      }}>
+        <p style={{ fontSize: '14px', margin: 0 }}>
+          © 2026 EAMS - Sistema de Gestión de Actividades Extracurriculares
+        </p>
+      </footer>
     </div>
   )
 }

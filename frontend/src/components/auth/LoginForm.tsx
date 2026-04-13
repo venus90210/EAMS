@@ -56,41 +56,104 @@ export function LoginForm({ onMfaRequired, onSuccess }: LoginFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="card p-8 space-y-6">
-      <div>
-        <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--text)' }}>
+    <form onSubmit={handleSubmit(onSubmit)} style={{
+      backgroundColor: 'var(--surface)',
+      borderRadius: 'var(--card-radius)',
+      border: '1px solid var(--border)',
+      padding: '48px 40px',
+      boxShadow: 'var(--elevation-3)'
+    }}>
+      <div style={{ marginBottom: '32px' }}>
+        <h2 style={{
+          fontSize: '32px',
+          fontWeight: '800',
+          color: 'var(--text)',
+          marginBottom: '8px'
+        }}>
           Iniciar sesión
-        </h1>
-        <p style={{ color: 'var(--muted)' }}>Accede a EAMS para gestionar tus actividades</p>
+        </h2>
+        <p style={{
+          color: 'var(--text-light)',
+          fontSize: '16px'
+        }}>
+          Accede a EAMS para gestionar tus actividades
+        </p>
       </div>
 
       {error && (
-        <div className="p-4 rounded" style={{ backgroundColor: '#FEE2E2', color: '#991B1B', borderLeft: '4px solid #DC2626' }}>
-          <p className="text-sm font-medium">{error}</p>
+        <div style={{
+          padding: '16px',
+          borderRadius: 'var(--button-radius)',
+          backgroundColor: '#ffebee',
+          borderLeft: '4px solid var(--danger)',
+          color: '#c62828',
+          fontWeight: '600',
+          fontSize: '14px',
+          marginBottom: '24px'
+        }}>
+          ⚠️ {error}
         </div>
       )}
 
-      <div className="space-y-2">
-        <label htmlFor="email" className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>
-          Email o teléfono
+      <div style={{ marginBottom: '24px' }}>
+        <label htmlFor="email" style={{
+          display: 'block',
+          fontSize: '14px',
+          fontWeight: '700',
+          color: 'var(--text)',
+          marginBottom: '8px'
+        }}>
+          Email
         </label>
         <input
           id="email"
           type="email"
           {...register('email')}
           className="input-field"
-          placeholder="correo@ejemplo.com"
+          placeholder="tu.email@ejemplo.com"
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            fontSize: '15px',
+            border: '2px solid var(--border)',
+            borderRadius: 'var(--input-radius)',
+            backgroundColor: 'var(--bg)',
+            transition: 'all 0.2s'
+          }}
         />
-        {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email.message}</p>}
+        {errors.email && (
+          <p style={{
+            color: 'var(--danger)',
+            fontSize: '13px',
+            marginTop: '6px',
+            fontWeight: '500'
+          }}>
+            {errors.email.message}
+          </p>
+        )}
       </div>
 
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <label htmlFor="password" className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>
+      <div style={{ marginBottom: '32px' }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '8px'
+        }}>
+          <label htmlFor="password" style={{
+            fontSize: '14px',
+            fontWeight: '700',
+            color: 'var(--text)'
+          }}>
             Contraseña
           </label>
-          <a href="#" className="text-sm" style={{ color: 'var(--primary)' }}>
-            ¿Olvidaste la contraseña?
+          <a href="#" style={{
+            fontSize: '13px',
+            color: 'var(--primary)',
+            fontWeight: '600',
+            textDecoration: 'none'
+          }}>
+            ¿Olvidaste?
           </a>
         </div>
         <input
@@ -99,40 +162,76 @@ export function LoginForm({ onMfaRequired, onSuccess }: LoginFormProps) {
           {...register('password')}
           className="input-field"
           placeholder="••••••••"
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            fontSize: '15px',
+            border: '2px solid var(--border)',
+            borderRadius: 'var(--input-radius)',
+            backgroundColor: 'var(--bg)',
+            transition: 'all 0.2s'
+          }}
         />
-        {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>}
+        {errors.password && (
+          <p style={{
+            color: 'var(--danger)',
+            fontSize: '13px',
+            marginTop: '6px',
+            fontWeight: '500'
+          }}>
+            {errors.password.message}
+          </p>
+        )}
       </div>
 
       <button
         type="submit"
         disabled={isLoading}
-        className="btn-primary w-full"
+        style={{
+          width: '100%',
+          padding: '14px 24px',
+          fontSize: '16px',
+          fontWeight: '700',
+          backgroundColor: isLoading ? 'var(--muted)' : 'var(--primary)',
+          color: 'white',
+          border: 'none',
+          borderRadius: 'var(--button-radius)',
+          cursor: isLoading ? 'not-allowed' : 'pointer',
+          transition: 'all 0.2s',
+          boxShadow: '0 4px 12px rgba(0, 166, 81, 0.2)'
+        }}
+        onMouseEnter={(e) => {
+          if (!isLoading) {
+            e.currentTarget.style.backgroundColor = 'var(--primary-dark)'
+            e.currentTarget.style.transform = 'translateY(-2px)'
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isLoading) {
+            e.currentTarget.style.backgroundColor = 'var(--primary)'
+            e.currentTarget.style.transform = 'translateY(0)'
+          }
+        }}
       >
-        {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+        {isLoading ? '⏳ Iniciando sesión...' : '→ Iniciar sesión'}
       </button>
 
-      <div className="relative py-4">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t" style={{ borderColor: 'var(--border)' }}></div>
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span style={{ color: 'var(--muted)', backgroundColor: 'var(--surface)' }} className="px-2">
-            o
-          </span>
-        </div>
-      </div>
-
-      <button
-        type="button"
-        className="btn-secondary w-full"
-      >
-        🍎 Iniciar sesión con Apple
-      </button>
-
-      <div className="pt-2 text-center">
-        <p style={{ color: 'var(--muted)' }} className="text-sm">
+      <div style={{
+        marginTop: '24px',
+        paddingTop: '24px',
+        borderTop: '1px solid var(--border)',
+        textAlign: 'center'
+      }}>
+        <p style={{
+          color: 'var(--text-light)',
+          fontSize: '14px'
+        }}>
           ¿Nuevo en EAMS?{' '}
-          <a href="#" style={{ color: 'var(--primary)' }} className="font-semibold">
+          <a href="#" style={{
+            color: 'var(--primary)',
+            fontWeight: '700',
+            textDecoration: 'none'
+          }}>
             Registrarse
           </a>
         </p>

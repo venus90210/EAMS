@@ -124,7 +124,12 @@
       "Bash(curl -s -X POST http://localhost:3000/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@example.com\",\"password\":\"password123\"}')",
       "Bash(pkill -f \"next dev\")",
       "Bash(docker build:*)",
-      "Bash(curl -s http://localhost:3000)"
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(curl -s http://localhost:8080/actuator/health)",
+      "Bash(curl -X POST http://localhost:8080/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"teacher@example.com\",\"password\":\"password123\"}')",
+      "Bash(curl -s -X POST http://localhost:8080/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"teacher@example.com\",\"password\":\"password123\"}')",
+      "Bash(node -e ':*)",
+      "Bash(openssl rand:*)"
     ],
     "additionalDirectories": [
       "/Users/angelica/workspace/EAMS/.claude",

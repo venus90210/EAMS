@@ -13,10 +13,13 @@ export interface Enrollment {
 
 export interface AttendanceRecord {
   id: string
+  sessionId: string
   enrollmentId: string
-  date: string
+  studentId: string
   present: boolean
-  observations?: string
+  observation?: string
+  recordedAt: string
+  date: string
 }
 
 export interface TrackingData {
@@ -31,57 +34,62 @@ export function useTracking() {
   const [data, setData] = useState<TrackingData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
-  useEffect(() => {
+  const fetchTracking = async () => {
     if (!user?.id) {
       setLoading(false)
       return
     }
 
-    const fetchTracking = async () => {
-      try {
-        setError(null)
-        const [enrollmentsRes, attendanceRes] = await Promise.all([
-          apiClient.get(`/api/enrollments/guardian/${user.id}`),
-          apiClient.get(`/api/attendance/guardians/${user.id}`),
-        ])
+    try {
+      setError(null)
+      const [enrollmentsRes, attendanceRes] = await Promise.all([
+        apiClient.get(`/api/enrollments/guardian/${user.id}`),
+        apiClient.get(`/api/attendance/guardians/${user.id}`),
+      ])
 
-        const enrollments = enrollmentsRes.data || []
-        const attendance = attendanceRes.data || []
+      const enrollments = enrollmentsRes.data || []
+      const attendance = attendanceRes.data || []
 
-        // Agrupar por estudiante
-        const grouped = enrollments.reduce((acc: Record<string, TrackingData>, enrollment: any) => {
-          if (!acc[enrollment.studentId]) {
-            acc[enrollment.studentId] = {
-              studentId: enrollment.studentId,
-              studentName: enrollment.studentName,
-              enrollments: [],
-              attendance: [],
-            }
+      // Agrupar por estudiante
+      const grouped = enrollments.reduce((acc: Record<string, TrackingData>, enrollment: any) => {
+        if (!acc[enrollment.studentId]) {
+          acc[enrollment.studentId] = {
+            studentId: enrollment.studentId,
+            studentName: enrollment.studentName,
+            enrollments: [],
+            attendance: [],
           }
-          acc[enrollment.studentId].enrollments.push(enrollment)
-          return acc
-        }, {})
+        }
+        acc[enrollment.studentId].enrollments.push(enrollment)
+        return acc
+      }, {})
 
-        // Agregar registros de asistencia
-        attendance.forEach((record: any) => {
-          const enrollment = enrollments.find((e: any) => e.id === record.enrollmentId)
-          if (enrollment && grouped[enrollment.studentId]) {
-            grouped[enrollment.studentId].attendance.push(record)
-          }
-        })
+      // Agregar registros de asistencia
+      attendance.forEach((record: any) => {
+        if (grouped[record.studentId]) {
+          grouped[record.studentId].attendance.push(record)
+        }
+      })
 
-        setData(Object.values(grouped))
-      } catch (err: any) {
-        setError(err.response?.data?.message || 'Error al cargar seguimiento')
-        setData([])
-      } finally {
-        setLoading(false)
-      }
+      setData(Object.values(grouped))
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al cargar seguimiento')
+      setData([])
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchTracking()
-  }, [user?.id])
+  }, [user?.id, refreshKey])
 
-  return { data, loading, error }
+  const refresh = () => {
+    setLoading(true)
+    setRefreshKey(prev => prev + 1)
+  }
+
+  return { data, loading, error, refresh }
 }

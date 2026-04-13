@@ -77,8 +77,21 @@ export function useAdminActivities() {
   }, [])
 
   const publishActivity = useCallback(async (activityId: string) => {
-    return updateActivity(activityId, { status: 'PUBLISHED' })
-  }, [updateActivity])
+    try {
+      setError(null)
+      const response = await apiClient.post(`/api/activities/${activityId}/publish`)
+
+      const updatedActivity = response.data
+      setActivities(prev =>
+        prev.map(a => (a.id === activityId ? updatedActivity : a))
+      )
+      return updatedActivity
+    } catch (err: any) {
+      const msg = err.response?.data?.message || 'Error al publicar actividad'
+      setError(msg)
+      throw err
+    }
+  }, [])
 
   const disableActivity = useCallback(async (activityId: string) => {
     return updateActivity(activityId, { status: 'DISABLED' })

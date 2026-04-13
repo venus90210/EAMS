@@ -3,6 +3,7 @@ package com.eams.enrollments.infrastructure.http;
 import com.eams.enrollments.application.EnrollmentService;
 import com.eams.enrollments.application.dto.CreateEnrollmentRequest;
 import com.eams.enrollments.application.dto.EnrollmentResponse;
+import com.eams.enrollments.application.dto.EnrollmentTrackingResponse;
 import com.eams.enrollments.domain.EnrollmentStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -53,11 +54,8 @@ public class EnrollmentController {
     }
 
     @GetMapping("/guardian/{guardianId}")
-    public List<EnrollmentResponse> getEnrollmentsByGuardian(
+    public List<EnrollmentTrackingResponse> getEnrollmentsByGuardian(
             @PathVariable UUID guardianId) {
-        return enrollmentService.getEnrollmentsByGuardian(guardianId)
-                .stream()
-                .map(EnrollmentResponse::from)
-                .toList();
+        return enrollmentService.getEnrollmentTrackingByGuardian(guardianId);
     }
 }

@@ -1,10 +1,14 @@
 package com.eams.attendance.application;
 
+import com.eams.attendance.application.dto.AttendanceStudentDto;
 import com.eams.attendance.domain.AttendanceRecord;
 import com.eams.attendance.domain.AttendanceRecordRepository;
 import com.eams.attendance.domain.AttendanceSession;
 import com.eams.attendance.domain.AttendanceSessionRepository;
 import com.eams.attendance.domain.EditWindowPolicy;
+import com.eams.enrollments.domain.Enrollment;
+import com.eams.enrollments.domain.EnrollmentRepository;
+import com.eams.enrollments.domain.EnrollmentStatus;
 import com.eams.shared.exception.DomainException;
 import com.eams.shared.tenant.TenantContextHolder;
 import com.eams.users.domain.Student;
@@ -17,6 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+
+/**
+ * Record temporal para retornar sesión con estudiantes
+ */
+record SessionWithStudents(AttendanceSession session, List<AttendanceStudentDto> students) {}
 
 /**
  * Casos de uso del módulo Attendance (F2-asistencia.feature, AD-07).
@@ -36,6 +45,7 @@ public class AttendanceService {
     private final AttendanceRecordRepository recordRepository;
     private final EditWindowPolicy editWindowPolicy;
     private final StudentRepository studentRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     // ── Apertura de sesión ───────────────────────────────────────────────────
 
@@ -71,10 +81,11 @@ public class AttendanceService {
                     "Solo docentes o administradores pueden abrir sesiones de asistencia");
         }
 
-        // 3. Validar que no existe sesión duplicada
-        if (sessionRepository.findByActivityIdAndDate(activityId, date).isPresent()) {
-            throw DomainException.conflict("SESSION_DUPLICATE",
-                    "Ya existe una sesión abierta para esta actividad en el día actual");
+        // 3. Si existe sesión duplicada, retornarla (idempotencia)
+        var existingSession = sessionRepository.findByActivityIdAndDate(activityId, date);
+        if (existingSession.isPresent()) {
+            log.debug("Sesión de asistencia ya existe, retornando la existente: {}", existingSession.get().getId());
+            return existingSession.get();
         }
 
         // Crear y guardar sesión
@@ -88,17 +99,17 @@ public class AttendanceService {
     // ── Marcación de asistencia ──────────────────────────────────────────────
 
     /**
-     * Registra la asistencia de un estudiante en una sesión.
+     * Registra o actualiza la asistencia de un estudiante en una sesión (idempotente).
      *
      * Validaciones:
      *   1. Sesión existe
      *   2. Dentro de ventana de edición (24h) → RF13
      *   3. Máximo 3 toques por estudiante (RF13) - simplificado a no validar aquí
-     *   4. No hay registro duplicado para (session_id, student_id)
+     *
+     * Si el registro ya existe, lo actualiza. Si no existe, lo crea.
      *
      * @throws DomainException NOT_FOUND si la sesión no existe (404)
      * @throws DomainException EDIT_WINDOW_EXPIRED si fuera de ventana (403)
-     * @throws DomainException RECORD_DUPLICATE si ya existe registro (409)
      */
     @Transactional
     public AttendanceRecord recordAttendance(UUID sessionId, UUID studentId, Boolean present, String observation) {
@@ -114,17 +125,24 @@ public class AttendanceService {
                     "La ventana de edición de 24h ha expirado para esta sesión");
         }
 
-        // 3. Validar que no existe registro duplicado
-        if (recordRepository.findBySessionIdAndStudentId(sessionId, studentId).isPresent()) {
-            throw DomainException.conflict("RECORD_DUPLICATE",
-                    "Ya existe un registro de asistencia para este estudiante en esta sesión");
+        // 3. Crear o actualizar registro (idempotencia)
+        var existingRecord = recordRepository.findBySessionIdAndStudentId(sessionId, studentId);
+
+        AttendanceRecord record;
+        if (existingRecord.isPresent()) {
+            // Actualizar registro existente
+            record = existingRecord.get();
+            record.markAttendance(present);
+            // Actualizar observación siempre (incluso si viene vacía o null)
+            record.updateObservation(observation);
+            log.debug("Registro de asistencia actualizado: estudiante {} en sesión {}", studentId, sessionId);
+        } else {
+            // Crear nuevo registro
+            record = AttendanceRecord.create(sessionId, studentId, present, observation);
+            log.debug("Registro de asistencia creado: estudiante {} en sesión {}", studentId, sessionId);
         }
 
-        // Crear y guardar registro
-        AttendanceRecord record = AttendanceRecord.create(sessionId, studentId, present, observation);
         AttendanceRecord saved = recordRepository.save(record);
-
-        log.debug("Asistencia registrada: estudiante {} en sesión {}", studentId, sessionId);
         return saved;
     }
 
@@ -224,5 +242,31 @@ public class AttendanceService {
         }
 
         return records;
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /**
+     * Obtiene la lista de estudiantes inscritos en una actividad como DTOs.
+     */
+    public List<AttendanceStudentDto> getActivityStudents(UUID activityId) {
+        List<Enrollment> enrollments = enrollmentRepository.findByActivityId(activityId, EnrollmentStatus.ACTIVE);
+
+        return enrollments.stream()
+                .map(enrollment -> {
+                    Student student = studentRepository.findById(enrollment.getStudentId())
+                            .orElseThrow(() -> DomainException.notFound("Estudiante no encontrado"));
+
+                    String studentName = student.getFirstName() + " " + student.getLastName();
+
+                    return new AttendanceStudentDto(
+                            enrollment.getId(),
+                            enrollment.getStudentId(),
+                            studentName,
+                            false,  // inicialmente no presente
+                            ""      // sin observaciones
+                    );
+                })
+                .toList();
     }
 }

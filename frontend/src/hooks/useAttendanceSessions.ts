@@ -26,7 +26,11 @@ export function useAttendanceSessions() {
       setLoading(true)
       setError(null)
 
-      const response = await apiClient.post('/api/attendance/sessions', { activityId })
+      const today = new Date().toISOString().split('T')[0]
+      const response = await apiClient.post('/api/attendance/sessions', {
+        activityId,
+        date: today,
+      })
       setSession(response.data)
       return response.data
     } catch (err: any) {
@@ -43,11 +47,17 @@ export function useAttendanceSessions() {
       try {
         setError(null)
 
+        // Obtener el studentId del estado actual
+        if (!session) return
+
+        const enrollment = session.students.find(s => s.enrollmentId === enrollmentId)
+        if (!enrollment) throw new Error('Estudiante no encontrado')
+
         await apiClient.post(`/api/attendance/records`, {
           sessionId,
-          enrollmentId,
+          studentId: enrollment.studentId,
           present,
-          observations,
+          observation: observations,
         })
 
         // Actualizar estado local

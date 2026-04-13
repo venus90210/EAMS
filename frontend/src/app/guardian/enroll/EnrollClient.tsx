@@ -40,18 +40,78 @@ export function EnrollClient() {
 
   if (!activityId || !selectedActivity) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-        <div className="max-w-md mx-auto p-8">
-          <div className="p-4 rounded-lg" style={{ backgroundColor: '#fee', borderLeft: `4px solid #dc2626` }}>
-            <p style={{ color: '#991b1b' }} className="font-medium">Actividad no encontrada</p>
+      <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
+        <section style={{
+          background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
+          color: 'white',
+          padding: '60px 40px',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <h1 style={{
+              fontSize: '40px',
+              fontWeight: '900',
+              lineHeight: '1.2',
+              marginBottom: '16px'
+            }}>
+              ACTIVIDAD NO ENCONTRADA
+            </h1>
+            <p style={{
+              fontSize: '16px',
+              lineHeight: '1.5',
+              opacity: '0.95',
+              marginBottom: '24px'
+            }}>
+              No pudimos encontrar la actividad que buscas. Por favor, intenta nuevamente.
+            </p>
           </div>
-          <button
-            onClick={() => router.push('/guardian/activities')}
-            className="mt-4 w-full btn-secondary"
-          >
-            Volver a actividades
-          </button>
-        </div>
+        </section>
+
+        <section style={{
+          padding: '80px 40px',
+          background: 'white',
+          textAlign: 'center'
+        }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <button
+              onClick={() => router.push('/guardian/activities')}
+              style={{
+                backgroundColor: 'var(--secondary)',
+                color: '#000',
+                padding: '14px 32px',
+                fontSize: '14px',
+                fontWeight: '800',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+            >
+              ← Volver a actividades
+            </button>
+          </div>
+        </section>
+
+        <footer style={{
+          background: '#1a1a1a',
+          color: 'white',
+          padding: '40px',
+          textAlign: 'center',
+          borderTop: '4px solid var(--primary)'
+        }}>
+          <p style={{ fontSize: '14px', margin: 0 }}>
+            © 2026 EAMS - Sistema de Gestión de Actividades Extracurriculares
+          </p>
+        </footer>
       </div>
     )
   }
@@ -72,47 +132,256 @@ export function EnrollClient() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        <div
-          style={{
-            backgroundColor: 'var(--surface)',
-            borderRadius: 'var(--radius-lg)',
-            border: `1px solid var(--border)`,
-          }}
-          className="p-8 shadow-sm"
-        >
-          <h1 className="text-3xl font-bold mb-8" style={{ color: 'var(--text)' }}>
-            📝 Inscribir estudiante
-          </h1>
+    <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
+      {/* Hero Section */}
+      <section style={{
+        background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
+        color: 'white',
+        padding: '60px 40px',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr auto',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <div>
+              <h1 style={{
+                fontSize: '40px',
+                fontWeight: '900',
+                lineHeight: '1.2',
+                marginBottom: '16px'
+              }}>
+                INSCRIBIR ESTUDIANTE
+              </h1>
+              <p style={{
+                fontSize: '16px',
+                lineHeight: '1.5',
+                opacity: '0.95'
+              }}>
+                Completa los pasos para registrar a tu estudiante en una actividad extracurricular
+              </p>
+            </div>
+            <div style={{
+              fontSize: '80px',
+              textAlign: 'center',
+              opacity: '0.8',
+              flexShrink: 0
+            }}>
+              📝
+            </div>
+          </div>
+        </div>
+      </section>
 
-          {/* Paso 1 */}
-          <div
-            className="mb-8 p-6 rounded-lg"
-            style={{
-              backgroundColor: 'var(--background)',
-              border: `1px solid var(--border)`,
-            }}
-          >
-            <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--text)' }}>
-              Paso 1: Selecciona el estudiante
-            </h2>
+      {/* Process Steps Indicator */}
+      <section style={{
+        padding: '40px',
+        background: 'var(--bg)',
+        borderBottom: '1px solid var(--border)'
+      }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px'
+          }}>
+            {/* Step 1 */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              flex: 1
+            }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--primary)',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: '900',
+                fontSize: '20px',
+                marginBottom: '8px'
+              }}>
+                1
+              </div>
+              <p style={{
+                fontSize: '12px',
+                fontWeight: '700',
+                color: 'var(--text)',
+                margin: 0,
+                textAlign: 'center'
+              }}>
+                Seleccionar
+              </p>
+            </div>
+
+            {/* Connector */}
+            <div style={{
+              flex: 0.5,
+              height: '2px',
+              backgroundColor: 'var(--border)',
+              marginBottom: '32px'
+            }} />
+
+            {/* Step 2 */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              flex: 1
+            }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--primary)',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: '900',
+                fontSize: '20px',
+                marginBottom: '8px'
+              }}>
+                2
+              </div>
+              <p style={{
+                fontSize: '12px',
+                fontWeight: '700',
+                color: 'var(--text)',
+                margin: 0,
+                textAlign: 'center'
+              }}>
+                Confirmar
+              </p>
+            </div>
+
+            {/* Connector */}
+            <div style={{
+              flex: 0.5,
+              height: '2px',
+              backgroundColor: 'var(--border)',
+              marginBottom: '32px'
+            }} />
+
+            {/* Step 3 */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              flex: 1
+            }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--muted)',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: '900',
+                fontSize: '20px',
+                marginBottom: '8px'
+              }}>
+                ✓
+              </div>
+              <p style={{
+                fontSize: '12px',
+                fontWeight: '700',
+                color: 'var(--muted)',
+                margin: 0,
+                textAlign: 'center'
+              }}>
+                Completado
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Content Section */}
+      <section style={{
+        padding: '80px 40px',
+        background: 'white'
+      }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          {/* Paso 1: Selecciona el estudiante */}
+          <div style={{
+            backgroundColor: 'var(--surface)',
+            borderRadius: 'var(--card-radius)',
+            border: '1px solid var(--border)',
+            padding: '32px',
+            marginBottom: '32px'
+          }}>
+            <div style={{ marginBottom: '24px' }}>
+              <h2 style={{
+                fontSize: '20px',
+                fontWeight: '800',
+                color: 'var(--primary)',
+                margin: '0 0 8px 0',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                Paso 1
+              </h2>
+              <h3 style={{
+                fontSize: '24px',
+                fontWeight: '900',
+                color: 'var(--text)',
+                margin: '0'
+              }}>
+                Selecciona el estudiante
+              </h3>
+            </div>
+
             {studentsLoading ? (
-              <p style={{ color: 'var(--muted)' }}>Cargando estudiantes...</p>
+              <p style={{ color: 'var(--muted)', fontSize: '16px' }}>⏳ Cargando estudiantes...</p>
             ) : studentsError ? (
-              <p style={{ color: '#991b1b' }}>Error al cargar estudiantes: {studentsError}</p>
+              <div style={{
+                padding: '16px',
+                borderRadius: 'var(--card-radius)',
+                backgroundColor: '#ffebee',
+                borderLeft: '4px solid var(--danger)',
+                color: '#c62828',
+                fontWeight: '600'
+              }}>
+                ⚠️ Error al cargar estudiantes: {studentsError}
+              </div>
             ) : students.length === 0 ? (
-              <p style={{ color: '#991b1b' }}>No tienes estudiantes asociados</p>
+              <div style={{
+                padding: '16px',
+                borderRadius: 'var(--card-radius)',
+                backgroundColor: '#fff3cd',
+                borderLeft: '4px solid var(--warning)',
+                color: '#856404',
+                fontWeight: '600'
+              }}>
+                ⚠️ No tienes estudiantes asociados
+              </div>
             ) : (
-              <div className="space-y-3">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {students.map(student => (
                   <label
                     key={student.id}
-                    className="flex items-center p-3 rounded cursor-pointer transition"
                     style={{
-                      backgroundColor: selectedStudentId === student.id ? 'var(--primary)' : 'var(--surface)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '16px',
+                      borderRadius: 'var(--card-radius)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      backgroundColor: selectedStudentId === student.id ? 'var(--primary)' : 'var(--bg)',
                       color: selectedStudentId === student.id ? 'white' : 'var(--text)',
-                      border: `1px solid ${selectedStudentId === student.id ? 'var(--primary)' : 'var(--border)'}`,
+                      border: `2px solid ${selectedStudentId === student.id ? 'var(--primary)' : 'var(--border)'}`,
+                      gap: '12px'
                     }}
                   >
                     <input
@@ -121,14 +390,26 @@ export function EnrollClient() {
                       value={student.id}
                       checked={selectedStudentId === student.id}
                       onChange={e => setSelectedStudentId(e.target.value)}
-                      className="mr-3"
+                      style={{
+                        cursor: 'pointer',
+                        width: '18px',
+                        height: '18px'
+                      }}
                     />
                     <div>
-                      <p className="font-semibold">
+                      <p style={{
+                        fontSize: '16px',
+                        fontWeight: '700',
+                        margin: '0 0 4px 0'
+                      }}>
                         {student.firstName} {student.lastName}
                       </p>
                       {student.grade && (
-                        <p className="text-sm opacity-75">
+                        <p style={{
+                          fontSize: '14px',
+                          opacity: selectedStudentId === student.id ? 0.9 : 0.7,
+                          margin: '0'
+                        }}>
                           Grado {student.grade}
                         </p>
                       )}
@@ -139,52 +420,128 @@ export function EnrollClient() {
             )}
           </div>
 
-          {/* Paso 2 */}
-          <div
-            className="mb-8 p-6 rounded-lg"
-            style={{
-              backgroundColor: 'var(--background)',
-              border: `1px solid var(--border)`,
-            }}
-          >
-            <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--text)' }}>
-              Paso 2: Confirma la actividad
-            </h2>
-            <div>
-              <p style={{ color: 'var(--muted)' }} className="text-sm font-medium uppercase mb-2">
+          {/* Paso 2: Confirma la actividad */}
+          <div style={{
+            backgroundColor: 'var(--surface)',
+            borderRadius: 'var(--card-radius)',
+            border: '1px solid var(--border)',
+            padding: '32px',
+            marginBottom: '32px'
+          }}>
+            <div style={{ marginBottom: '24px' }}>
+              <h2 style={{
+                fontSize: '20px',
+                fontWeight: '800',
+                color: 'var(--primary)',
+                margin: '0 0 8px 0',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                Paso 2
+              </h2>
+              <h3 style={{
+                fontSize: '24px',
+                fontWeight: '900',
+                color: 'var(--text)',
+                margin: '0'
+              }}>
+                Confirma la actividad
+              </h3>
+            </div>
+
+            <div style={{
+              backgroundColor: 'var(--bg)',
+              borderRadius: 'var(--card-radius)',
+              border: '1px solid var(--border)',
+              padding: '24px',
+              marginBottom: '24px'
+            }}>
+              <p style={{
+                color: 'var(--muted)',
+                fontSize: '12px',
+                fontWeight: '700',
+                textTransform: 'uppercase',
+                margin: '0 0 12px 0',
+                letterSpacing: '0.5px'
+              }}>
                 Actividad seleccionada
               </p>
-              <h3 className="text-2xl font-bold mb-3" style={{ color: 'var(--primary)' }}>
+              <h4 style={{
+                fontSize: '28px',
+                fontWeight: '900',
+                color: 'var(--primary)',
+                margin: '0 0 16px 0'
+              }}>
                 {selectedActivity.name}
-              </h3>
-              <p style={{ color: 'var(--text)' }} className="mb-4">
-                {selectedActivity.description}
-              </p>
-              <div className="grid grid-cols-2 gap-4">
-                <div
-                  className="p-3 rounded"
-                  style={{
-                    backgroundColor: 'var(--primary)',
-                    color: 'white',
-                  }}
-                >
-                  <p className="text-sm opacity-90">Cupos disponibles</p>
-                  <p className="text-2xl font-bold">
-                    {selectedActivity.availableSpots}/{selectedActivity.totalSpots}
-                  </p>
-                </div>
-                <div
-                  className="p-3 rounded"
-                  style={{
-                    backgroundColor: selectedActivity.availableSpots > 0 ? 'var(--accent)' : '#dc2626',
-                    color: 'white',
-                  }}
-                >
-                  <p className="text-sm opacity-90">Estado</p>
-                  <p className="text-lg font-bold">
-                    {selectedActivity.availableSpots > 0 ? '✓ Disponible' : '✕ Lleno'}
-                  </p>
-                </div>
+              </h4>
+              {selectedActivity.description && (
+                <p style={{
+                  color: 'var(--text)',
+                  fontSize: '15px',
+                  lineHeight: '1.6',
+                  margin: 0
+                }}>
+                  {selectedActivity.description}
+                </p>
+              )}
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '16px'
+            }}>
+              <div
+                style={{
+                  backgroundColor: 'var(--primary)',
+                  color: 'white',
+                  padding: '20px',
+                  borderRadius: 'var(--card-radius)'
+                }}
+              >
+                <p style={{
+                  fontSize: '12px',
+                  opacity: 0.9,
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  margin: '0 0 8px 0',
+                  letterSpacing: '0.5px'
+                }}>
+                  Cupos disponibles
+                </p>
+                <p style={{
+                  fontSize: '32px',
+                  fontWeight: '900',
+                  margin: '0'
+                }}>
+                  {selectedActivity.availableSpots}/{selectedActivity.totalSpots}
+                </p>
+              </div>
+              <div
+                style={{
+                  backgroundColor: selectedActivity.availableSpots > 0 ? 'var(--success)' : 'var(--danger)',
+                  color: 'white',
+                  padding: '20px',
+                  borderRadius: 'var(--card-radius)'
+                }}
+              >
+                <p style={{
+                  fontSize: '12px',
+                  opacity: 0.9,
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  margin: '0 0 8px 0',
+                  letterSpacing: '0.5px'
+                }}>
+                  Estado
+                </p>
+                <p style={{
+                  fontSize: '20px',
+                  fontWeight: '900',
+                  margin: '0'
+                }}>
+                  {selectedActivity.availableSpots > 0 ? '✓ Disponible' : '✕ Lleno'}
+                </p>
               </div>
             </div>
           </div>
@@ -192,11 +549,15 @@ export function EnrollClient() {
           {/* Mensaje */}
           {message && (
             <div
-              className="mb-6 p-4 rounded-lg font-medium"
               style={{
-                backgroundColor: message.includes('exitosa') ? '#dcfce7' : '#fee',
-                color: message.includes('exitosa') ? '#166534' : '#991b1b',
+                padding: '16px',
+                borderRadius: 'var(--card-radius)',
+                backgroundColor: message.includes('exitosa') ? '#dcfce7' : '#ffebee',
+                color: message.includes('exitosa') ? '#166534' : '#c62828',
                 border: `1px solid ${message.includes('exitosa') ? '#86efac' : '#fca5a5'}`,
+                borderLeft: `4px solid ${message.includes('exitosa') ? 'var(--success)' : 'var(--danger)'}`,
+                fontWeight: '600',
+                marginBottom: '32px'
               }}
             >
               {message.includes('exitosa') ? '✓ ' : '⚠️ '}
@@ -205,23 +566,82 @@ export function EnrollClient() {
           )}
 
           {/* Botones */}
-          <div className="flex gap-3">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '16px'
+          }}>
             <button
               onClick={() => router.back()}
-              className="flex-1 btn-secondary"
+              style={{
+                padding: '14px 24px',
+                fontSize: '14px',
+                fontWeight: '800',
+                backgroundColor: 'var(--muted)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                textTransform: 'uppercase'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
             >
               Cancelar
             </button>
             <button
               onClick={handleEnroll}
               disabled={!selectedStudentId || enrollLoading || selectedActivity.availableSpots === 0}
-              className={`flex-1 btn-primary ${(!selectedStudentId || enrollLoading || selectedActivity.availableSpots === 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              style={{
+                padding: '14px 24px',
+                fontSize: '14px',
+                fontWeight: '800',
+                backgroundColor: !selectedStudentId || enrollLoading || selectedActivity.availableSpots === 0
+                  ? 'var(--muted)'
+                  : 'var(--secondary)',
+                color: !selectedStudentId || enrollLoading || selectedActivity.availableSpots === 0 ? 'white' : '#000',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: !selectedStudentId || enrollLoading || selectedActivity.availableSpots === 0 ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s',
+                textTransform: 'uppercase'
+              }}
+              onMouseEnter={(e) => {
+                if (!(!selectedStudentId || enrollLoading || selectedActivity.availableSpots === 0)) {
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
             >
               {enrollLoading ? '⏳ Inscribiendo...' : '✓ Confirmar inscripción'}
             </button>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Footer */}
+      <footer style={{
+        background: '#1a1a1a',
+        color: 'white',
+        padding: '40px',
+        textAlign: 'center',
+        borderTop: '4px solid var(--primary)'
+      }}>
+        <p style={{ fontSize: '14px', margin: 0 }}>
+          © 2026 EAMS - Sistema de Gestión de Actividades Extracurriculares
+        </p>
+      </footer>
     </div>
   )
 }

@@ -26,13 +26,13 @@ public class AttendanceController {
     @ResponseStatus(HttpStatus.CREATED)
     public AttendanceSessionResponse openSession(
             @Valid @RequestBody OpenSessionRequest request) {
-        return AttendanceSessionResponse.from(
-                attendanceService.openSession(
-                        request.activityId(),
-                        request.date(),
-                        request.topicsCovered()
-                )
+        var session = attendanceService.openSession(
+                request.activityId(),
+                request.date(),
+                request.topicsCovered()
         );
+        var students = attendanceService.getActivityStudents(request.activityId());
+        return AttendanceSessionResponse.from(session, students);
     }
 
     // ── Marcación de asistencia ──────────────────────────────────────────────
