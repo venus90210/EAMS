@@ -126,7 +126,7 @@ services:
       - gateway
     environment:
       NODE_ENV: development
-      NEXT_PUBLIC_API_URL: http://localhost:${GATEWAY_PORT:-3000}
+      NEXT_PUBLIC_API_URL: http://gateway:3000
     ports:
       - "${FRONTEND_PORT:-3001}:3001"
     networks:

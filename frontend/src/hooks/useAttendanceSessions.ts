@@ -26,7 +26,7 @@ export function useAttendanceSessions() {
       setLoading(true)
       setError(null)
 
-      const response = await apiClient.post('/attendance/sessions', { activityId })
+      const response = await apiClient.post('/api/attendance/sessions', { activityId })
       setSession(response.data)
       return response.data
     } catch (err: any) {
@@ -43,7 +43,7 @@ export function useAttendanceSessions() {
       try {
         setError(null)
 
-        await apiClient.post(`/attendance/records`, {
+        await apiClient.post(`/api/attendance/records`, {
           sessionId,
           enrollmentId,
           present,

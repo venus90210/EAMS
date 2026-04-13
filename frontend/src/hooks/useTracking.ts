@@ -42,8 +42,8 @@ export function useTracking() {
       try {
         setError(null)
         const [enrollmentsRes, attendanceRes] = await Promise.all([
-          apiClient.get(`/enrollments/guardian/${user.id}`),
-          apiClient.get(`/attendance/guardians/${user.id}`),
+          apiClient.get(`/api/enrollments/guardian/${user.id}`),
+          apiClient.get(`/api/attendance/guardians/${user.id}`),
         ])
 
         const enrollments = enrollmentsRes.data || []

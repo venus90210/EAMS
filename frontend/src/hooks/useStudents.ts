@@ -17,6 +17,7 @@ export function useStudents() {
 
   useEffect(() => {
     if (!user?.id) {
+      console.log('[useStudents] User not loaded yet, user:', user)
       setLoading(false)
       return
     }
@@ -24,9 +25,12 @@ export function useStudents() {
     const fetchStudents = async () => {
       try {
         setError(null)
-        const response = await apiClient.get(`/users/guardians/${user.id}/students`)
+        console.log('[useStudents] Fetching students for guardian:', user.id)
+        const response = await apiClient.get(`/api/users/guardians/${user.id}/students`)
+        console.log('[useStudents] Response:', response.data)
         setStudents(response.data || [])
       } catch (err: any) {
+        console.error('[useStudents] Error:', err.response?.data || err.message)
         setError(err.response?.data?.message || 'Error al cargar estudiantes')
         setStudents([])
       } finally {

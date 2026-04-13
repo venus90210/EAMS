@@ -102,7 +102,22 @@
       "Bash(curl -s -X POST http://localhost:3000/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"teacher@example.com\",\"password\":\"password123\"}')",
       "Bash(curl -s -X GET 'http://localhost:3000/api/activities?status=PUBLISHED' -H 'Authorization: Bearer invalid_token')",
       "Bash(curl -s http://localhost:3001 -w \"\\\\nStatus: %{http_code}\\\\n\")",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(docker builder:*)",
+      "Bash(docker rmi:*)",
+      "Bash(curl -s -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlMzQ5ZjJlMS1hODkxLTQyOTktYjUzYy1iMjFlZjc2MjU2YzUiLCJyb2xlIjoiR1VBUkRJQU4iLCJpYXQiOjE3NzYwNzU4MDEsImV4cCI6MTc3NjA3NjcwMSwiaW5zdGl0dXRpb25JZCI6ImI3MTZmYTExLWVhNDAtNDY4YS05ZGM4LWFlMTMxNDAyYzdmZiJ9.v27SjXk3hHckItgK0x57deneXg64IGlBp21f8WKu4MDeE3hrItD4XIWfBYkKq8UG4UrFhyvnn4M78koVgaq3CQ' 'http://localhost:3000/api/users/e349f2e1-a891-4299-b53c-b21ef762 56c5/students')",
+      "Bash(curl -s -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlMzQ5ZjJlMS1hODkxLTQyOTktYjUzYy1iMjFlZjc2MjU2YzUiLCJyb2xlIjoiR1VBUkRJQU4iLCJpYXQiOjE3NzYwNzU4MDEsImV4cCI6MTc3NjA3NjcwMSwiaW5zdGl0dXRpb25JZCI6ImI3MTZmYTExLWVhNDAtNDY4YS05ZGM4LWFlMTMxNDAyYzdmZiJ9.v27SjXk3hHckItgK0x57deneXg64IGlBp21f8WKu4MDeE3hrItD4XIWfBYkKq8UG4UrFhyvnn4M78koVgaq3CQ' 'http://localhost:3000/users/e349f2e1-a891-4299-b53c-b21ef76256c5/students')",
+      "Bash(jq '.tokens.accessToken' -r)",
+      "Bash(curl -s -H 'Authorization: Bearer __TRACKED_VAR__' http://localhost:3000/api/activities)",
+      "Bash(curl -s -H 'Authorization: Bearer __TRACKED_VAR__' http://localhost:3000/api/users/__TRACKED_VAR__/students)",
+      "Bash(curl -v http://localhost:8080/api-docs)",
+      "Bash(curl -s -H 'Authorization: Bearer __TRACKED_VAR__' http://localhost:3000/api/users/e349f2e1-a891-4299-b53c-b21ef76256c5/students)",
+      "Bash(curl -s -H 'Authorization: Bearer __TRACKED_VAR__' http://localhost:3000/api/users/guardians/e349f2e1-a891-4299-b53c-b21ef76256c5/students)",
+      "Bash(curl -s -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlMzQ5ZjJlMS1hODkxLTQyOTktYjUzYy1iMjFlZjc2MjU2YzUiLCJyb2xlIjoiR1VBUkRJQU4iLCJpYXQiOjE3NzYwNzU4MDEsImV4cCI6MTc3NjA3NjcwMSwiaW5zdGl0dXRpb25JZCI6ImI3MTZmYTExLWVhNDAtNDY4YS05ZGM4LWFlMTMxNDAyYzdmZiJ9.v27SjXk3hHckItgK0x57deneXg64IGlBp21f8WKu4MDeE3hrItD4XIWfBYkKq8UG4UrFhyvnn4M78koVgaq3CQ' 'http://gateway:3000/api/users/guardians/e349f2e1-a891-4299-b53c-b21ef76256c5/students')",
+      "Bash(curl -s -X POST http://localhost:3000/api/enrollments -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlMzQ5ZjJlMS1hODkxLTQyOTktYjUzYy1iMjFlZjc2MjU2YzUiLCJyb2xlIjoiR1VBUkRJQU4iLCJpYXQiOjE3NzYwNzczNTAsImV4cCI6MTc3NjA3ODI1MCwiaW5zdGl0dXRpb25JZCI6ImI3MTZmYTExLWVhNDAtNDY4YS05ZGM4LWFlMTMxNDAyYzdmZiJ9.iBqLVdatwEsDP8dChtwlQAYls7AwwP9CSdtfYgGlOjTCj3UXj0E-cSlzHDXw4DbbCY7BMbzyCEMIoqYnsUky_Q' -H 'Content-Type: application/json' -d '{\"studentId\":\"550e8400-e29b-41d4-a716-446655440001\",\"activityId\":\"6d05ed1a-7637-47a7-bb14-d52f25cc4f9f\"}')",
+      "Bash(grep -r \"apiClient\\\\.\\\\\\(get\\\\|post\\\\|put\\\\|patch\\\\|delete\\\\\\)\" /Users/angelica/workspace/EAMS/frontend/src/hooks/*.ts)",
+      "Bash(curl -s \"http://localhost:3000/api/activities?status=PUBLISHED\")",
+      "Bash(curl -s 'http://localhost:3000/api/activities?status=PUBLISHED' -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlMzQ5ZjJlMS1hODkxLTQyOTktYjUzYy1iMjFlZjc2MjU2YzUiLCJyb2xlIjoiR1VBUkRJQU4iLCJpYXQiOjE3NzYwNzczNTAsImV4cCI6MTc3NjA3ODI1MCwiaW5zdGl0dXRpb25JZCI6ImI3MTZmYTExLWVhNDAtNDY4YS05ZGM4LWFlMTMxNDAyYzdmZiJ9.iBqLVdatwEsDP8dChtwlQAYls7AwwP9CSdtfYgGlOjTCj3UXj0E-cSlzHDXw4DbbCY7BMbzyCEMIoqYnsUky_Q')"
     ],
     "additionalDirectories": [
       "/Users/angelica/workspace/EAMS/.claude",

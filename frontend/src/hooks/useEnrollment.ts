@@ -16,13 +16,16 @@ export function useEnrollment() {
         setLoading(true)
         setError(null)
 
-        const response = await apiClient.post('/enrollments', {
+        console.log('[useEnrollment] Enrolling student:', { studentId, activityId })
+        const response = await apiClient.post('/api/enrollments', {
           studentId,
           activityId,
         })
 
+        console.log('[useEnrollment] Success:', response.data)
         return response.data
       } catch (err: any) {
+        console.error('[useEnrollment] Error:', err.response?.data || err.message)
         const errorCode = err.response?.data?.code || 'ENROLLMENT_ERROR'
         const errorMessage =
           err.response?.data?.message || 'Error al inscribirse en la actividad'

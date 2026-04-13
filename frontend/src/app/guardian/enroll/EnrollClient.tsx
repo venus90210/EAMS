@@ -12,7 +12,7 @@ export function EnrollClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, isAuthenticated, loading: authLoading } = useAuth()
-  const { students, loading: studentsLoading } = useStudents()
+  const { students, loading: studentsLoading, error: studentsError } = useStudents()
   const { enroll, loading: enrollLoading, error: enrollError } = useEnrollment()
   const { activities } = useActivities()
 
@@ -21,6 +21,8 @@ export function EnrollClient() {
 
   const activityId = searchParams.get('activityId')
   const selectedActivity = activities.find(a => a.id === activityId)
+
+  console.log('[EnrollClient] State:', { authLoading, isAuthenticated, userId: user?.id, students: students.length, studentsLoading, studentsError })
 
   if (authLoading) {
     return <div className="flex items-center justify-center min-h-screen"><p>Cargando...</p></div>
@@ -76,6 +78,8 @@ export function EnrollClient() {
           <h2 className="text-lg font-semibold mb-4">Paso 1: Selecciona el estudiante</h2>
           {studentsLoading ? (
             <p className="text-gray-500">Cargando estudiantes...</p>
+          ) : studentsError ? (
+            <p className="text-red-600">Error al cargar estudiantes: {studentsError}</p>
           ) : students.length === 0 ? (
             <p className="text-red-600">No tienes estudiantes asociados</p>
           ) : (

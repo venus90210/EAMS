@@ -26,7 +26,7 @@ export function useAdminActivities() {
     try {
       setLoading(true)
       setError(null)
-      const response = await apiClient.get('/activities')
+      const response = await apiClient.get('/api/activities')
       setActivities(response.data)
       return response.data
     } catch (err: any) {
@@ -41,7 +41,7 @@ export function useAdminActivities() {
   const createActivity = useCallback(async (input: CreateActivityInput) => {
     try {
       setError(null)
-      const response = await apiClient.post('/activities', {
+      const response = await apiClient.post('/api/activities', {
         name: input.name,
         description: input.description,
         totalSpots: input.totalSpots,
@@ -62,7 +62,7 @@ export function useAdminActivities() {
   const updateActivity = useCallback(async (activityId: string, input: UpdateActivityInput) => {
     try {
       setError(null)
-      const response = await apiClient.put(`/activities/${activityId}`, input)
+      const response = await apiClient.put(`/api/activities/${activityId}`, input)
 
       const updatedActivity = response.data
       setActivities(prev =>
@@ -87,7 +87,7 @@ export function useAdminActivities() {
   const deleteActivity = useCallback(async (activityId: string) => {
     try {
       setError(null)
-      await apiClient.delete(`/activities/${activityId}`)
+      await apiClient.delete(`/api/activities/${activityId}`)
       setActivities(prev => prev.filter(a => a.id !== activityId))
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Error al eliminar actividad'

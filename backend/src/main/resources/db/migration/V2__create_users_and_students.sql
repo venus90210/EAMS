@@ -1,6 +1,5 @@
 -- V2: Usuarios y estudiantes
 -- Fuente: RF08, RF10, AD-08 (institution_id obligatorio)
--- Note: role is stored as VARCHAR(50) with Hibernate @Enumerated(EnumType.STRING)
 
 CREATE TABLE users (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -28,6 +27,7 @@ CREATE TABLE students (
     first_name      VARCHAR(100) NOT NULL,
     last_name       VARCHAR(100) NOT NULL,
     grade           VARCHAR(20),
+    guardian_id     UUID        NOT NULL REFERENCES users(id),
     institution_id  UUID        NOT NULL REFERENCES institutions(id),
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -48,6 +48,7 @@ COMMENT ON TABLE guardian_students IS 'Relación acudiente ↔ estudiante (RF10 
 -- ── Índices ────────────────────────────────────────────────────────────────
 CREATE INDEX idx_users_institution_id   ON users(institution_id);
 CREATE INDEX idx_students_institution_id ON students(institution_id);
+CREATE INDEX idx_students_guardian_id ON students(guardian_id);
 CREATE INDEX idx_guardian_students_guardian ON guardian_students(guardian_id);
 CREATE INDEX idx_guardian_students_student  ON guardian_students(student_id);
 
