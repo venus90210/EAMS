@@ -38,7 +38,6 @@ export function AttendanceList({
       const obs = observations[student.enrollmentId] || ''
       await onRecordAttendance(sessionId, student.enrollmentId, !student.present, obs)
     } catch (err) {
-      // Error handled by hook
       console.error(err)
     } finally {
       setRecordingIds(prev => {
@@ -67,7 +66,7 @@ export function AttendanceList({
   }
 
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {students.map(student => {
         const touchCount = getTouchCount(student.enrollmentId)
         const isExpanded = expandedStudent === student.enrollmentId
@@ -75,47 +74,136 @@ export function AttendanceList({
         const isRecording = recordingIds.has(student.enrollmentId)
 
         return (
-          <div key={student.enrollmentId} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div
+            key={student.enrollmentId}
+            style={{
+              backgroundColor: 'var(--surface)',
+              borderRadius: 'var(--card-radius)',
+              border: '1px solid var(--border)',
+              overflow: 'hidden',
+              transition: 'all 0.3s ease',
+              boxShadow: isExpanded ? 'var(--card-shadow-hover)' : 'var(--card-shadow)'
+            }}
+          >
+            {/* Student Header */}
             <div
-              className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition"
+              style={{
+                padding: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                cursor: 'pointer',
+                backgroundColor: 'var(--bg)',
+                borderBottom: isExpanded ? '1px solid var(--border)' : 'none',
+                transition: 'all 0.2s ease'
+              }}
               onClick={() => {
-                if (isExpanded) {
-                  setExpandedStudent(null)
-                } else {
-                  setExpandedStudent(student.enrollmentId)
-                }
+                setExpandedStudent(isExpanded ? null : student.enrollmentId)
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--surface)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--bg)'
               }}
             >
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">{student.studentName}</p>
-                <p className="text-sm text-gray-500">ID: {student.studentId}</p>
+              <div style={{ flex: 1 }}>
+                <p style={{
+                  fontSize: '16px',
+                  fontWeight: '700',
+                  color: 'var(--text)',
+                  margin: '0 0 6px 0'
+                }}>
+                  👤 {student.studentName}
+                </p>
+                <p style={{
+                  fontSize: '13px',
+                  color: 'var(--muted)',
+                  margin: 0
+                }}>
+                  ID: {student.studentId}
+                </p>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '20px'
+              }}>
+                {/* Attendance Button */}
                 <button
-                  onClick={e => {
+                  onClick={(e) => {
                     e.stopPropagation()
                     handleToggleAttendance(student)
                   }}
                   disabled={!canRecord || isLoading || isRecording}
-                  className={`px-4 py-2 rounded-md font-medium transition ${
-                    student.present
-                      ? 'bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400'
-                      : 'bg-red-600 text-white hover:bg-red-700 disabled:bg-gray-400'
-                  }`}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '6px',
+                    fontWeight: '700',
+                    fontSize: '13px',
+                    border: 'none',
+                    cursor: !canRecord || isLoading || isRecording ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s',
+                    backgroundColor: student.present
+                      ? 'var(--success)'
+                      : 'var(--danger)',
+                    color: 'white',
+                    opacity: !canRecord || isLoading || isRecording ? 0.6 : 1,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!(!canRecord || isLoading || isRecording)) {
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
                 >
-                  {isRecording ? 'Guardando...' : student.present ? 'Presente' : 'Ausente'}
+                  {isRecording ? '⏳' : student.present ? '✓ Presente' : '✕ Ausente'}
                 </button>
 
-                <div className="text-right">
-                  <p className="text-xs text-gray-500">Toques</p>
-                  <p className={`text-lg font-bold ${canRecord ? 'text-gray-900' : 'text-red-600'}`}>
+                {/* Touch Count Badge */}
+                <div style={{
+                  textAlign: 'center',
+                  padding: '8px 16px',
+                  backgroundColor: canRecord ? 'var(--bg)' : 'rgba(244, 67, 54, 0.1)',
+                  borderRadius: '8px',
+                  minWidth: '60px'
+                }}>
+                  <p style={{
+                    fontSize: '11px',
+                    color: 'var(--muted)',
+                    fontWeight: '700',
+                    margin: '0 0 4px 0',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
+                    Toques
+                  </p>
+                  <p style={{
+                    fontSize: '18px',
+                    fontWeight: '900',
+                    color: canRecord ? 'var(--text)' : 'var(--danger)',
+                    margin: 0
+                  }}>
                     {touchCount}/3
                   </p>
                 </div>
 
+                {/* Expand Icon */}
                 <svg
-                  className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    color: 'var(--muted)',
+                    transition: 'transform 0.3s ease',
+                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
+                  }}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -125,38 +213,123 @@ export function AttendanceList({
               </div>
             </div>
 
+            {/* Expanded Section - Observations */}
             {isExpanded && (
-              <div className="border-t border-gray-200 p-4 bg-blue-50">
-                <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    📝 Agregar Observaciones
+              <div style={{
+                padding: '24px',
+                backgroundColor: 'var(--bg)',
+                borderTop: '1px solid var(--border)'
+              }}>
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    color: 'var(--text)',
+                    marginBottom: '12px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
+                    📝 Observaciones
                   </label>
                   <textarea
                     value={observations[student.enrollmentId] || ''}
-                    onChange={e =>
+                    onChange={(e) =>
                       setObservations(prev => ({ ...prev, [student.enrollmentId]: e.target.value }))
                     }
                     placeholder="Ej: Excelente desempeño, participación activa, llegó tarde..."
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      fontSize: '14px',
+                      border: '2px solid var(--border)',
+                      borderRadius: 'var(--input-radius)',
+                      backgroundColor: 'var(--surface)',
+                      color: 'var(--text)',
+                      fontFamily: 'inherit',
+                      transition: 'all 0.2s',
+                      resize: 'vertical',
+                      minHeight: '100px'
+                    }}
                     rows={4}
                     autoFocus
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--primary)'
+                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0, 166, 81, 0.1)'
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--border)'
+                      e.currentTarget.style.boxShadow = 'none'
+                    }}
                   />
-                  <p className="text-xs text-gray-500 mt-2">
-                    💡 Tip: Sé específico (comportamiento, desempeño, ausencia justificada, etc.)
+                  <p style={{
+                    fontSize: '12px',
+                    color: 'var(--muted)',
+                    marginTop: '8px',
+                    margin: '8px 0 0 0'
+                  }}>
+                    💡 Sé específico: comportamiento, desempeño, ausencia justificada, etc.
                   </p>
                 </div>
 
-                <div className="flex gap-2">
+                {/* Action Buttons */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '12px'
+                }}>
                   <button
                     onClick={() => handleSaveObservations(student)}
                     disabled={isLoading || isRecording}
-                    className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 transition flex items-center justify-center gap-2"
+                    style={{
+                      padding: '14px 20px',
+                      borderRadius: '4px',
+                      fontWeight: '800',
+                      fontSize: '14px',
+                      border: 'none',
+                      cursor: isLoading || isRecording ? 'not-allowed' : 'pointer',
+                      backgroundColor: isLoading || isRecording ? 'var(--muted)' : 'var(--primary)',
+                      color: 'white',
+                      transition: 'all 0.2s',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isLoading && !isRecording) {
+                        e.currentTarget.style.transform = 'translateY(-2px)'
+                        e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 166, 81, 0.3)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = 'none'
+                    }}
                   >
-                    {isRecording ? '⏳ Guardando...' : '💾 Guardar'}
+                    {isRecording ? '⏳ Guardando' : '💾 Guardar'}
                   </button>
                   <button
                     onClick={() => setExpandedStudent(null)}
-                    className="flex-1 bg-gray-300 text-gray-700 py-3 px-4 rounded-lg font-semibold hover:bg-gray-400 transition"
+                    style={{
+                      padding: '14px 20px',
+                      borderRadius: '4px',
+                      fontWeight: '800',
+                      fontSize: '14px',
+                      border: '2px solid var(--border)',
+                      cursor: 'pointer',
+                      backgroundColor: 'transparent',
+                      color: 'var(--text)',
+                      transition: 'all 0.2s',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--bg)'
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                      e.currentTarget.style.transform = 'translateY(0)'
+                    }}
                   >
                     Cerrar
                   </button>
