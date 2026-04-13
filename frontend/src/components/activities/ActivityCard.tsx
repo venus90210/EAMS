@@ -19,46 +19,64 @@ export function ActivityCard({
   const canEnroll = hasAvailableSpots && !offlineMode
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-lg transition">
-      <div className="flex justify-between items-start mb-3">
-        <h3 className="text-lg font-semibold text-gray-900">{activity.name}</h3>
+    <div
+      style={{
+        backgroundColor: 'var(--surface)',
+        borderRadius: 'var(--radius-lg)',
+        border: `1px solid var(--border)`,
+      }}
+      className="p-6 hover:shadow-lg transition-shadow"
+    >
+      <div className="flex justify-between items-start mb-4">
+        <h3 className="text-lg font-bold flex-1" style={{ color: 'var(--text)' }}>
+          {activity.name}
+        </h3>
         <span
-          className={`text-sm font-medium px-3 py-1 rounded-full ${
+          className={`text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap ml-2 ${
             hasAvailableSpots
-              ? 'bg-green-100 text-green-800'
-              : 'bg-red-100 text-red-800'
+              ? 'bg-green-100 text-green-700'
+              : 'bg-red-100 text-red-700'
           }`}
         >
-          {activity.availableSpots}/{activity.totalSpots} cupos
+          {hasAvailableSpots ? `✓ ${activity.availableSpots}` : '✕'} cupos
         </span>
       </div>
 
-      {activity.description && <p className="text-gray-600 text-sm mb-4">{activity.description}</p>}
+      {activity.description && (
+        <p style={{ color: 'var(--muted)' }} className="text-sm mb-4 line-clamp-2">
+          {activity.description}
+        </p>
+      )}
 
       {activity.schedule && (
-        <div className="flex items-center gap-2 text-sm text-gray-700 mb-4">
-          <span className="font-medium">
-            {activity.schedule.dayOfWeek} — {activity.schedule.startTime} a {activity.schedule.endTime}
+        <div
+          className="flex items-center gap-2 text-sm font-medium mb-4 p-3 rounded"
+          style={{ backgroundColor: 'var(--background)', color: 'var(--text)' }}
+        >
+          <span>📅</span>
+          <span>
+            {activity.schedule.dayOfWeek} • {activity.schedule.startTime} - {activity.schedule.endTime}
           </span>
         </div>
       )}
 
       {offlineMode && (
-        <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-sm">
-          📴 Inscripción no disponible en modo offline
+        <div className="mb-4 p-3 rounded text-sm font-medium" style={{ backgroundColor: '#fef3c7', color: '#92400e' }}>
+          📴 No disponible sin conexión
         </div>
       )}
 
       <button
         onClick={() => onEnroll?.(activity.id)}
         disabled={!canEnroll || loading}
-        className={`w-full py-2 px-4 rounded-md font-medium transition ${
+        className={`w-full py-2 px-4 rounded-md font-semibold transition ${
           canEnroll
-            ? 'bg-blue-600 text-white hover:bg-blue-700'
-            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-        } ${loading ? 'opacity-75' : ''}`}
+            ? 'btn-primary'
+            : 'opacity-60 cursor-not-allowed'
+        }`}
+        style={!canEnroll ? { backgroundColor: 'var(--muted)', color: 'var(--surface)' } : {}}
       >
-        {loading ? 'Inscribiendo...' : 'Inscribirse'}
+        {loading ? '⏳ Inscribiendo...' : canEnroll ? 'Inscribirse' : 'Sin cupos'}
       </button>
     </div>
   )

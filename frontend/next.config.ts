@@ -9,34 +9,37 @@ const config: NextConfig = {
   },
 };
 
-const nextConfig = withPWA({
-  dest: "public",
-  register: true,
-  skipWaiting: true,
-  runtimeCaching: [
-    {
-      urlPattern: /^https?:\/\/localhost:3000\/api\/.*/i,
-      handler: "CacheFirst",
-      options: {
-        cacheName: "api-cache",
-        expiration: {
-          maxEntries: 100,
-          maxAgeSeconds: 48 * 60 * 60, // 48 hours
+// Only enable PWA in production
+const nextConfig = process.env.NODE_ENV === "production"
+  ? withPWA({
+      dest: "public",
+      register: true,
+      skipWaiting: true,
+      runtimeCaching: [
+        {
+          urlPattern: /^https?:\/\/localhost:3000\/api\/.*/i,
+          handler: "CacheFirst",
+          options: {
+            cacheName: "api-cache",
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 48 * 60 * 60, // 48 hours
+            },
+          },
         },
-      },
-    },
-    {
-      urlPattern: /\/_next\/static\/.*/i,
-      handler: "CacheFirst",
-      options: {
-        cacheName: "next-static",
-        expiration: {
-          maxEntries: 60,
-          maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+        {
+          urlPattern: /\/_next\/static\/.*/i,
+          handler: "CacheFirst",
+          options: {
+            cacheName: "next-static",
+            expiration: {
+              maxEntries: 60,
+              maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+            },
+          },
         },
-      },
-    },
-  ],
-})(config);
+      ],
+    })(config)
+  : config;
 
 export default nextConfig;

@@ -13,7 +13,7 @@ import { authService } from '@/services/authService'
 
 export default function AdminActivitiesPage() {
   const router = useRouter()
-  const { user, isAuthenticated, logout, loading: authLoading } = useAuth()
+  const { user, isAuthenticated, loading: authLoading } = useAuth()
   const {
     activities,
     loading,
@@ -120,23 +120,26 @@ export default function AdminActivitiesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Administración de actividades</h1>
-          <button
-            onClick={() => router.push('/')}
-            className="text-gray-600 hover:text-gray-900 font-medium"
-          >
-            Inicio
-          </button>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+      <header style={{ backgroundColor: 'var(--surface)', borderBottom: `1px solid var(--border)` }}>
+        <div className="max-w-6xl mx-auto px-4 py-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold" style={{ color: 'var(--text)' }}>
+              ⚙️ Administración de actividades
+            </h1>
+            <p style={{ color: 'var(--muted)' }} className="mt-1">
+              Crea, edita y publica tus actividades
+            </p>
+          </div>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {successMessage && (
-          <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-            {successMessage}
+          <div className="mb-6 p-4 rounded-lg" style={{ backgroundColor: '#dcfce7', borderLeft: `4px solid var(--accent)` }}>
+            <p style={{ color: '#166534' }} className="font-medium">
+              ✓ {successMessage}
+            </p>
           </div>
         )}
 
@@ -154,7 +157,7 @@ export default function AdminActivitiesPage() {
           <div className="mb-8">
             <button
               onClick={() => setShowForm(true)}
-              className="bg-blue-600 text-white py-2 px-6 rounded-md font-medium hover:bg-blue-700"
+              className="btn-primary py-3 px-6 text-lg"
             >
               + Nueva actividad
             </button>
@@ -162,7 +165,9 @@ export default function AdminActivitiesPage() {
         )}
 
         <div>
-          <h2 className="text-lg font-bold mb-4">Actividades existentes</h2>
+          <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--text)' }}>
+            📚 Actividades existentes
+          </h2>
           <ActivityManagementList
             activities={activities}
             loading={loading}

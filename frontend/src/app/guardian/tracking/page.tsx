@@ -27,35 +27,66 @@ export default function TrackingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Seguimiento de inscripciones</h1>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+      <header style={{ backgroundColor: 'var(--surface)', borderBottom: `1px solid var(--border)` }}>
+        <div className="max-w-6xl mx-auto px-4 py-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold" style={{ color: 'var(--text)' }}>
+              Seguimiento de inscripciones
+            </h1>
+            <p style={{ color: 'var(--muted)' }} className="mt-1">
+              Monitorea el progreso de tus estudiantes
+            </p>
+          </div>
           <button
             onClick={() => router.push('/guardian/activities')}
-            className="text-gray-600 hover:text-gray-900 font-medium"
+            className="btn-secondary"
           >
-            ← Volver a actividades
+            ← Volver
           </button>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {loading ? (
-          <div className="text-center py-12"><p className="text-gray-600">Cargando seguimiento...</p></div>
+          <div className="text-center py-12">
+            <p style={{ color: 'var(--muted)' }}>Cargando seguimiento...</p>
+          </div>
         ) : data.length === 0 ? (
-          <div className="text-center py-12"><p className="text-gray-600">No tienes inscripciones aún</p></div>
+          <div className="text-center py-12">
+            <p style={{ color: 'var(--muted)' }}>No tienes inscripciones aún</p>
+          </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-6">
             {data.map(tracking => (
-              <div key={tracking.studentId} className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="bg-blue-50 px-6 py-4">
-                  <h2 className="text-xl font-bold text-blue-900">{tracking.studentName}</h2>
+              <div
+                key={tracking.studentId}
+                style={{ backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-lg)', border: `1px solid var(--border)` }}
+                className="overflow-hidden hover:shadow-md transition-shadow"
+              >
+                <div
+                  style={{ backgroundColor: 'var(--primary)', backgroundImage: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)' }}
+                  className="px-6 py-8"
+                >
+                  <div className="flex items-center gap-4">
+                    <div
+                      style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
+                      className="w-16 h-16 rounded-full flex items-center justify-center"
+                    >
+                      <span className="text-2xl">👤</span>
+                    </div>
+                    <div>
+                      <p style={{ color: 'rgba(255, 255, 255, 0.8)' }} className="text-sm uppercase font-medium">
+                        Estudiante
+                      </p>
+                      <h2 className="text-3xl font-bold text-white">{tracking.studentName}</h2>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="p-6">
                   {tracking.enrollments.length === 0 ? (
-                    <p className="text-gray-500">Sin inscripciones</p>
+                    <p style={{ color: 'var(--muted)' }}>Sin inscripciones registradas</p>
                   ) : (
                     <div className="space-y-4">
                       {tracking.enrollments.map(enrollment => {
@@ -63,48 +94,84 @@ export default function TrackingPage() {
                           a => a.enrollmentId === enrollment.id
                         )
                         const presentCount = attendanceRecords.filter(a => a.present).length
+                        const attendanceRate = attendanceRecords.length > 0
+                          ? Math.round((presentCount / attendanceRecords.length) * 100)
+                          : 0
 
                         return (
                           <div
                             key={enrollment.id}
-                            className="border rounded-lg p-4 bg-gray-50"
+                            style={{
+                              backgroundColor: 'var(--background)',
+                              borderRadius: 'var(--radius-md)',
+                              border: `1px solid var(--border)`
+                            }}
+                            className="p-5 hover:shadow-sm transition-shadow"
                           >
-                            <div className="flex justify-between items-start mb-2">
-                              <h3 className="text-lg font-semibold text-gray-900">
-                                {enrollment.activityName}
-                              </h3>
-                              <span className={`px-2 py-1 rounded text-sm font-medium ${
+                            <div className="flex justify-between items-start mb-4">
+                              <div className="flex-1">
+                                <h3 className="text-lg font-bold" style={{ color: 'var(--text)' }}>
+                                  {enrollment.activityName}
+                                </h3>
+                              </div>
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                                 enrollment.status === 'ACTIVE'
-                                  ? 'bg-green-100 text-green-800'
+                                  ? 'bg-green-100 text-green-700'
                                   : enrollment.status === 'COMPLETED'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-red-100 text-red-800'
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-red-100 text-red-700'
                               }`}>
-                                {enrollment.status}
+                                {enrollment.status === 'ACTIVE' && '🟢 Activo'}
+                                {enrollment.status === 'COMPLETED' && '✓ Completado'}
+                                {enrollment.status === 'CANCELLED' && '✕ Cancelado'}
                               </span>
                             </div>
 
-                            <p className="text-sm text-gray-600">
-                              Inscrito: {new Date(enrollment.enrolledAt).toLocaleDateString('es-ES')}
-                            </p>
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                              <div>
+                                <p style={{ color: 'var(--muted)' }} className="text-xs font-medium uppercase">
+                                  Fecha de inscripción
+                                </p>
+                                <p style={{ color: 'var(--text)' }} className="font-semibold mt-1">
+                                  {new Date(enrollment.enrolledAt).toLocaleDateString('es-ES', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                  })}
+                                </p>
+                              </div>
+                              <div>
+                                <p style={{ color: 'var(--muted)' }} className="text-xs font-medium uppercase">
+                                  Estado de asistencia
+                                </p>
+                                <p style={{ color: 'var(--text)' }} className="font-semibold mt-1">
+                                  {attendanceRecords.length === 0
+                                    ? 'Sin registros'
+                                    : `${presentCount}/${attendanceRecords.length} (${attendanceRate}%)`
+                                  }
+                                </p>
+                              </div>
+                            </div>
 
                             {attendanceRecords.length > 0 && (
-                              <div className="mt-3 pt-3 border-t">
-                                <p className="text-sm font-medium text-gray-700">
-                                  Asistencia: {presentCount}/{attendanceRecords.length} presentes
+                              <div className="pt-4" style={{ borderTop: `1px solid var(--border)` }}>
+                                <p style={{ color: 'var(--text)' }} className="font-semibold mb-3">
+                                  Registro de asistencias
                                 </p>
-                                <div className="mt-2 flex flex-wrap gap-2">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                   {attendanceRecords.map(record => (
                                     <div
                                       key={record.id}
-                                      className={`text-xs px-2 py-1 rounded ${
+                                      className={`text-xs p-2 rounded flex items-center justify-between ${
                                         record.present
-                                          ? 'bg-green-100 text-green-800'
-                                          : 'bg-gray-100 text-gray-800'
+                                          ? 'bg-green-50 text-green-700 border border-green-200'
+                                          : 'bg-red-50 text-red-700 border border-red-200'
                                       }`}
                                     >
-                                      {new Date(record.date).toLocaleDateString('es-ES')}:{' '}
-                                      {record.present ? '✓' : '✗'}
+                                      <span>{new Date(record.date).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}</span>
+                                      <span className="font-bold">
+                                        {record.present ? '✓' : '✗'}
+                                      </span>
                                     </div>
                                   ))}
                                 </div>

@@ -11,7 +11,7 @@ import { authService } from '@/services/authService'
 
 export default function ActivitiesPage() {
   const router = useRouter()
-  const { user, isAuthenticated, loading: authLoading, logout } = useAuth()
+  const { user, isAuthenticated, loading: authLoading } = useAuth()
   const { activities, loading, error, fromCache } = useActivities()
   const { isOnline } = useOfflineStatus()
 
@@ -44,51 +44,54 @@ export default function ActivitiesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+      <header style={{ backgroundColor: 'var(--surface)', borderBottom: `1px solid var(--border)` }}>
+        <div className="max-w-6xl mx-auto px-4 py-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Actividades Disponibles</h1>
+            <h1 className="text-3xl font-bold" style={{ color: 'var(--text)' }}>
+              🎯 Actividades Disponibles
+            </h1>
+            <p style={{ color: 'var(--muted)' }} className="mt-1">
+              Explora y participa en nuestras actividades
+            </p>
             {fromCache && (
-              <p className="text-sm text-yellow-600">📴 Datos del caché (modo offline)</p>
+              <p className="text-sm font-medium mt-2" style={{ color: 'var(--accent)' }}>
+                📴 Datos en caché (sin conexión)
+              </p>
             )}
           </div>
-          <button
-            onClick={() => logout()}
-            className="text-gray-600 hover:text-gray-900 font-medium"
-          >
-            Cerrar sesión
-          </button>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
         {error && (
-          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
+          <div className="mb-6 p-4 rounded-lg" style={{ backgroundColor: '#fee', borderLeft: `4px solid var(--error, #dc2626)` }}>
+            <p style={{ color: '#991b1b' }} className="font-medium">
+              ⚠️ {error}
+            </p>
           </div>
         )}
 
         {loading && !activities.length && (
           <div className="text-center py-12">
-            <p className="text-gray-600">Cargando actividades...</p>
+            <p style={{ color: 'var(--muted)' }}>Cargando actividades...</p>
           </div>
         )}
 
         {activities.length === 0 && !loading && (
           <div className="text-center py-12">
-            <p className="text-gray-600">No hay actividades disponibles en este momento.</p>
+            <p style={{ color: 'var(--muted)' }}>No hay actividades disponibles en este momento.</p>
           </div>
         )}
 
         {activities.length > 0 && (
           <>
-            <div className="mb-6">
-              <p className="text-gray-600">
-                Encontramos {activities.length} actividad{activities.length !== 1 ? 'es' : ''}
-                {!isOnline ? ' (offline)' : ''}
+            <div className="mb-8">
+              <p style={{ color: 'var(--muted)' }} className="text-sm">
+                Se encontraron <span className="font-bold" style={{ color: 'var(--primary)' }}>{activities.length}</span> actividad{activities.length !== 1 ? 'es' : ''}
+                {!isOnline && ' (sin conexión)'}
               </p>
             </div>
 
@@ -106,15 +109,13 @@ export default function ActivitiesPage() {
         )}
 
         {/* Navigation */}
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <div className="flex gap-4">
-            <button
-              onClick={() => router.push('/guardian/tracking')}
-              className="text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Ver inscripciones →
-            </button>
-          </div>
+        <div className="mt-12 pt-8" style={{ borderTop: `1px solid var(--border)` }}>
+          <button
+            onClick={() => router.push('/guardian/tracking')}
+            className="btn-secondary"
+          >
+            Ver mis inscripciones →
+          </button>
         </div>
       </main>
     </div>

@@ -25,12 +25,12 @@ export function EnrollClient() {
   console.log('[EnrollClient] State:', { authLoading, isAuthenticated, userId: user?.id, students: students.length, studentsLoading, studentsError })
 
   if (authLoading) {
-    return <div className="flex items-center justify-center min-h-screen"><p>Cargando...</p></div>
+    return <div className="flex items-center justify-center min-h-screen"><p style={{ color: 'var(--muted)' }}>Cargando...</p></div>
   }
 
   // If not authenticated in context, but we have a token stored, wait for context to update
   if (!isAuthenticated && authService.getAccessToken()) {
-    return <div className="flex items-center justify-center min-h-screen"><p>Cargando sesión...</p></div>
+    return <div className="flex items-center justify-center min-h-screen"><p style={{ color: 'var(--muted)' }}>Cargando sesión...</p></div>
   }
 
   if (!isAuthenticated || user?.role !== 'GUARDIAN') {
@@ -40,16 +40,18 @@ export function EnrollClient() {
 
   if (!activityId || !selectedActivity) {
     return (
-      <div className="max-w-md mx-auto p-8">
-        <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded">
-          Actividad no encontrada
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+        <div className="max-w-md mx-auto p-8">
+          <div className="p-4 rounded-lg" style={{ backgroundColor: '#fee', borderLeft: `4px solid #dc2626` }}>
+            <p style={{ color: '#991b1b' }} className="font-medium">Actividad no encontrada</p>
+          </div>
+          <button
+            onClick={() => router.push('/guardian/activities')}
+            className="mt-4 w-full btn-secondary"
+          >
+            Volver a actividades
+          </button>
         </div>
-        <button
-          onClick={() => router.push('/guardian/activities')}
-          className="mt-4 w-full bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
-        >
-          Volver a actividades
-        </button>
       </div>
     )
   }
@@ -70,69 +72,154 @@ export function EnrollClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow p-8">
-        <h1 className="text-3xl font-bold mb-6">Inscribir estudiante</h1>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+      <div className="max-w-2xl mx-auto px-4 py-12">
+        <div
+          style={{
+            backgroundColor: 'var(--surface)',
+            borderRadius: 'var(--radius-lg)',
+            border: `1px solid var(--border)`,
+          }}
+          className="p-8 shadow-sm"
+        >
+          <h1 className="text-3xl font-bold mb-8" style={{ color: 'var(--text)' }}>
+            📝 Inscribir estudiante
+          </h1>
 
-        <div className="mb-8 p-4 border rounded-lg">
-          <h2 className="text-lg font-semibold mb-4">Paso 1: Selecciona el estudiante</h2>
-          {studentsLoading ? (
-            <p className="text-gray-500">Cargando estudiantes...</p>
-          ) : studentsError ? (
-            <p className="text-red-600">Error al cargar estudiantes: {studentsError}</p>
-          ) : students.length === 0 ? (
-            <p className="text-red-600">No tienes estudiantes asociados</p>
-          ) : (
-            <div className="space-y-2">
-              {students.map(student => (
-                <label key={student.id} className="flex items-center">
-                  <input
-                    type="radio"
-                    name="student"
-                    value={student.id}
-                    checked={selectedStudentId === student.id}
-                    onChange={e => setSelectedStudentId(e.target.value)}
-                    className="mr-3"
-                  />
-                  <span>{student.firstName} {student.lastName} {student.grade ? `(${student.grade})` : ''}</span>
-                </label>
-              ))}
+          {/* Paso 1 */}
+          <div
+            className="mb-8 p-6 rounded-lg"
+            style={{
+              backgroundColor: 'var(--background)',
+              border: `1px solid var(--border)`,
+            }}
+          >
+            <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--text)' }}>
+              Paso 1: Selecciona el estudiante
+            </h2>
+            {studentsLoading ? (
+              <p style={{ color: 'var(--muted)' }}>Cargando estudiantes...</p>
+            ) : studentsError ? (
+              <p style={{ color: '#991b1b' }}>Error al cargar estudiantes: {studentsError}</p>
+            ) : students.length === 0 ? (
+              <p style={{ color: '#991b1b' }}>No tienes estudiantes asociados</p>
+            ) : (
+              <div className="space-y-3">
+                {students.map(student => (
+                  <label
+                    key={student.id}
+                    className="flex items-center p-3 rounded cursor-pointer transition"
+                    style={{
+                      backgroundColor: selectedStudentId === student.id ? 'var(--primary)' : 'var(--surface)',
+                      color: selectedStudentId === student.id ? 'white' : 'var(--text)',
+                      border: `1px solid ${selectedStudentId === student.id ? 'var(--primary)' : 'var(--border)'}`,
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="student"
+                      value={student.id}
+                      checked={selectedStudentId === student.id}
+                      onChange={e => setSelectedStudentId(e.target.value)}
+                      className="mr-3"
+                    />
+                    <div>
+                      <p className="font-semibold">
+                        {student.firstName} {student.lastName}
+                      </p>
+                      {student.grade && (
+                        <p className="text-sm opacity-75">
+                          Grado {student.grade}
+                        </p>
+                      )}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Paso 2 */}
+          <div
+            className="mb-8 p-6 rounded-lg"
+            style={{
+              backgroundColor: 'var(--background)',
+              border: `1px solid var(--border)`,
+            }}
+          >
+            <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--text)' }}>
+              Paso 2: Confirma la actividad
+            </h2>
+            <div>
+              <p style={{ color: 'var(--muted)' }} className="text-sm font-medium uppercase mb-2">
+                Actividad seleccionada
+              </p>
+              <h3 className="text-2xl font-bold mb-3" style={{ color: 'var(--primary)' }}>
+                {selectedActivity.name}
+              </h3>
+              <p style={{ color: 'var(--text)' }} className="mb-4">
+                {selectedActivity.description}
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div
+                  className="p-3 rounded"
+                  style={{
+                    backgroundColor: 'var(--primary)',
+                    color: 'white',
+                  }}
+                >
+                  <p className="text-sm opacity-90">Cupos disponibles</p>
+                  <p className="text-2xl font-bold">
+                    {selectedActivity.availableSpots}/{selectedActivity.totalSpots}
+                  </p>
+                </div>
+                <div
+                  className="p-3 rounded"
+                  style={{
+                    backgroundColor: selectedActivity.availableSpots > 0 ? 'var(--accent)' : '#dc2626',
+                    color: 'white',
+                  }}
+                >
+                  <p className="text-sm opacity-90">Estado</p>
+                  <p className="text-lg font-bold">
+                    {selectedActivity.availableSpots > 0 ? '✓ Disponible' : '✕ Lleno'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mensaje */}
+          {message && (
+            <div
+              className="mb-6 p-4 rounded-lg font-medium"
+              style={{
+                backgroundColor: message.includes('exitosa') ? '#dcfce7' : '#fee',
+                color: message.includes('exitosa') ? '#166534' : '#991b1b',
+                border: `1px solid ${message.includes('exitosa') ? '#86efac' : '#fca5a5'}`,
+              }}
+            >
+              {message.includes('exitosa') ? '✓ ' : '⚠️ '}
+              {message}
             </div>
           )}
-        </div>
 
-        <div className="mb-8 p-4 border rounded-lg bg-blue-50">
-          <h2 className="text-lg font-semibold mb-4">Paso 2: Confirma la actividad</h2>
-          <div>
-            <p className="text-sm text-gray-600">Actividad seleccionada</p>
-            <h3 className="text-xl font-bold text-blue-600">{selectedActivity.name}</h3>
-            <p className="text-gray-700 mt-2">{selectedActivity.description}</p>
-            <div className="mt-3 text-sm">
-              <p><strong>Cupos disponibles:</strong> {selectedActivity.availableSpots}/{selectedActivity.totalSpots}</p>
-            </div>
+          {/* Botones */}
+          <div className="flex gap-3">
+            <button
+              onClick={() => router.back()}
+              className="flex-1 btn-secondary"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleEnroll}
+              disabled={!selectedStudentId || enrollLoading || selectedActivity.availableSpots === 0}
+              className={`flex-1 btn-primary ${(!selectedStudentId || enrollLoading || selectedActivity.availableSpots === 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {enrollLoading ? '⏳ Inscribiendo...' : '✓ Confirmar inscripción'}
+            </button>
           </div>
-        </div>
-
-        {message && (
-          <div className={`mb-4 p-4 rounded ${message.includes('exitosa') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-            {message}
-          </div>
-        )}
-
-        <div className="flex gap-4">
-          <button
-            onClick={() => router.back()}
-            className="flex-1 bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 disabled:bg-gray-300"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleEnroll}
-            disabled={!selectedStudentId || enrollLoading || selectedActivity.availableSpots === 0}
-            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:bg-gray-400"
-          >
-            {enrollLoading ? 'Inscribiendo...' : 'Confirmar inscripción'}
-          </button>
         </div>
       </div>
     </div>
