@@ -1,6 +1,7 @@
 package com.eams.activities.application;
 
 import com.eams.activities.domain.*;
+import com.eams.shared.audit.AuditLogService;
 import com.eams.shared.exception.DomainException;
 import com.eams.shared.tenant.TenantContext;
 import com.eams.shared.tenant.TenantContextHolder;
@@ -29,6 +30,7 @@ class ActivityServiceTest {
 
     @Mock private ActivityRepository activityRepository;
     @Mock private ActivityCachePort cachePort;
+    @Mock private AuditLogService auditLogService;
 
     private ActivityService service;
     private final UUID institutionId = UUID.randomUUID();
@@ -36,7 +38,7 @@ class ActivityServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new ActivityService(activityRepository, cachePort);
+        service = new ActivityService(activityRepository, cachePort, auditLogService);
     }
 
     @AfterEach
