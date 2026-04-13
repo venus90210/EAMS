@@ -1,13 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import React from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { authService } from '@/services/authService'
 
 export default function Navbar() {
   const router = useRouter()
+  const pathname = usePathname()
   const { user, isAuthenticated } = useAuth()
 
   const handleLogout = () => {
@@ -15,8 +16,11 @@ export default function Navbar() {
     router.push('/login')
   }
 
-  // Si no está autenticado, no mostrar navbar
-  if (!isAuthenticated || !user) {
+  // No mostrar navbar en rutas públicas
+  const isPublicRoute = pathname === '/login' || pathname === '/'
+
+  // Si no está autenticado o está en ruta pública, no mostrar navbar
+  if (!isAuthenticated || !user || isPublicRoute) {
     return null
   }
 
