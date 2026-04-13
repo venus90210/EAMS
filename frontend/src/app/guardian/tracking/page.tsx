@@ -284,7 +284,8 @@ export default function TrackingPage() {
                                   <div style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                                    gap: '8px'
+                                    gap: '8px',
+                                    marginBottom: '20px'
                                   }}>
                                     {attendanceRecords.map(record => (
                                       <div
@@ -313,6 +314,59 @@ export default function TrackingPage() {
                                       </div>
                                     ))}
                                   </div>
+
+                                  {/* Observaciones */}
+                                  {attendanceRecords.some(r => r.observation) && (
+                                    <div style={{
+                                      paddingTop: '20px',
+                                      borderTop: '1px solid var(--border)'
+                                    }}>
+                                      <p style={{ color: 'var(--text)', fontWeight: '700', margin: '0 0 12px 0' }}>
+                                        📝 Observaciones
+                                      </p>
+                                      <div style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '12px'
+                                      }}>
+                                        {attendanceRecords.map(record =>
+                                          record.observation && (
+                                            <div
+                                              key={`obs-${record.id}`}
+                                              style={{
+                                                padding: '12px',
+                                                backgroundColor: 'rgba(0, 166, 81, 0.05)',
+                                                borderLeft: '4px solid var(--primary)',
+                                                borderRadius: '4px',
+                                                fontSize: '13px',
+                                                color: 'var(--text)',
+                                                lineHeight: '1.5'
+                                              }}
+                                            >
+                                              <p style={{
+                                                fontSize: '11px',
+                                                color: 'var(--muted)',
+                                                fontWeight: '700',
+                                                margin: '0 0 6px 0',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px'
+                                              }}>
+                                                {new Date(record.recordedAt).toLocaleDateString('es-ES', {
+                                                  weekday: 'long',
+                                                  year: 'numeric',
+                                                  month: 'long',
+                                                  day: 'numeric'
+                                                })}
+                                              </p>
+                                              <p style={{ margin: 0 }}>
+                                                {record.observation}
+                                              </p>
+                                            </div>
+                                          )
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
