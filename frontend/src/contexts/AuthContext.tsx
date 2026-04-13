@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useCallback, useEffect, useState } from 'react'
+import React, { createContext, useCallback, useEffect, useState, useMemo } from 'react'
 import { LoginResponse, Role, TokenPair, User } from '@/types'
 import apiClient from '@/services/apiClient'
 import { authService } from '@/services/authService'
@@ -17,6 +17,25 @@ export interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+/**
+ * Decode JWT payload without verification (client-side only for UX)
+ */
+function decodeToken(token: string): User | null {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return {
+      id: payload.sub,
+      email: '',
+      role: payload.role as Role,
+      institutionId: payload.institutionId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+  } catch {
+    return null
+  }
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -36,10 +55,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Try to refresh and restore session
-        await refreshSilently()
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Refresh failed')
+        }
+
+        const tokens = await response.json()
+        authService.storeTokens(tokens)
+
+        const decoded = decodeToken(tokens.accessToken)
+        if (decoded) setUser(decoded)
       } catch (err) {
         console.error('Failed to restore session:', err)
         authService.clearTokens()
+        setUser(null)
       } finally {
         setLoading(false)
       }
@@ -47,25 +81,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initAuth()
   }, [])
-
-  /**
-   * Decode JWT payload without verification (client-side only for UX)
-   */
-  const decodeToken = (token: string): User | null => {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]))
-      return {
-        id: payload.sub,
-        email: '',
-        role: payload.role as Role,
-        institutionId: payload.institutionId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-    } catch {
-      return null
-    }
-  }
 
   /**
    * Login with email and password.
@@ -114,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError(err.response?.data?.message || 'MFA verification failed')
       throw err
     }
-  }, [decodeToken])
+  }, [])
 
   /**
    * Logout
@@ -154,7 +169,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null)
       throw err
     }
-  }, [decodeToken])
+  }, [])
 
   const value: AuthContextType = {
     user,
