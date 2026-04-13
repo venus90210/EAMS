@@ -8,20 +8,24 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#6C4AE2',
-        accent: '#00A0A8',
-        muted: '#6B7280',
+        primary: '#0A66C2',
+        accent: '#0A8A2E',
+        muted: '#65676B',
         surface: '#FFFFFF',
-        bg: '#F6F7FB'
+        bg: '#F3F6F8',
+        border: '#E0E0E0'
       },
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui']
+        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica Neue', 'sans-serif']
       },
       borderRadius: {
-        lg: '12px'
+        lg: '8px',
+        xl: '12px',
+        button: '24px'
       },
       boxShadow: {
-        card: '0 8px 24px rgba(27,31,35,0.08)'
+        card: '0 2px 4px rgba(0,0,0,0.1)',
+        'card-hover': '0 4px 12px rgba(0,0,0,0.15)'
       }
     }
   },

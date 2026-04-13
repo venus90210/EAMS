@@ -1,20 +1,101 @@
+'use client'
+
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import React from 'react'
+import { useAuth } from '@/hooks/useAuth'
+import { authService } from '@/services/authService'
 
 export default function Navbar() {
-  return (
-    <nav className="w-full bg-transparent py-4">
-      <div className="container mx-auto px-6 lg:px-12 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">E</div>
-          <span className="font-semibold text-lg" style={{ color: 'var(--text)' }}>EAMS</span>
-        </Link>
+  const router = useRouter()
+  const { user, isAuthenticated } = useAuth()
 
-        <div className="hidden md:flex items-center gap-4">
-          <Link href="/admin/activities" className="text-sm text-muted hover:text-black">Actividades</Link>
-          <Link href="/enrollments" className="text-sm text-muted hover:text-black">Inscripciones</Link>
-          <Link href="/attendance" className="text-sm text-muted hover:text-black">Asistencia</Link>
-          <button className="btn-primary">Iniciar</button>
+  const handleLogout = () => {
+    authService.clearTokens()
+    router.push('/login')
+  }
+
+  // Si no está autenticado, no mostrar navbar
+  if (!isAuthenticated || !user) {
+    return null
+  }
+
+  // Rutas según el rol
+  const getNavLinks = () => {
+    switch (user.role) {
+      case 'GUARDIAN':
+        return [
+          { label: 'Actividades', href: '/guardian/activities' },
+          { label: 'Seguimiento', href: '/guardian/tracking' },
+        ]
+      case 'TEACHER':
+        return [
+          { label: 'Asistencia', href: '/teacher/attendance' },
+        ]
+      case 'ADMIN':
+        return [
+          { label: 'Actividades', href: '/admin/activities' },
+        ]
+      default:
+        return []
+    }
+  }
+
+  const navLinks = getNavLinks()
+
+  return (
+    <nav className="w-full" style={{ backgroundColor: 'var(--surface)', borderBottom: `1px solid var(--border)` }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
+              style={{ backgroundColor: 'var(--primary)' }}
+            >
+              E
+            </div>
+            <span className="font-semibold text-lg" style={{ color: 'var(--text)' }}>
+              EAMS
+            </span>
+          </Link>
+
+          {/* Navigation Links */}
+          <div className="flex items-center gap-8">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm font-medium transition-colors"
+                style={{ color: 'var(--text)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--primary)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text)')}
+              >
+                {link.label}
+              </Link>
+            ))}
+
+            {/* User Info and Logout */}
+            <div className="flex items-center gap-4 border-l" style={{ borderColor: 'var(--border)', paddingLeft: '32px' }}>
+              <div className="text-right">
+                <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
+                  {user.name || user.email.split('@')[0]}
+                </p>
+                <p className="text-xs" style={{ color: 'var(--muted)' }}>
+                  {user.role === 'GUARDIAN' && 'Acudiente'}
+                  {user.role === 'TEACHER' && 'Docente'}
+                  {user.role === 'ADMIN' && 'Administrador'}
+                </p>
+              </div>
+
+              <button
+                onClick={handleLogout}
+                className="btn-secondary px-4 py-2 text-sm"
+              >
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </nav>

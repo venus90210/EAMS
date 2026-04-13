@@ -45,58 +45,63 @@ export default function LoginPage() {
 
   if (mfaSessionToken) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <form onSubmit={handleMfaSubmit} className="space-y-4 max-w-md w-full bg-white p-8 rounded shadow">
-          <h1 className="text-2xl font-bold">Verificación de dos factores</h1>
-
-          {mfaError && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              {mfaError}
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg)' }}>
+        <form onSubmit={handleMfaSubmit} className="w-full max-w-md">
+          <div className="card p-8 space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold" style={{ color: 'var(--text)' }}>Verificación de dos factores</h1>
+              <p className="text-sm" style={{ color: 'var(--muted)' }} >Ingresa el código de tu app autenticadora</p>
             </div>
-          )}
 
-          <div>
-            <label htmlFor="mfaCode" className="block text-sm font-medium text-gray-700">
-              Código TOTP
-            </label>
-            <input
-              id="mfaCode"
-              type="text"
-              value={mfaCode}
-              onChange={(e) => setMfaCode(e.target.value)}
-              placeholder="000000"
-              maxLength={6}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
+            {mfaError && (
+              <div className="p-4 rounded" style={{ backgroundColor: '#FEE2E2', color: '#B91C1C', borderLeft: '4px solid #DC2626' }}>
+                {mfaError}
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="mfaCode" className="block text-sm font-semibold" style={{ color: 'var(--text)', marginBottom: '8px' }}>
+                Código TOTP
+              </label>
+              <input
+                id="mfaCode"
+                type="text"
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value)}
+                placeholder="000000"
+                maxLength={6}
+                className="input-field text-center text-2xl tracking-widest"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={mfaLoading || mfaCode.length !== 6}
+              className="btn-primary w-full"
+            >
+              {mfaLoading ? 'Verificando...' : 'Verificar'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setMfaSessionToken(null)
+                setMfaCode('')
+                setMfaError(null)
+              }}
+              className="btn-secondary w-full"
+            >
+              Volver al login
+            </button>
           </div>
-
-          <button
-            type="submit"
-            disabled={mfaLoading || mfaCode.length !== 6}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 disabled:bg-gray-400"
-          >
-            {mfaLoading ? 'Verificando...' : 'Verificar'}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setMfaSessionToken(null)
-              setMfaCode('')
-              setMfaError(null)
-            }}
-            className="w-full text-gray-600 py-2 px-4 rounded-md font-medium hover:bg-gray-100"
-          >
-            Volver al login
-          </button>
         </form>
       </div>
     )
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded shadow">
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg)' }}>
+      <div className="w-full max-w-md">
         <LoginForm onMfaRequired={handleMfaRequired} onSuccess={handleLoginSuccess} />
       </div>
     </div>
