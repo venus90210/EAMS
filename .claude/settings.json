@@ -122,7 +122,9 @@
       "Bash(jar tf:*)",
       "Bash(docker restart:*)",
       "Bash(curl -s -X POST http://localhost:3000/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@example.com\",\"password\":\"password123\"}')",
-      "Bash(pkill -f \"next dev\")"
+      "Bash(pkill -f \"next dev\")",
+      "Bash(docker build:*)",
+      "Bash(curl -s http://localhost:3000)"
     ],
     "additionalDirectories": [
       "/Users/angelica/workspace/EAMS/.claude",
