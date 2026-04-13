@@ -16,11 +16,8 @@ export default function Navbar() {
     router.push('/login')
   }
 
-  // No mostrar navbar en rutas públicas
-  const isPublicRoute = pathname === '/login' || pathname === '/'
-
-  // Si no está autenticado o está en ruta pública, no mostrar navbar
-  if (!isAuthenticated || !user || isPublicRoute) {
+  // Si no está autenticado, no mostrar navbar
+  if (!isAuthenticated || !user) {
     return null
   }
 
