@@ -27,7 +27,7 @@ export function EnrollmentForm({
   onSuccess,
   onCancel,
 }: EnrollmentFormProps) {
-  const { enroll, enrolling, error } = useEnrollment()
+  const { enroll, loading: enrolling, error } = useEnrollment()
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
 

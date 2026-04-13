@@ -10,9 +10,17 @@ import { ActivityCard } from '@/components/activities/ActivityCard'
 
 export default function ActivitiesPage() {
   const router = useRouter()
-  const { user, isAuthenticated, logout } = useAuth()
+  const { user, isAuthenticated, loading: authLoading, logout } = useAuth()
   const { activities, loading, error, fromCache } = useActivities()
   const { isOnline } = useOfflineStatus()
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-600">Cargando...</p>
+      </div>
+    )
+  }
 
   if (!isAuthenticated || user?.role !== 'GUARDIAN') {
     router.push('/login')

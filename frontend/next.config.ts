@@ -3,7 +3,6 @@ import withPWA from "next-pwa";
 
 const config: NextConfig = {
   reactStrictMode: true,
-  turbopack: {},
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
   },

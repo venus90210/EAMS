@@ -11,8 +11,8 @@ RUN npm install --legacy-peer-deps
 # Copiar código
 COPY . .
 
-# Build
-RUN npm run build
+# Build — webpack requerido: next-pwa usa webpack plugins, incompatible con Turbopack (Next.js 16 default)
+RUN npx next build --webpack
 
 # ── Runtime stage ──────────────────────────────────────────────────────────
 

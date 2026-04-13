@@ -274,88 +274,114 @@
 
 > **Objetivo**: interfaz para los 4 roles con soporte offline de 48 horas.
 > **ADR de referencia**: AD-05
-> **Status**: ✅ COMPLETADO (PR #14)
+> **Status**: [~] EN PROGRESO (Commits en feature/phase-3-frontend)
 
 ### 3.0 Setup del proyecto Next.js
 - [x] Crear proyecto Next.js con TypeScript y App Router
-- [x] Instalar `next-pwa`, configurar Service Worker
+- [x] Instalar `next-pwa`, configurar Service Worker con caching 48h para API
 - [x] Instalar dependencias de pruebas: `jest`, `@testing-library/react`, `@testing-library/user-event`, `msw`
 - [x] Configurar Jest con umbral de cobertura ≥ 95% (líneas, ramas, funciones, sentencias)
 - [x] Crear `manifest.json` con iconos e información de la app
-- [x] Verificar instalación como PWA en Android Chrome
+- [x] Configurar build con webpack (Next.js 16 — Turbopack + next-pwa incompatibilidad resuelta)
+- [x] Corregir Tailwind v4 syntax en CSS (`@import "tailwindcss"`)
+- [x] Arreglar frontend build issues (PostCSS config, autoprefixer)
 
 ### 3.1 Autenticación y sesión
 > **Spec funcional**: F4-autenticacion.feature
 
-- [ ] Implementar pantalla de login con email y contraseña
-- [ ] Implementar flujo MFA: pantalla de ingreso de código TOTP
-- [ ] Implementar almacenamiento seguro de access token (memoria) y refresh token (httpOnly cookie)
-- [ ] Implementar renovación silenciosa de access token antes de expiración
-- [ ] Implementar logout con revocación de refresh token
-- [ ] Implementar redirección por rol tras login exitoso
+- [x] Implementar pantalla de login con email y contraseña
+- [x] Implementar flujo MFA: pantalla de ingreso de código TOTP
+- [x] Implementar `AuthContext` con estado global de auth
+- [x] Implementar `authService`: almacenamiento access token en memoria, refresh token en localStorage
+- [x] Implementar `apiClient` Axios con interceptor JWT y auto-refresh en 401
+- [x] Implementar `LoginForm` component con react-hook-form + zod validation
+- [x] Implementar decodificación JWT client-side (`decodeToken()`) para extraer rol e institución
+- [x] Implementar redirección por rol tras login: GUARDIAN → /guardian/activities, TEACHER → /teacher/attendance, ADMIN → /admin/activities
+- [~] Implementar logout con revocación de refresh token en backend
+- [~] Implementar renovación silenciosa de access token (token refresh endpoint)
 
 ### 3.2 Módulo Actividades (GUARDIAN)
 > **Spec funcional**: F5-estado-actividad.feature, F3-consulta-offline.feature
 
-- [ ] Implementar listado de actividades publicadas con cupos disponibles
-- [ ] Implementar detalle de actividad (horario, descripción, cupos)
-- [ ] Cachear listado de actividades en Service Worker (48h offline)
+- [x] Crear página `/guardian/activities` con layout header + main content
+- [x] Implementar hook `useActivities()` que consume `GET /api/activities?status=PUBLISHED`
+- [x] Implementar caching de actividades en `cacheService` (localStorage + TTL 48h)
+- [x] Implementar `ActivityCard` component mostrando nombre, cupos, horario, botón inscribir
+- [x] Implementar redirección a `/guardian/enroll?activityId=...` al hacer click en inscribir
+- [~] Implementar soporte offline: mostrar datos en caché cuando no hay conexión
+- [ ] Implementar paginación o infinite scroll si hay muchas actividades
 
 ### 3.3 Módulo Inscripción (GUARDIAN)
 > **Spec funcional**: F1-inscripcion.feature
 
-- [ ] Implementar formulario de inscripción: seleccionar hijo → seleccionar actividad → confirmar
-- [ ] Mostrar disponibilidad de cupos en tiempo real
-- [ ] Manejar errores: 409 SPOT_EXHAUSTED, 409 ALREADY_ENROLLED, 403 FORBIDDEN
-- [ ] Mostrar confirmación tras inscripción exitosa
-- [ ] Bloquear acción de inscripción en modo offline (F3)
+- [ ] Crear página `/guardian/enroll` con wizard multi-paso
+- [ ] Paso 1: seleccionar hijo (consumir `GET /api/users/guardians/{id}/students`)
+- [ ] Paso 2: mostrar detalle de actividad seleccionada con cupos actualizados
+- [ ] Paso 3: confirmar inscripción (POST `/api/enrollments`)
+- [ ] Implementar hook `useEnrollment()` con error handling 409 (SPOT_EXHAUSTED, ALREADY_ENROLLED, ACTIVE_ENROLLMENT_EXISTS)
+- [ ] Mostrar error inline: "Cupos agotados" / "Ya estás inscrito en esta actividad"
+- [ ] Bloquear submit si offline (modo lectura solamente)
+- [ ] Mostrar confirmación success y redirigir a `/guardian/tracking` al finalizar
 
 ### 3.4 Módulo Seguimiento (GUARDIAN)
 > **Spec funcional**: F3-consulta-offline.feature
 
-- [ ] Implementar vista de actividades inscritas por hijo
-- [ ] Implementar historial de asistencia por actividad
-- [ ] Cachear vistas de seguimiento en Service Worker (48h offline)
+- [ ] Crear página `/guardian/tracking` listando actividades inscritas por cada hijo
+- [ ] Para cada inscripción, mostrar: nombre actividad, horario, estado, historial de asistencia
+- [ ] Consumir `GET /api/enrollments/student/{studentId}` y `GET /api/attendance/students/{studentId}`
+- [ ] Implementar vista de asistencia por actividad (lista de fechas + presente/ausente)
+- [ ] Cachear datos de seguimiento en Service Worker (48h offline)
 
 ### 3.5 Módulo Asistencia (TEACHER)
 > **Spec funcional**: F2-asistencia.feature
 
-- [ ] Implementar apertura de sesión de asistencia (fecha = hoy)
-- [ ] Implementar lista de inscritos con toggle presente/ausente (≤3 toques por estudiante)
-- [ ] Implementar campo de observación con bloqueo al expirar ventana de 24h
-- [ ] Cachear roster de la sesión en Service Worker (48h offline)
+- [ ] Crear página `/teacher/attendance` con selector de actividad y fecha
+- [ ] Botón "Abrir sesión": `POST /api/attendance/sessions` (crea registro de hoy)
+- [ ] Listado de estudiantes inscritos en esa actividad (GET desde API)
+- [ ] Toggle presente/ausente por estudiante (máx 3 toques por alumno)
+- [ ] Campo observación: disabled si pasaron 24h desde apertura de sesión
+- [ ] Consumir `POST /api/attendance/records` para guardar cambios
+- [ ] Cachear roster en Service Worker (48h offline — lectura solamente)
 
 ### 3.6 Módulo Administración (ADMIN)
 > **Spec funcional**: F5-estado-actividad.feature
 
-- [ ] Implementar CRUD de actividades (crear, editar, publicar, deshabilitar)
-- [ ] Implementar gestión de usuarios (registrar docentes, cargar CSV de estudiantes)
-- [ ] Implementar cambio de estado de actividades con confirmación
+- [ ] Crear página `/admin/activities` con tablas CRUD actividades
+- [ ] Listado: nombre, cupos, estado, acciones (editar, publicar, deshabilitar)
+- [ ] Crear actividad: formulario con horarios + guardar con POST `/api/activities`
+- [ ] Editar actividad: GET detalle + formulario pre-llenado + PUT
+- [ ] Cambiar estado (DRAFT → PUBLISHED → DISABLED): confirmación en diálogo
+- [ ] Gestión de usuarios: registrar docentes (nombre, email, rol) + cargar CSV estudiantes
+- [ ] Mostrar errores y validaciones inline
 
 ### 3.7 Indicador de modo offline
-- [ ] Mostrar banner "Modo offline — datos de hace N horas" cuando no hay conexión
-- [ ] Mostrar advertencia cuando el caché supera las 48 horas
-- [ ] Ocultar acciones de escritura en modo offline
+- [ ] Implementar hook `useOfflineStatus()` con `navigator.onLine` + event listeners
+- [ ] Crear componente `OfflineBanner` visible cuando offline
+- [ ] Mostrar tiempo de última sincronización: "Modo offline — datos de hace X horas"
+- [ ] Advertencia visual si caché > 48h (naranja badge)
+- [ ] Deshabilitar botones de escritura (Inscribir, Crear, Editar) en offline
+- [ ] Implementar `cacheService.getAge(key)` para verificar antigüedad del caché
 
 ### 3.8 Pruebas unitarias — Frontend (cobertura ≥ 95%)
 
 **Hooks**
 - [ ] `useAuth()`: login exitoso, MFA requerido, error de credenciales, logout, renovación silenciosa de token
+- [ ] `useActivities()`: carga desde API, carga desde caché en offline, manejo de errores
 - [ ] `useEnrollment()`: inscripción exitosa, cupo agotado (409), duplicado (409), modo offline bloqueado
 - [ ] `useOfflineStatus()`: online, offline, reconexión automática, caché expirado (>48h)
-- [ ] `useActivities()`: carga desde API, carga desde caché cuando está offline
 
 **Componentes**
-- [ ] `<LoginForm />`: submit válido, validación de campos vacíos, flujo de pantalla MFA
+- [ ] `<LoginForm />`: submit válido, validación de campos vacíos, flujo MFA
+- [ ] `<ActivityCard />`: muestra cupos disponibles, estado deshabilitado, acción bloqueada offline
 - [ ] `<EnrollmentForm />`: selección hijo/actividad, confirmación, manejo de errores 409 y 403
 - [ ] `<AttendanceList />`: toggle presente/ausente, límite de 3 toques por estudiante, campo observación
 - [ ] `<OfflineBanner />`: visible en offline, oculto en online, advertencia cuando caché >48h
-- [ ] `<ActivityCard />`: muestra cupos disponibles, estado deshabilitado, acción bloqueada offline
 
 **Servicios / utils**
-- [ ] `authService`: almacenamiento seguro de tokens, renovación antes de expiración, revocación al logout
-- [ ] `apiClient`: inyección de Bearer token, manejo de 401 (dispara refresh), propagación de 403
+- [x] `authService`: almacenamiento seguro de tokens (memory + localStorage), logout
+- [x] `apiClient`: inyección de Bearer token, manejo básico de errores
 - [ ] `cacheService`: lectura de caché, verificación de expiración 48h, escritura y limpieza
+- [ ] Cobertura global ≥ 95%
 
 ---
 
