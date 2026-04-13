@@ -36,14 +36,19 @@ export function LoginForm({ onMfaRequired, onSuccess }: LoginFormProps) {
       setIsLoading(true)
       setError(null)
 
+      console.log('[LoginForm] Submitting login for:', data.email)
       const sessionToken = await login(data.email, data.password)
+      console.log('[LoginForm] Login returned sessionToken:', sessionToken)
 
       if (sessionToken) {
+        console.log('[LoginForm] MFA required')
         onMfaRequired?.(sessionToken)
       } else {
+        console.log('[LoginForm] Calling onSuccess')
         onSuccess?.()
       }
     } catch (err: any) {
+      console.log('[LoginForm] Login error:', err)
       setError(err.response?.data?.message || err.message || 'Login failed')
     } finally {
       setIsLoading(false)

@@ -89,23 +89,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(async (email: string, password: string): Promise<string | null> => {
     try {
       setError(null)
+      console.log('[AuthContext] Starting login for:', email)
       const response = await apiClient.post<LoginResponse>('/auth/login', {
         email,
         password,
       })
 
+      console.log('[AuthContext] Login response:', response.data)
+
       if (response.data.mfaRequired && response.data.sessionToken) {
+        console.log('[AuthContext] MFA required, returning session token')
         return response.data.sessionToken
       }
 
       if (response.data.tokens) {
+        console.log('[AuthContext] Storing tokens and setting user')
         authService.storeTokens(response.data.tokens)
         const decoded = decodeToken(response.data.tokens.accessToken)
-        if (decoded) setUser(decoded)
+        console.log('[AuthContext] Decoded token:', decoded)
+        if (!decoded) {
+          throw new Error('Failed to decode token')
+        }
+        setUser(decoded)
+        console.log('[AuthContext] User state updated')
+      } else {
+        console.log('[AuthContext] No tokens in response')
       }
 
       return null
     } catch (err: any) {
+      console.log('[AuthContext] Login error:', err)
       setError(err.response?.data?.message || 'Login failed')
       throw err
     }
@@ -124,7 +137,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       authService.storeTokens(response.data)
       const decoded = decodeToken(response.data.accessToken)
-      if (decoded) setUser(decoded)
+      if (!decoded) {
+        throw new Error('Failed to decode token')
+      }
+      setUser(decoded)
     } catch (err: any) {
       setError(err.response?.data?.message || 'MFA verification failed')
       throw err
@@ -163,7 +179,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       authService.storeTokens(response.data)
       const decoded = decodeToken(response.data.accessToken)
-      if (decoded) setUser(decoded)
+      if (!decoded) {
+        throw new Error('Failed to decode token')
+      }
+      setUser(decoded)
     } catch (err) {
       authService.clearTokens()
       setUser(null)

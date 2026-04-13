@@ -2,10 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 import { LoginForm } from '@/components/auth/LoginForm'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { mfaVerify } = useAuth()
   const [mfaSessionToken, setMfaSessionToken] = useState<string | null>(null)
   const [mfaCode, setMfaCode] = useState('')
   const [mfaLoading, setMfaLoading] = useState(false)
@@ -27,28 +29,14 @@ export default function LoginPage() {
       setMfaLoading(true)
       setMfaError(null)
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/mfa/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionToken: mfaSessionToken,
-          code: mfaCode,
-        }),
-      })
+      console.log('[LoginPage] Verifying MFA code')
+      await mfaVerify(mfaSessionToken, mfaCode)
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'MFA verification failed')
-      }
-
-      const { accessToken, refreshToken } = await response.json()
-
-      // Store tokens (normally done by authService)
-      localStorage.setItem('eams_refresh_token', refreshToken)
-
+      console.log('[LoginPage] MFA verified, redirecting to home')
       // Redirect to home
       router.push('/')
     } catch (err: any) {
+      console.log('[LoginPage] MFA error:', err)
       setMfaError(err.message || 'MFA verification failed')
     } finally {
       setMfaLoading(false)

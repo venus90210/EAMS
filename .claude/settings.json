@@ -93,11 +93,18 @@
       "Bash(curl -s -X GET 'http://localhost:3000/api/activities?status=PUBLISHED' -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIzYTA1ZWQxYS03NjM3LTQ3YTctYmIxNC1kNTJmMjVjYzRmOWYiLCJyb2xlIjoiR1VBUkRJQU4iLCJpYXQiOjE3NzYwNDc3MzMsImV4cCI6MTc3NjA0ODYzMywiaW5zdGl0dXRpb25JZCI6ImI3MTZmYTExLWVhNDAtNDY4YS05ZGM4LWFlMTMxNDAyYzdmZiJ9.DvzEBwqfkVEV3m4HZPZPXXX')",
       "Bash(curl -s -X GET 'http://localhost:8082/activities?status=PUBLISHED' -H 'X-User-Id: 3a05ed1a-7637-47a7-bb14-d52f25cc4f9f' -H 'X-User-Role: GUARDIAN' -H 'X-Institution-Id: b716fa11-ea40-468a-9dc8-ae131402c7ff')",
       "Bash(curl -f http://localhost:3000/health)",
-      "Bash(xargs basename:*)"
+      "Bash(xargs basename:*)",
+      "Bash(curl -s -X POST http://localhost:3000/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"guardian@example.com\",\"password\":\"password123\"}')",
+      "Bash(wait)",
+      "Bash(curl -s -X POST http://localhost:3000/api/activities -H 'Content-Type: application/json' -H 'Authorization: Bearer invalid_token')",
+      "Bash(chmod +x /tmp/test_login.sh)",
+      "Bash(/tmp/test_login.sh)",
+      "Bash(curl -s -X POST http://localhost:3000/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"teacher@example.com\",\"password\":\"password123\"}')"
     ],
     "additionalDirectories": [
       "/Users/angelica/workspace/EAMS/.claude",
-      "/Users/angelica/workspace/EAMS/db/migrations"
+      "/Users/angelica/workspace/EAMS/db/migrations",
+      "/private/tmp"
     ]
   }
 }
