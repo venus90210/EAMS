@@ -306,7 +306,7 @@ export default function TrackingPage() {
                                           fontWeight: '600'
                                         }}
                                       >
-                                        <span>{new Date(record.date).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}</span>
+                                        <span>{new Date(record.recordedAt).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}</span>
                                         <span style={{ fontWeight: '800', marginLeft: '8px' }}>
                                           {record.present ? '✓' : '✗'}
                                         </span>

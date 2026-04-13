@@ -14,12 +14,10 @@ export interface Enrollment {
 export interface AttendanceRecord {
   id: string
   sessionId: string
-  enrollmentId: string
   studentId: string
   present: boolean
   observation?: string
   recordedAt: string
-  date: string
 }
 
 export interface TrackingData {
