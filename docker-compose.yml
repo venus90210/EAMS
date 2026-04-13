@@ -102,11 +102,11 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: development
-      PORT: 3000
+      PORT: 3001
       BACKEND_URL: http://backend:8080
       JWT_SECRET: ${JWT_SECRET}
     ports:
-      - "${GATEWAY_PORT:-3000}:3000"
+      - "${GATEWAY_PORT:-3001}:3001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 15s
@@ -126,9 +126,9 @@ services:
       - gateway
     environment:
       NODE_ENV: development
-      NEXT_PUBLIC_API_URL: http://gateway:3000
+      NEXT_PUBLIC_API_URL: http://gateway:3001
     ports:
-      - "${FRONTEND_PORT:-3001}:3001"
+      - "${FRONTEND_PORT:-3000}:3001"
     networks:
       - eams_network
 

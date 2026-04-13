@@ -1,24 +1,35 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { LoginForm } from '@/components/auth/LoginForm'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { mfaVerify } = useAuth()
+  const { mfaVerify, isAuthenticated, user } = useAuth()
+  const [shouldRedirect, setShouldRedirect] = useState(false)
   const [mfaSessionToken, setMfaSessionToken] = useState<string | null>(null)
   const [mfaCode, setMfaCode] = useState('')
   const [mfaLoading, setMfaLoading] = useState(false)
   const [mfaError, setMfaError] = useState<string | null>(null)
+
+  // Handle redirect after login succeeds and user state is updated
+  useEffect(() => {
+    if (shouldRedirect && isAuthenticated && user) {
+      console.log('[LoginPage] User authenticated, redirecting to home')
+      setShouldRedirect(false)
+      router.push('/')
+    }
+  }, [shouldRedirect, isAuthenticated, user, router])
 
   const handleMfaRequired = (sessionToken: string) => {
     setMfaSessionToken(sessionToken)
   }
 
   const handleLoginSuccess = () => {
-    router.push('/')
+    console.log('[LoginPage] Login successful, preparing to redirect')
+    setShouldRedirect(true)
   }
 
   const handleMfaSubmit = async (e: React.FormEvent) => {
@@ -32,9 +43,9 @@ export default function LoginPage() {
       console.log('[LoginPage] Verifying MFA code')
       await mfaVerify(mfaSessionToken, mfaCode)
 
-      console.log('[LoginPage] MFA verified, redirecting to home')
-      // Redirect to home
-      router.push('/')
+      console.log('[LoginPage] MFA verified, preparing to redirect')
+      // Set flag to redirect after state updates
+      setShouldRedirect(true)
     } catch (err: any) {
       console.log('[LoginPage] MFA error:', err)
       setMfaError(err.message || 'MFA verification failed')
