@@ -25,7 +25,7 @@ describe('useEnrollment', () => {
       await result.current.enroll('student-1', 'activity-1')
     })
 
-    expect(apiClient.post).toHaveBeenCalledWith('/enrollments', {
+    expect(apiClient.post).toHaveBeenCalledWith('/api/enrollments', {
       studentId: 'student-1',
       activityId: 'activity-1',
     })

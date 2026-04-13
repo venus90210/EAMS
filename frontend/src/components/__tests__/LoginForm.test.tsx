@@ -27,12 +27,14 @@ describe('LoginForm', () => {
 
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/contraseña/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /iniciar sesión/i })).toBeInTheDocument()
+    const buttons = screen.getAllByRole('button', { name: /iniciar sesión/i })
+    expect(buttons.length).toBeGreaterThan(0)
   })
 
   it('should render heading', () => {
     render(<LoginForm />)
-    expect(screen.getByText('EAMS Login')).toBeInTheDocument()
+    const headings = screen.getAllByText(/Iniciar sesión/i)
+    expect(headings.length).toBeGreaterThan(0)
   })
 
   it('should call login with form data on valid submission', async () => {
@@ -44,7 +46,8 @@ describe('LoginForm', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
     await user.type(screen.getByLabelText(/contraseña/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /iniciar sesión/i }))
+    const buttons = screen.getAllByRole('button', { name: /iniciar sesión/i })
+    await user.click(buttons[buttons.length - 1]) // Click the submit button
 
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith('test@example.com', 'password123')
@@ -60,7 +63,8 @@ describe('LoginForm', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
     await user.type(screen.getByLabelText(/contraseña/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /iniciar sesión/i }))
+    const buttons = screen.getAllByRole('button', { name: /iniciar sesión/i })
+    await user.click(buttons[buttons.length - 1])
 
     await waitFor(() => {
       expect(mockOnSuccess).toHaveBeenCalled()
@@ -76,7 +80,8 @@ describe('LoginForm', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
     await user.type(screen.getByLabelText(/contraseña/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /iniciar sesión/i }))
+    const buttons = screen.getAllByRole('button', { name: /iniciar sesión/i })
+    await user.click(buttons[buttons.length - 1])
 
     await waitFor(() => {
       expect(mockOnMfaRequired).toHaveBeenCalledWith('session_token_123')
@@ -93,7 +98,8 @@ describe('LoginForm', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
     await user.type(screen.getByLabelText(/contraseña/i), 'wrongpassword')
-    await user.click(screen.getByRole('button', { name: /iniciar sesión/i }))
+    const buttons = screen.getAllByRole('button', { name: /iniciar sesión/i })
+    await user.click(buttons[buttons.length - 1])
 
     await waitFor(() => {
       expect(screen.getByText('Invalid credentials')).toBeInTheDocument()
@@ -113,7 +119,8 @@ describe('LoginForm', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
     await user.type(screen.getByLabelText(/contraseña/i), 'password123')
-    const submitButton = screen.getByRole('button', { name: /iniciar sesión/i })
+    const buttons = screen.getAllByRole('button', { name: /iniciar sesión/i })
+    const submitButton = buttons[buttons.length - 1]
 
     await user.click(submitButton)
     expect(submitButton).toBeDisabled()

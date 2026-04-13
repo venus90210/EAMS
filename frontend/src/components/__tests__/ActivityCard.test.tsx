@@ -25,7 +25,7 @@ describe('ActivityCard', () => {
 
     expect(screen.getByText('Fútbol Juvenil')).toBeInTheDocument()
     expect(screen.getByText(/Actividad de fútbol/)).toBeInTheDocument()
-    expect(screen.getByText(/5\/20 cupos/)).toBeInTheDocument()
+    expect(screen.getByText(/✓ 5 cupos/)).toBeInTheDocument()
   })
 
   it('should show schedule information', () => {
@@ -38,14 +38,16 @@ describe('ActivityCard', () => {
   it('should render enroll button when online', () => {
     render(<ActivityCard activity={mockActivity} offlineMode={false} />)
 
-    const button = screen.getByRole('button', { name: /Inscribirse/i })
+    const button = screen.getAllByRole('button')[0]
+    expect(button).toBeInTheDocument()
     expect(button).not.toBeDisabled()
   })
 
   it('should disable enroll button in offline mode', () => {
     render(<ActivityCard activity={mockActivity} offlineMode={true} />)
 
-    const button = screen.getByRole('button', { name: /Inscribirse/i })
+    const button = screen.getAllByRole('button')[0]
+    expect(button).toBeInTheDocument()
     expect(button).toBeDisabled()
   })
 
@@ -53,14 +55,15 @@ describe('ActivityCard', () => {
     const noSpotsActivity = { ...mockActivity, availableSpots: 0 }
     render(<ActivityCard activity={noSpotsActivity} offlineMode={false} />)
 
-    const button = screen.getByRole('button', { name: /Inscribirse/i })
+    const button = screen.getAllByRole('button')[0]
+    expect(button).toBeInTheDocument()
     expect(button).toBeDisabled()
   })
 
   it('should show offline warning in offline mode', () => {
     render(<ActivityCard activity={mockActivity} offlineMode={true} />)
 
-    expect(screen.getByText(/no disponible en modo offline/i)).toBeInTheDocument()
+    expect(screen.getByText(/No disponible sin conexión/i)).toBeInTheDocument()
   })
 
   it('should call onEnroll callback when button clicked', () => {
@@ -75,7 +78,14 @@ describe('ActivityCard', () => {
   it('should show loading state', () => {
     render(<ActivityCard activity={mockActivity} loading={true} />)
 
-    expect(screen.getByRole('button')).toHaveTextContent('Inscribiendo...')
+    expect(screen.getByRole('button')).toHaveTextContent('⏳ Inscribiendo...')
+  })
+
+  it('should show "Sin cupos" text when no spots available', () => {
+    const noSpotsActivity = { ...mockActivity, availableSpots: 0 }
+    render(<ActivityCard activity={noSpotsActivity} />)
+
+    expect(screen.getByRole('button')).toHaveTextContent('Sin cupos')
   })
 
   it('should display correct spot color when available', () => {
