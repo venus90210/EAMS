@@ -1,13 +1,11 @@
 -- V2: Usuarios y estudiantes
 -- Fuente: RF08, RF10, AD-08 (institution_id obligatorio)
 
-CREATE TYPE user_role AS ENUM ('GUARDIAN', 'TEACHER', 'ADMIN', 'SUPERADMIN');
-
 CREATE TABLE users (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     email           VARCHAR(255) NOT NULL,
     password_hash   VARCHAR(255) NOT NULL,
-    role            user_role    NOT NULL,
+    role            VARCHAR(50)  NOT NULL,
     first_name      VARCHAR(100),
     last_name       VARCHAR(100),
     phone           VARCHAR(20),

@@ -1,19 +1,6 @@
--- V9: Crear usuarios de prueba y actividades
-
--- Insertar usuarios principales (contraseñas temporales)
-INSERT INTO users (id, email, password_hash, role, first_name, last_name, phone, institution_id, created_at, updated_at)
-VALUES
-    ('3a05ed1a-7637-47a7-bb14-d52f25cc4f9f'::UUID, 'guardian@sanjose.edu.co', 'temp_guardian', 'GUARDIAN', 'Ana', 'Martínez', '+57 300 1234567', 'b716fa11-ea40-468a-9dc8-ae131402c7ff'::UUID, NOW(), NOW()),
-    ('4b05ed1a-7637-47a7-bb14-d52f25cc4f9f'::UUID, 'teacher@sanjose.edu.co', 'temp_teacher', 'TEACHER', 'Pedro', 'Rodríguez', '+57 300 2345678', 'b716fa11-ea40-468a-9dc8-ae131402c7ff'::UUID, NOW(), NOW()),
-    ('5c05ed1a-7637-47a7-bb14-d52f25cc4f9f'::UUID, 'admin@sanjose.edu.co', 'temp_admin', 'ADMIN', 'Clara', 'Sánchez', '+57 300 3456789', 'b716fa11-ea40-468a-9dc8-ae131402c7ff'::UUID, NOW(), NOW())
-ON CONFLICT (email) DO NOTHING;
-
--- Asociar estudiantes con guardian
-INSERT INTO guardian_students (guardian_id, student_id, created_at)
-VALUES
-    ('3a05ed1a-7637-47a7-bb14-d52f25cc4f9f'::UUID, '550e8400-e29b-41d4-a716-446655440001'::UUID, NOW()),
-    ('3a05ed1a-7637-47a7-bb14-d52f25cc4f9f'::UUID, '550e8400-e29b-41d4-a716-446655440002'::UUID, NOW())
-ON CONFLICT DO NOTHING;
+-- V9: Crear actividades y datos de prueba
+-- Nota: Los usuarios de prueba se crean mediante TestDataInitializer en la aplicación Spring
+-- para asegurar que las contraseñas estén correctamente hasheadas con bcrypt.
 
 -- Insertar actividades de prueba
 INSERT INTO activities (id, name, description, total_spots, available_spots, status, institution_id, created_by, created_at, updated_at)

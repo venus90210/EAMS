@@ -24,8 +24,10 @@ export class ProxyService {
 
   forward(request: Request, user: ValidatedUser): Observable<AxiosResponse> {
     // Strip /api prefix: gateway exposes /api/*, backend has controllers at /*
-    const backendPath = request.path.replace(/^\/api/, '');
-    const targetUrl = `${this.backendUrl}${backendPath}`;
+    // Use originalUrl to preserve query strings
+    const pathWithQuery = request.originalUrl.replace(/^\/api/, '');
+    const targetUrl = `${this.backendUrl}${pathWithQuery}`;
+    console.log(`[ProxyService] ${request.method} -> ${targetUrl}`);
 
     const headers = { ...request.headers };
     delete headers.authorization;
@@ -38,11 +40,28 @@ export class ProxyService {
       headers['X-Institution-Id'] = user.institutionId;
     }
 
-    return this.httpService.request({
-      url: targetUrl,
-      method: request.method.toLowerCase() as any,
+    const method = (request.method || 'GET').toUpperCase();
+    const config = {
       headers,
-      data: request.body,
-    });
+    };
+
+    // Use typed method based on HTTP verb
+    switch (method) {
+      case 'GET':
+        return this.httpService.get(targetUrl, config);
+      case 'POST':
+        return this.httpService.post(targetUrl, request.body, config);
+      case 'PUT':
+        return this.httpService.put(targetUrl, request.body, config);
+      case 'PATCH':
+        return this.httpService.patch(targetUrl, request.body, config);
+      case 'DELETE':
+        return this.httpService.delete(targetUrl, config);
+      case 'HEAD':
+        return this.httpService.head(targetUrl, config);
+      case 'OPTIONS':
+      default:
+        return this.httpService.get(targetUrl, config);
+    }
   }
 }

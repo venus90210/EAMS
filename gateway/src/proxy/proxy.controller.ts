@@ -16,6 +16,10 @@ export class ProxyController {
 
     try {
       const response = await firstValueFrom(this.proxyService.forward(req, user));
+      console.log(`[PROXY] ${req.method} ${req.path} -> ${response?.status}`, {
+        hasData: response?.data !== undefined,
+        dataType: typeof response?.data,
+      });
       if (response && response.status && response.data !== undefined) {
         res.status(response.status).json(response.data);
       } else {
@@ -23,6 +27,10 @@ export class ProxyController {
       }
     } catch (error: unknown) {
       const axiosError = error as any;
+      console.log(`[PROXY] ERROR ${req.method} ${req.path}:`, {
+        status: axiosError?.response?.status,
+        message: axiosError?.message,
+      });
       const status = axiosError?.response?.status || 500;
       const data = axiosError?.response?.data || {
         error: 'GATEWAY_ERROR',
