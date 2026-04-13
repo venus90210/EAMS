@@ -99,7 +99,8 @@
       "Bash(curl -s -X POST http://localhost:3000/api/activities -H 'Content-Type: application/json' -H 'Authorization: Bearer invalid_token')",
       "Bash(chmod +x /tmp/test_login.sh)",
       "Bash(/tmp/test_login.sh)",
-      "Bash(curl -s -X POST http://localhost:3000/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"teacher@example.com\",\"password\":\"password123\"}')"
+      "Bash(curl -s -X POST http://localhost:3000/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"teacher@example.com\",\"password\":\"password123\"}')",
+      "Bash(curl -s -X GET 'http://localhost:3000/api/activities?status=PUBLISHED' -H 'Authorization: Bearer invalid_token')"
     ],
     "additionalDirectories": [
       "/Users/angelica/workspace/EAMS/.claude",

@@ -9,6 +9,7 @@ import { useAdminActivities, CreateActivityInput } from '@/hooks/useAdminActivit
 import { ActivityForm } from '@/components/admin/ActivityForm'
 import { ActivityManagementList } from '@/components/admin/ActivityManagementList'
 import { Activity } from '@/types'
+import { authService } from '@/services/authService'
 
 export default function AdminActivitiesPage() {
   const router = useRouter()
@@ -37,6 +38,11 @@ export default function AdminActivitiesPage() {
 
   if (authLoading) {
     return <div className="flex items-center justify-center min-h-screen"><p>Cargando...</p></div>
+  }
+
+  // If not authenticated in context, but we have a token stored, wait for context to update
+  if (!isAuthenticated && authService.getAccessToken()) {
+    return <div className="flex items-center justify-center min-h-screen"><p>Cargando sesión...</p></div>
   }
 
   if (!isAuthenticated || (user?.role !== 'ADMIN' && user?.role !== 'SUPERADMIN')) {

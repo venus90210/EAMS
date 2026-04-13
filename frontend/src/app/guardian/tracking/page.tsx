@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useTracking } from '@/hooks/useTracking'
+import { authService } from '@/services/authService'
 
 export default function TrackingPage() {
   const router = useRouter()
@@ -13,6 +14,11 @@ export default function TrackingPage() {
 
   if (authLoading) {
     return <div className="flex items-center justify-center min-h-screen"><p>Cargando...</p></div>
+  }
+
+  // If not authenticated in context, but we have a token stored, wait for context to update
+  if (!isAuthenticated && authService.getAccessToken()) {
+    return <div className="flex items-center justify-center min-h-screen"><p>Cargando sesión...</p></div>
   }
 
   if (!isAuthenticated || user?.role !== 'GUARDIAN') {

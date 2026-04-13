@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useAttendanceSessions } from '@/hooks/useAttendanceSessions'
 import { useActivities } from '@/hooks/useActivities'
 import { AttendanceList } from '@/components/attendance/AttendanceList'
+import { authService } from '@/services/authService'
 
 export default function AttendancePage() {
   const router = useRouter()
@@ -20,6 +21,11 @@ export default function AttendancePage() {
 
   if (authLoading) {
     return <div className="flex items-center justify-center min-h-screen"><p>Cargando...</p></div>
+  }
+
+  // If not authenticated in context, but we have a token stored, wait for context to update
+  if (!isAuthenticated && authService.getAccessToken()) {
+    return <div className="flex items-center justify-center min-h-screen"><p>Cargando sesión...</p></div>
   }
 
   if (!isAuthenticated || user?.role !== 'TEACHER') {

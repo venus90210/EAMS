@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useActivities } from '@/hooks/useActivities'
 import { useOfflineStatus } from '@/hooks/useOfflineStatus'
 import { ActivityCard } from '@/components/activities/ActivityCard'
+import { authService } from '@/services/authService'
 
 export default function ActivitiesPage() {
   const router = useRouter()
@@ -22,7 +23,18 @@ export default function ActivitiesPage() {
     )
   }
 
+  // If not authenticated in context, but we have a token stored, wait for context to update
+  if (!isAuthenticated && authService.getAccessToken()) {
+    console.log('[ActivitiesPage] Token exists but context not updated yet, waiting...')
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-600">Cargando sesión...</p>
+      </div>
+    )
+  }
+
   if (!isAuthenticated || user?.role !== 'GUARDIAN') {
+    console.log('[ActivitiesPage] Not authenticated or wrong role, redirecting to login')
     router.push('/login')
     return null
   }

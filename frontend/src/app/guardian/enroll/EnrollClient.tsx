@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useActivities } from '@/hooks/useActivities'
 import { useEnrollment } from '@/hooks/useEnrollment'
 import { useStudents } from '@/hooks/useStudents'
+import { authService } from '@/services/authService'
 
 export function EnrollClient() {
   const router = useRouter()
@@ -23,6 +24,11 @@ export function EnrollClient() {
 
   if (authLoading) {
     return <div className="flex items-center justify-center min-h-screen"><p>Cargando...</p></div>
+  }
+
+  // If not authenticated in context, but we have a token stored, wait for context to update
+  if (!isAuthenticated && authService.getAccessToken()) {
+    return <div className="flex items-center justify-center min-h-screen"><p>Cargando sesión...</p></div>
   }
 
   if (!isAuthenticated || user?.role !== 'GUARDIAN') {
