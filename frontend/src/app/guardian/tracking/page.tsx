@@ -176,9 +176,9 @@ export default function TrackingPage() {
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                         {tracking.enrollments.map(enrollment => {
-                          const attendanceRecords = tracking.attendance.filter(
-                            a => a.enrollmentId === enrollment.id
-                          )
+                          // Los attendance records vienen agrupados por estudiante
+                          // Mostramos todos los registros ya que no tenemos enrollmentId en ellos
+                          const attendanceRecords = tracking.attendance
                           const presentCount = attendanceRecords.filter(a => a.present).length
                           const attendanceRate = attendanceRecords.length > 0
                             ? Math.round((presentCount / attendanceRecords.length) * 100)
