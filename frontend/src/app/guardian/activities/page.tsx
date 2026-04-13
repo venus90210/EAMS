@@ -202,10 +202,11 @@ export default function ActivitiesPage() {
               marginBottom: '60px'
             }}>
               <h2 style={{
-                fontSize: '36px',
+                fontSize: '40px',
                 fontWeight: '900',
-                color: 'var(--text)',
-                marginBottom: '12px'
+                color: 'var(--primary)',
+                marginBottom: '12px',
+                letterSpacing: '-0.5px'
               }}>
                 Nuestras Actividades
               </h2>
