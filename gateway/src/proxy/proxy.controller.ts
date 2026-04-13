@@ -1,10 +1,12 @@
-import { Controller, All, Req, Res } from '@nestjs/common';
+import { Controller, All, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { firstValueFrom } from 'rxjs';
 import { ProxyService } from './proxy.service';
 import { ValidatedUser } from '../auth/jwt.strategy';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('api')
+@UseGuards(JwtAuthGuard)
 export class ProxyController {
   constructor(private proxyService: ProxyService) {}
 

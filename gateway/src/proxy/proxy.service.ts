@@ -38,15 +38,11 @@ export class ProxyService {
       headers['X-Institution-Id'] = user.institutionId;
     }
 
-    const config = {
-      method: request.method.toLowerCase(),
-      headers,
-      data: request.body,
-    };
-
     return this.httpService.request({
       url: targetUrl,
-      ...config,
+      method: request.method.toLowerCase() as any,
+      headers,
+      data: request.body,
     });
   }
 }
