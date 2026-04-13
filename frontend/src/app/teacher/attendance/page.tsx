@@ -289,11 +289,12 @@ export default function AttendancePage() {
           {/* Students Section */}
           <div style={{ marginBottom: '48px' }}>
             <h3 style={{
-              fontSize: '28px',
+              fontSize: '32px',
               fontWeight: '900',
-              color: 'var(--text)',
+              color: 'var(--primary)',
               marginBottom: '24px',
-              margin: '0 0 24px 0'
+              margin: '0 0 24px 0',
+              letterSpacing: '-0.5px'
             }}>
               👥 Estudiantes inscritos ({session.students.length})
             </h3>
