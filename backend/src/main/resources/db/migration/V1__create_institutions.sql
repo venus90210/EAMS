@@ -3,6 +3,9 @@
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
+-- Create user role enum (used in V2 by users table)
+CREATE TYPE user_role AS ENUM ('GUARDIAN', 'TEACHER', 'ADMIN', 'SUPERADMIN');
+
 CREATE TABLE institutions (
     id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     name         VARCHAR(200) NOT NULL,

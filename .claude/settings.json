@@ -65,7 +65,16 @@
       "Bash(htpasswd -iBBC /dev/stdin /dev/null)",
       "Bash(grep \"^\\\\$2\")",
       "Bash(cat)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(npm test:*)",
+      "Bash(watch -n 1 'docker compose ps | grep backend | grep -o \"health: [^\\)]*\"')",
+      "Bash(docker volume:*)",
+      "Bash(docker run:*)",
+      "Bash(curl -X POST http://localhost:8082/api/auth/login -H 'Content-Type: application/json' -d '{:*)",
+      "Bash(curl -X POST http://localhost:8082/auth/login -H 'Content-Type: application/json' -d '{:*)",
+      "Bash(curl -v -X POST http://localhost:8082/auth/login -H 'Content-Type: application/json' -d '{:*)",
+      "Bash(curl -X POST http://localhost:3000/auth/login -H 'Content-Type: application/json' -d '{:*)",
+      "Bash(curl -s http://localhost:3001/health)"
     ],
     "additionalDirectories": [
       "/Users/angelica/workspace/EAMS/.claude",

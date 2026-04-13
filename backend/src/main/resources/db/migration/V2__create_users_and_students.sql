@@ -1,13 +1,6 @@
 -- V2: Usuarios y estudiantes
 -- Fuente: RF08, RF10, AD-08 (institution_id obligatorio)
-
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT FROM pg_type WHERE typname = 'user_role') THEN
-        CREATE TYPE user_role AS ENUM ('GUARDIAN', 'TEACHER', 'ADMIN', 'SUPERADMIN');
-    END IF;
-END
-$$;
+-- Note: user_role enum is created in V1
 
 CREATE TABLE users (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
