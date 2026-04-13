@@ -272,9 +272,10 @@
 
 ## Fase 3 — Frontend: Next.js PWA
 
-> **Objetivo**: interfaz para los 4 roles con soporte offline de 48 horas.
+> **Objetivo**: interfaz para los 4 roles con soporte offline de 48 horas + diseño profesional LinkedIn-inspired.
 > **ADR de referencia**: AD-05
 > **Status**: [x] COMPLETADA (Commits en feature/phase-3-frontend, merged a develop)
+> **Última actualización**: 2026-04-13 — Estilos LinkedIn aplicados, PWA dev-only, Fase 3.0-3.7 + estilos completados
 
 ### 3.0 Setup del proyecto Next.js
 - [x] Crear proyecto Next.js con TypeScript y App Router
@@ -285,6 +286,15 @@
 - [x] Configurar build con webpack (Next.js 16 — Turbopack + next-pwa incompatibilidad resuelta)
 - [x] Corregir Tailwind v4 syntax en CSS (`@import "tailwindcss"`)
 - [x] Arreglar frontend build issues (PostCSS config, autoprefixer)
+- [x] Desactivar PWA en modo desarrollo (evitar caché stale durante desarrollo)
+- [x] Aplicar diseño LinkedIn-inspired a todas las páginas:
+  - [x] Página de actividades (GUARDIAN) — cards mejoradas con cupos y horarios
+  - [x] Formulario de inscripción (GUARDIAN) — wizard multi-paso con gradientes
+  - [x] Página de seguimiento (GUARDIAN) — información del estudiante prominente con avatar
+  - [x] Página de asistencia (TEACHER) — interfaz profesional de registro
+  - [x] Panel de administración (ADMIN) — gestión limpia de actividades
+  - [x] Usar variables CSS para tema consistente (--primary, --accent, --surface, --muted, etc.)
+  - [x] Mejorar AccessibilidAd y contraste visual
 
 ### 3.1 Autenticación y sesión
 > **Spec funcional**: F4-autenticacion.feature
