@@ -35,11 +35,13 @@ export function ActivityCard({
 
       {activity.description && <p className="text-gray-600 text-sm mb-4">{activity.description}</p>}
 
-      <div className="flex items-center gap-2 text-sm text-gray-700 mb-4">
-        <span className="font-medium">
-          {activity.schedule.dayOfWeek} — {activity.schedule.startTime} a {activity.schedule.endTime}
-        </span>
-      </div>
+      {activity.schedule && (
+        <div className="flex items-center gap-2 text-sm text-gray-700 mb-4">
+          <span className="font-medium">
+            {activity.schedule.dayOfWeek} — {activity.schedule.startTime} a {activity.schedule.endTime}
+          </span>
+        </div>
+      )}
 
       {offlineMode && (
         <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-sm">
