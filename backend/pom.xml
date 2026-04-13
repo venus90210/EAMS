@@ -27,6 +27,7 @@
         <wiremock.version>3.9.1</wiremock.version>
         <jacoco.version>0.8.12</jacoco.version>
         <jacoco.minimum.coverage>0.95</jacoco.minimum.coverage>
+        <dependency-check.version>10.0.4</dependency-check.version>
         <!-- Override: Lombok 1.18.38+ añade soporte para Java 25 -->
         <lombok.version>1.18.38</lombok.version>
     </properties>
@@ -283,6 +284,25 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- OWASP Dependency-Check: detectar CVEs en dependencias -->
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>${dependency-check.version}</version>
+                <configuration>
+                    <!-- Falla build si hay vulnerabilidades con CVSS >= 7 (alta/crítica) -->
+                    <failBuildOnCVSS>7</failBuildOnCVSS>
+                    <!-- Supresiones de falsos positivos (crear si es necesario) -->
+                    <suppressionFile>owasp-suppressions.xml</suppressionFile>
+                    <!-- Generar reporte HTML -->
+                    <formats>
+                        <format>HTML</format>
+                    </formats>
+                </configuration>
+                <!-- NO agregamos al lifecycle default; se ejecuta manualmente con:
+                     mvn dependency-check:check -->
             </plugin>
 
         </plugins>

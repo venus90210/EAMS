@@ -6,6 +6,7 @@ import com.eams.auth.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -14,10 +15,14 @@ import java.util.UUID;
 /**
  * Initializes test users on application startup.
  * This ensures test credentials have properly bcrypt-hashed passwords.
+ *
+ * Solo se ejecuta en perfiles 'dev' y 'test'.
+ * NO se carga en producción (@Profile({"dev", "test"})).
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Profile({"dev", "test"})
 public class TestDataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;

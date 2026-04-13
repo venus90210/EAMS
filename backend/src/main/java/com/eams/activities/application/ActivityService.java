@@ -4,12 +4,14 @@ import com.eams.activities.domain.Activity;
 import com.eams.activities.domain.ActivityCachePort;
 import com.eams.activities.domain.ActivityRepository;
 import com.eams.activities.domain.ActivityStatus;
+import com.eams.shared.audit.AuditLogService;
 import com.eams.shared.exception.DomainException;
 import com.eams.shared.tenant.TenantContextHolder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -28,6 +30,7 @@ public class ActivityService {
 
     private final ActivityRepository activityRepository;
     private final ActivityCachePort cachePort;
+    private final AuditLogService auditLogService;
 
     // ── Crear ────────────────────────────────────────────────────────────────
 
@@ -121,8 +124,17 @@ public class ActivityService {
         // Actualizar campos
         activity.updateBasicInfo(name, description);
         if (totalSpots != null) {
+            int oldTotalSpots = activity.getTotalSpots();
             activity.updateTotalSpots(totalSpots);
-            // TODO: Generar entrada en audit_log (Fase 1.4)
+            // Registrar auditoría de cambio en cupos
+            auditLogService.log(
+                    "activities",
+                    activityId,
+                    "UPDATE",
+                    Map.of("totalSpots", oldTotalSpots),
+                    Map.of("totalSpots", totalSpots),
+                    institutionId
+            );
             cachePort.invalidate(activityId);  // Invalidar caché al cambiar cupos
         }
 
@@ -146,11 +158,23 @@ public class ActivityService {
                     "Solo ADMIN puede publicar actividades");
         }
 
+        ActivityStatus oldStatus = activity.getStatus();
         try {
             activity.transitionTo(ActivityStatus.PUBLISHED);
         } catch (IllegalArgumentException e) {
             throw DomainException.conflict("INVALID_STATUS_TRANSITION", e.getMessage());
         }
+
+        // Registrar auditoría de cambio de estado
+        UUID institutionId = TenantContextHolder.requireContext().institutionId();
+        auditLogService.log(
+                "activities",
+                activityId,
+                "UPDATE",
+                Map.of("status", oldStatus.name()),
+                Map.of("status", activity.getStatus().name()),
+                institutionId
+        );
 
         cachePort.invalidate(activityId);  // Caché es irrelevante en DRAFT, pero invalidamos por seguridad
         return activityRepository.save(activity);
@@ -174,11 +198,23 @@ public class ActivityService {
                     "Solo ADMIN puede cambiar estado de actividades");
         }
 
+        ActivityStatus oldStatus = activity.getStatus();
         try {
             activity.transitionTo(newStatus);
         } catch (IllegalArgumentException e) {
             throw DomainException.conflict("INVALID_STATUS_TRANSITION", e.getMessage());
         }
+
+        // Registrar auditoría de cambio de estado
+        UUID institutionId = TenantContextHolder.requireContext().institutionId();
+        auditLogService.log(
+                "activities",
+                activityId,
+                "UPDATE",
+                Map.of("status", oldStatus.name()),
+                Map.of("status", newStatus.name()),
+                institutionId
+        );
 
         cachePort.invalidate(activityId);  // Invalidar caché tras cambio de estado
         Activity saved = activityRepository.save(activity);

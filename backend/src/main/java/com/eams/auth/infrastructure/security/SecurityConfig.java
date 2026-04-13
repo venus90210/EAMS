@@ -2,6 +2,7 @@ package com.eams.auth.infrastructure.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -35,6 +36,20 @@ public class SecurityConfig {
                 // Security perimeter is enforced at the API Gateway (AD-04).
                 // Backend trusts all forwarded requests with X-User-Role header.
                 .anyRequest().permitAll()
+            )
+            .headers(headers -> headers
+                .httpStrictTransportSecurity(hsts -> hsts
+                    .maxAgeInSeconds(31536000)
+                    .includeSubDomains(true))
+                .contentTypeOptions(Customizer.withDefaults())
+                .frameOptions(frame -> frame.deny())
+                .xssProtection(Customizer.withDefaults())
+                .contentSecurityPolicy(csp -> csp
+                    .policyDirectives("default-src 'self'; " +
+                        "script-src 'self'; " +
+                        "style-src 'self'; " +
+                        "img-src 'self' data:; " +
+                        "frame-ancestors 'none'"))
             );
 
         return http.build();
