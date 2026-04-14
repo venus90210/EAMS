@@ -68,9 +68,9 @@ copy .env.example .env
 ```
 # Backend
 SPRING_PROFILES_ACTIVE=dev
-SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/eams
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=postgres
+SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/eams_dev
+SPRING_DATASOURCE_USERNAME=eams
+SPRING_DATASOURCE_PASSWORD=eams
 
 # Redis
 SPRING_REDIS_HOST=redis
@@ -81,7 +81,7 @@ JWT_SECRET=your-secret-key-for-development
 BACKEND_URL=http://backend:8080
 
 # Frontend
-NEXT_PUBLIC_GATEWAY_URL=http://localhost:3001
+NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
 **⚠️ IMPORTANTE:**
@@ -112,17 +112,27 @@ docker compose logs -f frontend
 **¿Qué está pasando?**
 - Docker descarga imágenes (primera vez tarda ~2-3 min)
 - 5 servicios levantándose:
-  1. **postgres** (base de datos)
-  2. **redis** (caché)
-  3. **backend** (Java/Spring Boot en puerto 8080)
-  4. **gateway** (NestJS en puerto 3001)
-  5. **frontend** (Next.js en puerto 3000)
+  1. **postgres** (base de datos en puerto 5432)
+  2. **redis** (caché en puerto 6379)
+  3. **backend** (Java/Spring Boot en puerto 8082)
+  4. **gateway** (NestJS en puerto 3000)
+  5. **frontend** (Next.js en puerto 3001)
 
 **Espera a ver estos mensajes:**
 ```
-backend  | ... started Spring Boot application
-gateway  | [Nest] ... Nest application successfully started
-frontend | ✓ ready - started server on 0.0.0.0:3000
+eams_backend  | ... Tomcat started on port 8080
+eams_gateway  | 🚀 Gateway listening on port 3001
+eams_frontend | ✓ Ready in 450ms
+```
+
+**Status esperado (docker compose ps):**
+```
+NAME              STATUS
+eams_postgres     Up (healthy)
+eams_redis        Up (healthy)
+eams_backend      Up (healthy)
+eams_gateway      Up (healthy)
+eams_frontend     Up (healthy)
 ```
 
 ---
@@ -147,20 +157,20 @@ docker compose ps
 ### B) Hacer pruebas HTTP
 
 ```bash
-# Test 1: Backend está corriendo
-curl http://localhost:8080/actuator/health
+# Test 1: Backend está corriendo (interno 8080, externo 8082)
+curl http://localhost:8082/actuator/health
 
 # Deberías ver: {"status":"UP"}
 
-# Test 2: Gateway está corriendo
-curl http://localhost:3001/health
+# Test 2: Gateway está corriendo (puerto 3000)
+curl http://localhost:3000/health
 
-# Deberías ver: {"statusCode":200,"message":"OK"}
+# Deberías ver: {"status":"ok"}
 
-# Test 3: Frontend está corriendo
-curl http://localhost:3000
+# Test 3: Frontend está corriendo (puerto 3001)
+curl http://localhost:3001
 
-# Deberías ver: HTML de la página
+# Deberías ver: HTML de la página Next.js
 ```
 
 ---
@@ -169,45 +179,80 @@ curl http://localhost:3000
 
 | Aplicación | URL | Credenciales de Prueba |
 |------------|-----|------------------------|
-| **Frontend (PWA)** | http://localhost:3000 | email: `guardian@example.com`<br/>password: `password123` |
-| **API Gateway** | http://localhost:3001 | (usado por frontend automáticamente) |
-| **Backend API** | http://localhost:8080/swagger-ui.html | (Swagger/OpenAPI docs) |
-| **PostgreSQL** | localhost:5432 | user: `postgres`<br/>pass: `postgres` |
+| **Frontend (PWA)** | http://localhost:3001 | email: `guardian@example.com`<br/>password: `password123` |
+| **API Gateway** | http://localhost:3000 | (usado por frontend automáticamente) |
+| **Backend API** | http://localhost:8082 | Spring Boot app |
+| **Backend Health** | http://localhost:8082/actuator/health | Status del backend |
+| **PostgreSQL** | localhost:5432 | user: `eams`<br/>pass: `eams` |
 | **Redis** | localhost:6379 | (sin contraseña) |
 
 ---
 
 ## 👥 Usuarios de Prueba Disponibles
 
-Estos usuarios se crean automáticamente en desarrollo (`TestDataInitializer`):
+Estos usuarios se crean automáticamente en desarrollo (`TestDataInitializer`). 
 
-### Guardian (Padre/Acudiente)
+**⚠️ IMPORTANTE:** Todos requieren **Multi-Factor Authentication (MFA)** con código TOTP después del login inicial.
+
+### Guardian (Padre/Acudiente) - Principal
 ```
-Email: guardian@example.com
-Password: password123
-Rol: GUARDIAN
-Institución: Instituto Técnico Metropolitano
+Email:        guardian@example.com
+Password:     password123
+Rol:          GUARDIAN
+Institución:  Colegio San José
+TOTP Secret:  ERJ2WCRVSFUQJGJ6GVPUCYMEAGWMSAUE
+Estudiantes:  Juan Pérez, Carlos López
+```
+
+### Guardian - Secundarios
+```
+Email:        padre.luis@example.com
+Password:     password123
+TOTP Secret:  XMZBHKA7RCZZ55WZKEIH5P6PKBYPHTGB
+Estudiantes:  Santiago Gómez, Valentina Gómez
+
+Email:        madre.ana@example.com
+Password:     password123
+TOTP Secret:  F43CUJLHTBLLDISVLHLM5PB5XJZ4DOFM
+Estudiantes:  Martín López
 ```
 
 ### Teacher (Docente)
 ```
-Email: teacher@example.com
-Password: password123
-Rol: TEACHER
-Institución: Instituto Técnico Metropolitano
+Email:        teacher@example.com
+Password:     password123
+Rol:          TEACHER
+TOTP Secret:  JBSWY3DPEHPK3PXP
+Institución:  Colegio San José
+```
+
+### Teacher - Secundario
+```
+Email:        prof.carlos@example.com
+Password:     password123
+TOTP Secret:  QXQWQOB7QZVXYEDT5CECXYYCNP33QWO7
 ```
 
 ### Admin (Administrador Institucional)
 ```
-Email: admin@example.com
-Password: password123
-Rol: ADMIN
-Institución: Instituto Técnico Metropolitano
+Email:        admin@example.com
+Password:     password123
+Rol:          ADMIN
+TOTP Secret:  OKRV2AZG25UJLQDWT7UJKKZD57RCKWD7
+Institución:  Colegio San José
 ```
+
+**Cómo usar MFA (TOTP):**
+1. Inicia sesión con email y contraseña
+2. Te pedirá un código TOTP de 6 dígitos
+3. Usa https://www.authgear.com/tools/totp-authenticator
+4. Pega el TOTP Secret del usuario
+5. Copia el código de 6 dígitos que aparece
+6. Ingresa el código en la app
 
 **Flujos de prueba recomendados:**
 1. **Login como GUARDIAN** → Ver actividades → Inscribir estudiante
-2. **Login como TEACHER** → Registrar asistencia
+2. **Login como TEACHER** → Registrar asistencia de estudiantes
 3. **Login como ADMIN** → Crear/publicar/deshabilitar actividades
 
 ---
@@ -246,16 +291,19 @@ brew install docker
 docker compose up -d
 ```
 
-### ❌ "Puertos ya están en uso" (Port 3000, 3001, 8080, etc.)
+### ❌ "Puertos ya están en uso" (Port 3000, 3001, 8082, 5432, etc.)
 **Solución:** Otro servicio está usando esos puertos.
 ```bash
 # Encuentra qué proceso usa puerto 3000:
 lsof -i :3000  # macOS/Linux
+lsof -i :3001  # Frontend
+lsof -i :8082  # Backend
 netstat -ano | findstr :3000  # Windows
 
 # O simplemente cambia puertos en docker-compose.yml:
 # ports:
-#   - "3000:3000"  → cambia a "3001:3000"
+#   - "3000:3001"  → cambia a "3002:3001" (si puerto 3000 está en uso)
+#   - "3001:3000"  → cambia a "3003:3000" (si puerto 3001 está en uso)
 ```
 
 ### ❌ "Database is initializing" error en backend
@@ -320,12 +368,16 @@ docker compose logs --tail 100
 ```bash
 # Si cambias código Java:
 
-# Opción 1: Parar y levantar de nuevo
+# Opción 1: Recompila y reinicia solo backend
+docker compose up --build backend
+
+# Opción 2: Parar y levantar todo de nuevo
 docker compose down
 docker compose up
 
-# Opción 2: Solo recompila backend
-docker compose up --build backend
+# Opción 3: Local (sin Docker)
+cd backend
+mvn clean spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev"
 ```
 
 ### Gateway (requiere recompilación)
@@ -384,34 +436,53 @@ EAMS/
 ## 🎓 Primeros Pasos (Tutorial Rápido)
 
 ### 1. Login como Guardian
-1. Abre http://localhost:3000
+1. Abre **http://localhost:3001** (Frontend)
 2. Haz clic en "Iniciar Sesión"
 3. Email: `guardian@example.com`
 4. Password: `password123`
-5. Haz clic en "Iniciar Sesión"
+5. Código TOTP: 
+   - Ve a https://www.authgear.com/tools/totp-authenticator
+   - Pega: `ERJ2WCRVSFUQJGJ6GVPUCYMEAGWMSAUE`
+   - Copia el código de 6 dígitos
+   - Pégalo en la app
+6. Haz clic en "Verificar"
 
 ### 2. Ver Actividades
-- Verás un listado de actividades disponibles
-- Cada actividad muestra: nombre, descripción, cupos disponibles, horario
+- Verás un listado de actividades disponibles (Fútbol, Matemáticas, Arte, etc.)
+- Cada actividad muestra: nombre, descripción, cupos disponibles, estado
 
 ### 3. Inscribir Estudiante
-- Haz clic en el botón "Inscribirse" de cualquier actividad
-- Selecciona el estudiante (si tienes múltiples)
+- Haz clic en "Inscribirse" en cualquier actividad
+- Selecciona un estudiante (ej: Juan Pérez, Carlos López)
 - Confirma la inscripción
-- ¡Listo! Aparecerá en "Mis Inscripciones"
+- ¡Listo! Aparecerá en tu seguimiento
 
-### 4. Login como Teacher (Docente)
-1. Logout: haz clic en el avatar arriba a la derecha → "Logout"
+### 4. Ver Seguimiento
+- Haz clic en "Ver mis inscripciones"
+- Verás todas las actividades en las que te inscribiste
+- Muestra asistencia y observaciones del docente
+
+### 5. Login como Teacher (Docente)
+1. Logout: haz clic en el avatar → "Salir"
 2. Login con: `teacher@example.com` / `password123`
-3. Ve a "Asistencia"
-4. Abre una sesión de asistencia
-5. Marca estudiantes como "Presente" o "Ausente"
+3. Código TOTP: 
+   - Usa: `JBSWY3DPEHPK3PXP` en https://www.authgear.com/tools/totp-authenticator
+4. Ve a "Registro de Asistencia"
+5. Abre una sesión de asistencia para una actividad
+6. Marca estudiantes como "✓ Presente" o "✕ Ausente"
+7. Agrega observaciones (ej: "Excelente desempeño")
 
-### 5. Login como Admin
+### 6. Login como Admin
 1. Logout
 2. Login con: `admin@example.com` / `password123`
-3. Ve a "Gestión de Actividades"
-4. Crea una actividad nueva, publícala, deshabílitala
+3. Código TOTP:
+   - Usa: `OKRV2AZG25UJLQDWT7UJKKZD57RCKWD7`
+4. Ve a "Administración de Actividades"
+5. Crea una actividad nueva:
+   - Nombre, descripción, cupos
+   - Crea en estado DRAFT
+6. Publica la actividad (DRAFT → PUBLISHED)
+7. Opcionalmente, deshabilítala (PUBLISHED → DISABLED)
 
 ---
 
@@ -440,6 +511,25 @@ EAMS/
 
 ---
 
-**Última actualización:** 13 de Abril de 2026
-**Versión:** 1.0
-**Estado:** Pronto para desarrollo local ✅
+---
+
+## 📝 Cambios Recientes (v1.1)
+
+✅ **Corregido:**
+- Puertos correctos documentados (3000 Gateway, 3001 Frontend, 8082 Backend)
+- Instrucciones MFA/TOTP agregadas
+- Todos los usuarios de prueba con TOTP secrets
+- Variables de entorno actualizadas
+- Tutorial paso a paso con detalles reales
+- Database credentials correctas (eams/eams)
+
+✅ **Verificado en:**
+- Docker Compose v1.29+
+- Todas las actividades listándose correctamente en admin
+- MFA funcionando con TOTP
+
+---
+
+**Última actualización:** 14 de Abril de 2026
+**Versión:** 1.1
+**Estado:** ✅ Listo para desarrollo local — Todas las pruebas verificadas

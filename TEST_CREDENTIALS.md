@@ -1,7 +1,21 @@
 # 🧪 Credenciales de Prueba - EAMS
 
 > **Nota**: Todos los usuarios usan la contraseña: `password123`  
-> **Para TOTP**: Usa https://www.authgear.com/tools/totp-authenticator
+> **MFA/TOTP**: Requerido después del login inicial
+> **Generador TOTP**: Usa https://www.authgear.com/tools/totp-authenticator
+
+---
+
+## ⚠️ Importante sobre MFA
+
+Todos los usuarios requieren **Multi-Factor Authentication (MFA)** con código TOTP después de ingresar email y contraseña:
+
+1. Inicia sesión con email + password
+2. El sistema te pedirá un código TOTP de 6 dígitos
+3. Abre https://www.authgear.com/tools/totp-authenticator
+4. Pega el **Secret TOTP** de abajo
+5. Copia el código de 6 dígitos que se genera
+6. Ingresa ese código en la app
 
 ---
 
@@ -107,13 +121,85 @@ print(str(code % 1000000).zfill(6))
 
 ## 🎯 Casos de Uso Recomendados
 
-| Caso de Uso | Usuario Recomendado |
-|-------------|---------------------|
-| Gestionar actividades | `admin@example.com` |
-| Registrar asistencia | `teacher@example.com` o `prof.carlos@example.com` |
-| Ver seguimiento de estudiantes | `guardian@example.com` o `padre.luis@example.com` |
-| Inscribirse en actividades | `padre.luis@example.com` o `madre.ana@example.com` |
+| Caso de Uso | Usuario Recomendado | Pasos |
+|-------------|---------------------|-------|
+| **Gestionar actividades** | `admin@example.com` | Login → Admin → Crear/Publicar/Deshabilitar actividades |
+| **Registrar asistencia** | `teacher@example.com` | Login → Asistencia → Abrir sesión → Marcar presente/ausente |
+| **Ver seguimiento** | `guardian@example.com` | Login → Seguimiento de inscripciones → Ver historial |
+| **Inscribir estudiante** | `padre.luis@example.com` | Login → Actividades → Inscribirse → Seleccionar estudiante |
+| **Prueba multi-docente** | `prof.carlos@example.com` | Login → Asistencia (ver múltiples docentes) |
+| **Prueba multi-acudiente** | `madre.ana@example.com` | Login → Seguimiento (estudiantes de madre.ana) |
 
 ---
 
-**Última actualización**: 13 de abril de 2026
+## 📱 URLs de Acceso Local
+
+| Aplicación | URL | Puerto |
+|-----------|-----|--------|
+| **Frontend (PWA)** | http://localhost:3001 | 3001 |
+| **API Gateway** | http://localhost:3000 | 3000 |
+| **Backend API** | http://localhost:8082 | 8082 |
+| **Backend Health** | http://localhost:8082/actuator/health | 8082 |
+
+---
+
+## 🔄 Flujo Completo de Prueba (25 minutos)
+
+### 1. Setup (5 min)
+```bash
+docker compose up -d
+# Espera a que todos los servicios estén healthy (~2-3 min)
+```
+
+### 2. Prueba Guardian (5 min)
+- Login: `guardian@example.com` / `password123` + TOTP
+- Ve a Actividades
+- Inscribir estudiante en una actividad
+- Ve a Seguimiento
+- Verifica que aparece la inscripción
+
+### 3. Prueba Teacher (5 min)
+- Login: `teacher@example.com` / `password123` + TOTP
+- Ve a Registro de Asistencia
+- Abre una sesión
+- Marca estudiantes como Presente/Ausente
+- Agrega observaciones
+
+### 4. Prueba Admin (5 min)
+- Login: `admin@example.com` / `password123` + TOTP
+- Ve a Administración de Actividades
+- Crea una actividad nueva (DRAFT)
+- Publica la actividad
+- Opcionalmente deshabilítala
+
+### 5. Verificación Final (5 min)
+- Guardian ve la nueva actividad del Admin
+- Teacher puede registrar asistencia
+- Todo funciona sin errores
+
+---
+
+## 🐛 Si algo no funciona
+
+### Error: "Unauthorized" en login
+- ✅ Verifica credenciales exactas (incluyendo mayúsculas en email)
+- ✅ Espera a que backend esté healthy: `docker logs eams_backend`
+
+### Error: "Invalid TOTP code"
+- ✅ Genera código nuevo en https://www.authgear.com/tools/totp-authenticator
+- ✅ El código expira cada 30 segundos, debes copiarlo rápido
+- ✅ Verifica el TOTP Secret exacto (sin espacios)
+
+### Error: "Activities not found"
+- ✅ Verifica que las migraciones corrieron: `docker compose logs eams_postgres`
+- ✅ Reconstruye backend: `docker compose up --build backend`
+
+### Contenedores unhealthy
+- ✅ Reinicia todo: `docker compose down -v && docker compose up`
+- ✅ Verifica logs: `docker compose logs -f`
+
+---
+
+**Última actualización**: 14 de abril de 2026  
+**Versión**: 1.1  
+**Status**: ✅ Verificado y funcionando
