@@ -90,7 +90,10 @@ public class ActivityService {
             return activityRepository.findByInstitutionId(institutionId, ActivityStatus.PUBLISHED);
         }
 
-        // TEACHER/ADMIN ven todas
+        // TEACHER/ADMIN ven todas (sin filtro si statusFilter es null)
+        if (statusFilter == null) {
+            return activityRepository.findByInstitutionId(institutionId);
+        }
         return activityRepository.findByInstitutionId(institutionId, statusFilter);
     }
 

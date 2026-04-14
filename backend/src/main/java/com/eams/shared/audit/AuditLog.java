@@ -38,11 +38,11 @@ public class AuditLog {
     @Column(name = "action", nullable = false, length = 20)
     private String action; // INSERT, UPDATE, DELETE
 
-    @Column(name = "old_value", columnDefinition = "jsonb")
-    private String oldValue; // JSON serializado
+    @Column(name = "old_value", columnDefinition = "text", nullable = true)
+    private String oldValue; // JSON serializado como texto
 
-    @Column(name = "new_value", columnDefinition = "jsonb")
-    private String newValue; // JSON serializado
+    @Column(name = "new_value", columnDefinition = "text", nullable = true)
+    private String newValue; // JSON serializado como texto
 
     @Column(name = "performed_by")
     private UUID performedBy; // FK users.id — nullable

@@ -245,11 +245,12 @@ export default function AdminActivitiesPage() {
           {/* Activities List Section */}
           <div>
             <h2 style={{
-              fontSize: '28px',
+              fontSize: '40px',
               fontWeight: '900',
-              color: 'var(--text)',
+              color: 'var(--primary)',
               marginBottom: '32px',
-              margin: '0 0 32px 0'
+              margin: '0 0 32px 0',
+              letterSpacing: '-0.5px'
             }}>
               📚 Actividades existentes
             </h2>

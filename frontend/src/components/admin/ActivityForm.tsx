@@ -65,49 +65,118 @@ export function ActivityForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="bg-white rounded-lg shadow p-6 max-w-2xl">
-      <h2 className="text-xl font-bold mb-6">
-        {activity ? 'Editar actividad' : 'Nueva actividad'}
-      </h2>
+    <form onSubmit={handleSubmit(handleFormSubmit)}>
+
 
       {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
-          {error}
+        <div style={{
+          marginBottom: '24px',
+          padding: '16px',
+          borderRadius: 'var(--card-radius)',
+          backgroundColor: '#ffebee',
+          borderLeft: '4px solid var(--danger)',
+          color: '#c62828',
+          fontWeight: '600',
+          fontSize: '14px'
+        }}>
+          ⚠️ {error}
         </div>
       )}
 
-      <div className="mb-4">
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+      <div style={{ marginBottom: '24px' }}>
+        <label htmlFor="name" style={{
+          display: 'block',
+          fontSize: '14px',
+          fontWeight: '700',
+          color: 'var(--text)',
+          marginBottom: '12px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px'
+        }}>
           Nombre
         </label>
         <input
           id="name"
           type="text"
           {...register('name')}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            fontSize: '15px',
+            border: '2px solid var(--border)',
+            borderRadius: 'var(--input-radius)',
+            backgroundColor: 'var(--bg)',
+            color: 'var(--text)',
+            transition: 'all 0.2s',
+            fontFamily: 'inherit'
+          }}
           disabled={isSubmitting || loading}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = 'var(--primary)'
+            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0, 166, 81, 0.1)'
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = 'var(--border)'
+            e.currentTarget.style.boxShadow = 'none'
+          }}
         />
-        {errors.name && <span className="text-red-500 text-sm">{errors.name.message}</span>}
+        {errors.name && <span style={{ color: 'var(--danger)', fontSize: '13px', marginTop: '6px', display: 'block' }}>{errors.name.message}</span>}
       </div>
 
-      <div className="mb-4">
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+      <div style={{ marginBottom: '24px' }}>
+        <label htmlFor="description" style={{
+          display: 'block',
+          fontSize: '14px',
+          fontWeight: '700',
+          color: 'var(--text)',
+          marginBottom: '12px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px'
+        }}>
           Descripción
         </label>
         <textarea
           id="description"
           {...register('description')}
           rows={4}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            fontSize: '15px',
+            border: '2px solid var(--border)',
+            borderRadius: 'var(--input-radius)',
+            backgroundColor: 'var(--bg)',
+            color: 'var(--text)',
+            transition: 'all 0.2s',
+            fontFamily: 'inherit',
+            resize: 'vertical',
+            minHeight: '120px'
+          }}
           disabled={isSubmitting || loading}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = 'var(--primary)'
+            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0, 166, 81, 0.1)'
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = 'var(--border)'
+            e.currentTarget.style.boxShadow = 'none'
+          }}
         />
         {errors.description && (
-          <span className="text-red-500 text-sm">{errors.description.message}</span>
+          <span style={{ color: 'var(--danger)', fontSize: '13px', marginTop: '6px', display: 'block' }}>{errors.description.message}</span>
         )}
       </div>
 
-      <div className="mb-6">
-        <label htmlFor="totalSpots" className="block text-sm font-medium text-gray-700 mb-2">
+      <div style={{ marginBottom: '32px' }}>
+        <label htmlFor="totalSpots" style={{
+          display: 'block',
+          fontSize: '14px',
+          fontWeight: '700',
+          color: 'var(--text)',
+          marginBottom: '12px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px'
+        }}>
           Cupos totales
         </label>
         <input
@@ -115,29 +184,101 @@ export function ActivityForm({
           type="number"
           {...register('totalSpots', { valueAsNumber: true })}
           min={1}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            fontSize: '15px',
+            border: '2px solid var(--border)',
+            borderRadius: 'var(--input-radius)',
+            backgroundColor: 'var(--bg)',
+            color: 'var(--text)',
+            transition: 'all 0.2s',
+            fontFamily: 'inherit'
+          }}
           disabled={isSubmitting || loading}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = 'var(--primary)'
+            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0, 166, 81, 0.1)'
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = 'var(--border)'
+            e.currentTarget.style.boxShadow = 'none'
+          }}
         />
         {errors.totalSpots && (
-          <span className="text-red-500 text-sm">{errors.totalSpots.message}</span>
+          <span style={{ color: 'var(--danger)', fontSize: '13px', marginTop: '6px', display: 'block' }}>{errors.totalSpots.message}</span>
         )}
       </div>
 
-      <div className="flex gap-3">
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '12px'
+      }}>
         <button
           type="submit"
           disabled={isSubmitting || loading}
-          className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 disabled:bg-gray-400"
+          style={{
+            padding: '14px 24px',
+            fontSize: '14px',
+            fontWeight: '800',
+            backgroundColor: isSubmitting || loading ? 'var(--muted)' : 'var(--primary)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: isSubmitting || loading ? 'not-allowed' : 'pointer',
+            transition: 'all 0.2s',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            boxShadow: '0 4px 12px rgba(0, 166, 81, 0.2)'
+          }}
+          onMouseEnter={(e) => {
+            if (!isSubmitting && !loading) {
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 166, 81, 0.3)'
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isSubmitting && !loading) {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 166, 81, 0.2)'
+            }
+          }}
         >
-          {isSubmitting ? 'Guardando...' : activity ? 'Guardar cambios' : 'Crear actividad'}
+          {isSubmitting ? '⏳ Guardando...' : activity ? '💾 Guardar cambios' : '✓ Crear actividad'}
         </button>
         <button
           type="button"
           onClick={onCancel}
           disabled={isSubmitting || loading}
-          className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md font-medium hover:bg-gray-400 disabled:bg-gray-200"
+          style={{
+            padding: '14px 24px',
+            fontSize: '14px',
+            fontWeight: '800',
+            backgroundColor: 'transparent',
+            color: 'var(--text)',
+            border: '2px solid var(--border)',
+            borderRadius: '4px',
+            cursor: isSubmitting || loading ? 'not-allowed' : 'pointer',
+            transition: 'all 0.2s',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            opacity: isSubmitting || loading ? 0.6 : 1
+          }}
+          onMouseEnter={(e) => {
+            if (!isSubmitting && !loading) {
+              e.currentTarget.style.backgroundColor = 'var(--bg)'
+              e.currentTarget.style.transform = 'translateY(-2px)'
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isSubmitting && !loading) {
+              e.currentTarget.style.backgroundColor = 'transparent'
+              e.currentTarget.style.transform = 'translateY(0)'
+            }
+          }}
         >
-          Cancelar
+          ✕ Cancelar
         </button>
       </div>
     </form>
