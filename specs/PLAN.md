@@ -1,7 +1,7 @@
 # EAMS — Plan de Implementación
 
 > **Plataforma de Gestión de Actividades Extracurriculares**
-> Última actualización: 2026-04-15 — Fases 0-3 completadas, Fase 4.0-4.4 con reportes estrategia testing, 4.9 (Security hardening) iniciada
+> Última actualización: 2026-04-15 — Fases 0-3 completadas, Fase 4.0-4.4 con reportes estrategia + evidencia ejecución, 4.9 (Security hardening) iniciada
 
 ## Leyenda de estados
 
