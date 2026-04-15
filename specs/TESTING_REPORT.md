@@ -991,19 +991,63 @@ Triggered By: venus90210
 
 ### 4.8 Acceso a Reportes Detallados
 
-**Frontend Coverage Report**:
+#### ✅ Reportes Existentes
+
+**Frontend Coverage Report (LCOV)**:
 ```
-file:///Users/angelica/workspace/EAMS/frontend/coverage/lcov-report/index.html
+Ubicación: frontend/coverage/lcov-report/index.html
+Estado: ✅ DISPONIBLE
+Último actualizado: 2026-04-13 06:44
+Archivos incluidos: 
+  - lcov.info (formato LCOV)
+  - coverage-final.json (formato JSON)
+  - clover.xml (formato Clover)
+  - lcov-report/ (reporte HTML interactivo)
+
+Comando para regenerar:
+  cd frontend && npm test -- --coverage
 ```
+
+#### 📋 Reportes Pendientes (Requieren Ejecución)
 
 **Backend JaCoCo Report**:
 ```
-file:///Users/angelica/workspace/EAMS/backend/target/site/jacoco/index.html
+Ubicación esperada: backend/target/site/jacoco/index.html
+Estado: ❌ NO GENERADO (se crea al ejecutar tests)
+Comando para generar:
+  cd backend && mvn clean test -DskipITs=true && mvn jacoco:report
+Tiempo aprox: ~40 segundos
+Nota: Se ejecutará contra PostgreSQL local (docker-compose up)
 ```
 
-**CI/CD Pipeline Dashboard**:
+**Gateway Jest Coverage**:
 ```
-https://github.com/venus90210/EAMS/actions
+Ubicación esperada: gateway/coverage/
+Estado: ❌ NO GENERADO
+Comando para generar:
+  cd gateway && npm test -- --coverage
+Tiempo aprox: ~20 segundos
+```
+
+**Cucumber HTML Reports**:
+```
+Ubicación esperada: backend/target/cucumber-reports/
+Estado: ❌ NO GENERADO
+Comando para generar:
+  cd backend && mvn test -Dtest=*Steps
+Tiempo aprox: ~15 segundos
+```
+
+#### CI/CD Pipeline Dashboard
+
+```
+GitHub Actions: https://github.com/venus90210/EAMS/actions
+
+Información disponible:
+✓ Status de cada commit
+✓ Detalles de builds pasados
+✓ Logs de ejecución
+✓ Artefactos generados (si están configurados)
 ```
 
 ---
