@@ -15,6 +15,7 @@
 4. [Pruebas Funcionales](#3-pruebas-funcionales)
 5. [Cobertura y Métricas](#cobertura-y-métricas)
 6. [Matriz de Trazabilidad](#matriz-de-trazabilidad)
+7. [Validación de Requisitos y Casos de Negocio](#5-validación-de-requisitos-y-casos-de-negocio)
 
 ---
 
@@ -933,9 +934,287 @@ Información disponible:
 
 ---
 
-## Conclusiones
+## 5. Validación de Requisitos y Casos de Negocio
 
-### Fortalezas de la Estrategia
+### 5.1 Mapeo Requisitos Funcionales (RF) → Tests
+
+Cada requisito funcional tiene una **cadena de validación** que garantiza su implementación:
+
+#### RF03: Visualizar Actividades Publicadas
+
+| Nivel | Validación | Archivo/Test |
+|---|---|---|
+| **Unit** | `ActivityService.listForRole()` retorna PUBLISHED cuando rol=GUARDIAN | `ActivityServiceTest` |
+| **Integration** | Query SQL sin filtro respeta RLS, ve solo su institución | `TenantIsolationIT` |
+| **Functional** | Feature: "Padre ve actividades publicadas de su institución" | `F1-inscripcion.feature` |
+| **E2E (Manual)** | Padre logueado ve 5 actividades PUBLISHED, no ve DRAFT ni DISABLED | Guardian dashboard |
+
+**Requisito Cumplido**: ✅ Si todas las capas pasan
+
+---
+
+#### RF04: Inscribirse a Actividad (Camino Feliz)
+
+**Caso de Negocio**: 
+> María (padre guardián) quiere inscribir a su hijo Juan en una actividad de fútbol.
+> Debe poder completar la inscripción en <2 segundos si hay cupos disponibles.
+
+| Paso | Validación | Test |
+|---|---|---|
+| 1. Padre autenticado con role=GUARDIAN | `AuthServiceTest.login()` ✅ | Unit |
+| 2. Puede ver actividad PUBLISHED | `ActivityServiceTest.listForRole()` ✅ | Unit |
+| 3. Activity tiene cupos disponibles (>0) | `ActivityService.getAvailableSpots()` ✅ | Unit |
+| 4. Envía POST /enrollments | `EnrollmentServiceTest.enroll()` ✅ | Unit |
+| 5. Sistema valida: padre es responsable de Juan | `EnrollmentServiceTest.getByStudent()` ✅ | Unit |
+| 6. Crea enrollment en estado ACTIVE | `EnrollmentServiceTest.enroll()` ✅ | Unit |
+| 7. Reduce cupos disponibles | `ActivityService.getAvailableSpots()` ✅ | Unit |
+| 8. Envía email de confirmación <60s | `NotificationFlowIT` ✅ | Integration |
+| 9. Feature Gherkin ejecuta completo | Scenario 1: Inscripcion exitosa | `F1-inscripcion.feature` |
+
+**Requisito Cumplido**: ✅ Si todos los tests pasan
+
+---
+
+#### RF05: Cupos Limitados (Sin Sobrecupo)
+
+**Caso de Negocio - Crítico**:
+> Una actividad tiene exactamente 1 cupo. Dos padres intentan inscribir al mismo tiempo.
+> El sistema DEBE permitir solo 1 inscripción, la otra recibe "CUPO AGOTADO".
+
+| Escenario | Validación | Test |
+|---|---|---|
+| Concurrencia bajo carga | 10 threads contra 1 cupo → 1 exitoso, 9 fallan | `EnrollmentConcurrencyIT` (IT-01) |
+| Bloqueo optimista | `SELECT FOR UPDATE` en PostgreSQL previene race condition | `EnrollmentConcurrencyIT` |
+| Respuesta correcta | Exactamente 1 HTTP 201, 9 HTTP 409 SPOT_EXHAUSTED | `EnrollmentConcurrencyIT` |
+| Cupos nunca negativos | available_spots final = 0 (no -1, -2, etc.) | `EnrollmentConcurrencyIT` |
+| Feature Gherkin | Scenario 7: "Inscripcion concurrente no genera sobrecupo" | `F1-inscripcion.feature` |
+
+**Criticidad**: 🔴 ALTA — Violación violaría lógica de negocio  
+**Requisito Cumplido**: ✅ Si `EnrollmentConcurrencyIT` pasa
+
+---
+
+#### RF06: Cancelación Libera Cupo
+
+**Caso de Negocio**:
+> Juan estaba inscrito pero ya no puede asistir. María cancela la inscripción.
+> El cupo debe liberarse inmediatamente para que otro estudiante se inscriba.
+
+| Paso | Validación | Test |
+|---|---|---|
+| 1. Enrollment existe en estado ACTIVE | `EnrollmentServiceTest.getByStudent()` ✅ | Unit |
+| 2. DELETE /enrollments/{id} | `EnrollmentServiceTest.cancelEnrollment()` ✅ | Unit |
+| 3. Enrollment cambia a CANCELLED | `EnrollmentServiceTest.cancelEnrollment()` ✅ | Unit |
+| 4. available_spots incrementa | `ActivityService.getAvailableSpots()` ✅ | Unit |
+| 5. Feature Gherkin | Scenario 6: "Cancelacion libera cupo" | `F1-inscripcion.feature` |
+
+**Requisito Cumplido**: ✅ Si todos pasan
+
+---
+
+#### RF07: Email de Confirmación <60 segundos
+
+**Caso de Negocio**:
+> Después de inscribirse, María recibe un email confirmando la inscripción de Juan.
+> Debe llegar en menos de 60 segundos.
+
+| Componente | Validación | Test |
+|---|---|---|
+| Evento asíncrono | POST /enrollments dispara evento `EnrollmentConfirmed` | `NotificationFlowIT` (IT-04) |
+| Cola Redis | Evento encolado en <1s | `NotificationFlowIT` |
+| Worker procesa | Consumer toma evento de cola y envía email | `NotificationFlowIT` |
+| SMTP entregado | Email llega a inbox (WireMock stub) | `NotificationFlowIT` |
+| Idempotencia | Si evento se reencola, no genera 2 emails | `NotificationFlowIT` |
+| SLA <60s | Email entregado en <60s (típicamente <10s) | `NotificationFlowIT` |
+| Feature Gherkin | Scenario 1: "email de confirmacion en menos de 60 segundos" | `F1-inscripcion.feature` |
+
+**SLA**: 60 segundos máximo  
+**Requisito Cumplido**: ✅ Si `NotificationFlowIT` pasa con tiempo <60s
+
+---
+
+#### RF13: Registrar Asistencia en Ventana 3h
+
+**Caso de Negocio**:
+> Prof. García abre una sesión de asistencia a las 09:00.
+> Los estudiantes pueden registrar presencia entre 09:00-12:00 (ventana 3h).
+> Después de 12:00, sistema rechaza nuevos registros.
+
+| Escenario | Validación | Test |
+|---|---|---|
+| Apertura de sesión | POST /attendance/sessions con fecha hoy → HTTP 201 | `AttendanceServiceTest.openSession()` ✅ |
+| Dentro de ventana (09:30) | PUT /attendance con status=PRESENTE → HTTP 200 | `AttendanceServiceTest.recordAttendance()` ✅ |
+| Fuera de ventana (13:00) | PUT /attendance → HTTP 403 "TIME_WINDOW_CLOSED" | `AttendanceServiceTest.recordAttendance()` ✅ |
+| Boundary: exactamente 3h | Presencia a 12:00:00 → éxito, 12:00:01 → fallo | `EditWindowPolicy.isEditable()` ✅ |
+| Feature Gherkin | Scenario 2-3: "Registro dentro/fuera de ventana" | `F2-asistencia.feature` |
+
+**Ventana Crítica**: 3 horas exactas  
+**Requisito Cumplido**: ✅ Si `AttendanceServiceTest` + `EditWindowPolicy` pasan
+
+---
+
+#### RNF04: Autenticación con MFA Obligatorio para ADMIN
+
+**Caso de Negocio - Seguridad**:
+> Directora Rosa es ADMIN. Cuando intenta loguearse con email + password:
+> 1. Sistema valida credenciales
+> 2. Pide que ingrese código TOTP de su app autenticadora
+> 3. Solo después emite access token
+>
+> **Objeto**: Impedir acceso no autorizado a cuentas administrativas.
+
+| Componente | Validación | Test |
+|---|---|---|
+| Login Paso 1 | POST /auth/login con credenciales ADMIN → HTTP 202 MFA_REQUIRED | `AuthServiceTest.login()` ✅ |
+| Session Token | Retorna sessionToken válido por 5 minutos | `JwtTokenProviderTest` ✅ |
+| TOTP Generación | TOTP único por usuario (Google Authenticator compatible) | `MfaServiceTest.verifyTotp()` ✅ |
+| TOTP Verificación | Código correcto: HTTP 200 + accessToken/refreshToken | `MfaServiceTest.verifyTotp()` ✅ |
+| TOTP Incorrecto | Código inválido: HTTP 401 INVALID_MFA_CODE | `MfaServiceTest.verifyTotp()` ✅ |
+| Feature Gherkin | Scenario 2-3: "Login con MFA, Verificación correcta" | `F4-autenticacion.feature` |
+
+**Criticidad**: 🔴 ALTA — Breach de seguridad si falla  
+**Requisito Cumplido**: ✅ Si `MfaServiceTest` + `JwtTokenProviderTest` pasan
+
+---
+
+#### RNF06: Aislamiento Multi-Tenant (RLS)
+
+**Caso de Negocio - Compliance**:
+> Institución A (Colegio María) e Institución B (Colegio José) usan el mismo sistema.
+> Un usuario de A **nunca debe ver** datos de B (actividades, estudiantes, asistencias).
+> Cumple con RGPD, Ley 1581 (protección datos personales Colombia).
+
+| Escenario | Validación | Test |
+|---|---|---|
+| RLS Policy Activa | PostgreSQL impone política: `(institution_id = current_setting('app.institution_id'))` | `TenantIsolationIT` (IT-02) |
+| Query sin filtro | SELECT * FROM activities — RLS bloquea automáticamente | `TenantIsolationIT` |
+| Institución A vs B | Usuario de A query activities → resultado VACÍO de B | `TenantIsolationIT` |
+| Todas las tablas | activities, enrollments, attendance_sessions, users aisladas | `TenantIsolationIT` |
+| SUPERADMIN bypass | SUPERADMIN (soporte) CAN query todos (con audit log) | `TenantIsolationIT` |
+
+**Compliance**: Ley 1581, RGPD  
+**Requisito Cumplido**: ✅ Si `TenantIsolationIT` pasa
+
+---
+
+### 5.2 Matriz Completa: Requisito → Test Coverage
+
+| RF/RNF | Descripción | Unit Test | Integration Test | Functional (Gherkin) | Status |
+|---|---|---|---|---|---|
+| **RF03** | Visualizar actividades publicadas | ActivityServiceTest | TenantIsolationIT | F1-inscripcion (Scenario) | ✅ |
+| **RF04** | Inscribirse a actividad | EnrollmentServiceTest | EnrollmentConcurrencyIT | F1-inscripcion (Scenario 1) | ✅ |
+| **RF05** | Cupos limitados, sin sobrecupo | EnrollmentServiceTest | EnrollmentConcurrencyIT | F1-inscripcion (Scenario 2,7) | ✅ |
+| **RF06** | Cancelación libera cupo | EnrollmentServiceTest | — | F1-inscripcion (Scenario 6) | ✅ |
+| **RF07** | Email confirmación <60s | NotificationWorker | NotificationFlowIT | F1-inscripcion (Scenario 1) | ✅ |
+| **RF13** | Registrar asistencia (ventana 3h) | AttendanceServiceTest | — | F2-asistencia (Scenario 2-3) | ✅ |
+| — | Editar observaciones (ventana 24h) | EditWindowPolicy | — | F2-asistencia (Scenario 4-5) | ✅ |
+| **RNF04** | MFA obligatorio ADMIN | MfaService, JwtToken | TokenRevocationIT | F4-autenticacion (Scenario 2-3) | ✅ |
+| **RNF05** | RBAC por rol (8 combinaciones) | RolesGuardTest | — | F4-autenticacion | ✅ |
+| **RNF06** | Aislamiento multi-tenant (RLS) | TenantContext | TenantIsolationIT | F1, F2, F3 | ✅ |
+| **RNF08** | Cache PWA 48h, offline-first | cacheService, useOfflineStatus | — | F3-consulta-offline | ✅ |
+| **RNF09** | <3s transacciones (95%) | — | — | (Fase 4.7 - performance) | ⏳ |
+
+---
+
+### 5.3 Casos de Negocio Críticos (Must-Pass)
+
+Estos casos de negocio **DETIENEN el deploy** si fallan:
+
+#### 🔴 Crítico #1: Sobrecupo
+
+```
+Escenario: 1 actividad, 1 cupo, 2 inscripciones concurrentes
+
+Esperado:
+  ✓ Exactly 1 succeeds (HTTP 201)
+  ✓ Exactly 1 fails (HTTP 409 SPOT_EXHAUSTED)
+  ✓ Final available_spots = 0
+
+Impacto si falla:
+  ✗ Podrían inscribirse más estudiantes de lo permitido
+  ✗ Caos logístico (actividades overcrowded)
+  ✗ Violación de contrato
+
+Test Bloqueante: EnrollmentConcurrencyIT
+```
+
+#### 🔴 Crítico #2: Datos de Otra Institución
+
+```
+Escenario: Usuario de Institución A intenta ver Institución B
+
+Esperado:
+  ✓ RLS impide automáticamente
+  ✓ Query retorna vacío (silenciosamente)
+  ✓ No error, no leak de información
+
+Impacto si falla:
+  ✗ Breach de privacidad (Ley 1581)
+  ✗ GDPR violation
+  ✗ Pérdida de confianza / demanda legal
+
+Test Bloqueante: TenantIsolationIT
+```
+
+#### 🔴 Crítico #3: MFA Bypasseable
+
+```
+Escenario: ADMIN intenta loguearse sin TOTP
+
+Esperado:
+  ✓ Login sin MFA falla (HTTP 401 o 202 MFA_REQUIRED)
+  ✓ sessionToken solo válido 5 min
+  ✓ Solo después de TOTP correcto → accessToken
+
+Impacto si falla:
+  ✗ Cualquiera con admin password puede loguear
+  ✗ Cuentas administrativas comprometidas
+  ✗ Control de negocio perdido
+
+Test Bloqueante: MfaServiceTest + JwtTokenProviderTest
+```
+
+---
+
+### 5.4 Checklist de Validación de Requisitos
+
+**Antes de cualquier release, validar**:
+
+```
+REQUISITOS FUNCIONALES:
+□ RF03: ListForRole retorna PUBLISHED/DRAFT según rol
+□ RF04: Inscripción exitosa reduce cupos (unit + integration)
+□ RF05: Concurrencia 10 threads → 1 éxito, 9 fallan (IT-01)
+□ RF06: Cancelación libera cupo
+□ RF07: Email en <60s (IT-04)
+□ RF13: Asistencia bloqueada fuera de ventana 3h + 24h
+
+REQUISITOS NO-FUNCIONALES:
+□ RNF04: MFA obligatorio ADMIN (no bypasseable)
+□ RNF05: RBAC: cada rol solo ve endpoints permitidos
+□ RNF06: Institución A no ve datos de Institución B (TenantIsolationIT)
+□ RNF08: Cache PWA 48h + offline fallback
+□ RNF09: <3s en 95 percentil (performance test, Fase 4.7)
+
+COBERTURA:
+□ Backend unit: ≥ 95% líneas + ramas (JaCoCo)
+□ Gateway unit: ≥ 95% (Jest)
+□ Frontend unit: ≥ 95% (Jest)
+□ Integration tests: 4/4 escenarios pasan
+□ Functional tests: 5/5 features, 23+ scenarios pasan
+
+CRÍTICOS (BLOQUEAN DEPLOY):
+□ EnrollmentConcurrencyIT: cupos sin sobrecupo
+□ TenantIsolationIT: aislamiento RLS perfecto
+□ MfaServiceTest + JwtTokenProviderTest: MFA no bypasseable
+□ NotificationFlowIT: email <60s
+
+RESULT: GO / NO-GO para producción
+```
+
+---
+
+
 
 ✓ **Cobertura exhaustiva**: 95% mínimo garantiza detección temprana de defectos  
 ✓ **Tres niveles complementarios**: unitarias (velocidad) + integración (infraestructura real) + funcionales (requisitos)  
