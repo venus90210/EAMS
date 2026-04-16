@@ -1,7 +1,7 @@
 # EAMS — Plan de Implementación
 
 > **Plataforma de Gestión de Actividades Extracurriculares**
-> Última actualización: 2026-04-13 — Fases 0-3 completadas, Fase 4.0-4.4 y 4.9 (Security) completadas
+> Última actualización: 2026-04-15 — Fases 0-3 completadas, Fase 4.0-4.4 con reportes estrategia + evidencia ejecución, 4.9 (Security hardening) iniciada
 
 ## Leyenda de estados
 
@@ -414,7 +414,11 @@
 ## Fase 4 — Pruebas e integración
 
 > **Objetivo**: validar que la implementación cumple todas las specs funcionales y no funcionales.
-> **Referencia completa**: [specs/technical/testing-strategy.md](technical/testing-strategy.md)
+> **Referencia técnica**: [specs/technical/testing-strategy.md](technical/testing-strategy.md)
+> 
+> **📋 Documentación Disponible**:
+> - [specs/TESTS.md](TESTS.md) — Resumen de cobertura (unitarios, integración, componentes, hooks). ✓ Creado 2026-04-15
+> - [specs/TESTING_REPORT.md](TESTING_REPORT.md) — **Reporte Estrategia Completa** (3 pilares: unitarias 95%, integración 4 escenarios, funcionales Gherkin). ✓ Creado 2026-04-15
 
 ### 4.0 Setup de pruebas de integración
 - [x] Agregar dependencias: `testcontainers-postgresql`, `testcontainers-junit-jupiter`, `wiremock-jre8`

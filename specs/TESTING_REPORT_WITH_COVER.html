@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EAMS - Reporte de Estrategia de Pruebas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            background: white;
+        }
+
+        @media print {
+            .page {
+                page-break-after: always;
+            }
+            .no-break {
+                page-break-inside: avoid;
+            }
+        }
+
+        /* Title Page */
+        .cover-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 100vh;
+            padding: 60px 40px;
+            text-align: center;
+            background: linear-gradient(135deg, #f5f5f5 0%, white 100%);
+        }
+
+        .cover-header {
+            margin-bottom: 40px;
+        }
+
+        .cover-title {
+            font-size: 3.5em;
+            color: #00a651;
+            font-weight: 900;
+            margin: 30px 0;
+            line-height: 1.2;
+        }
+
+        .cover-subtitle {
+            font-size: 1.4em;
+            color: #005a33;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+
+        .cover-course {
+            font-size: 0.95em;
+            color: #666;
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+
+        .cover-divider {
+            width: 80px;
+            height: 3px;
+            background: #00a651;
+            margin: 40px auto;
+        }
+
+        .group-info {
+            margin: 40px 0;
+        }
+
+        .group-title {
+            font-size: 1.2em;
+            color: #00a651;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .member {
+            font-size: 0.95em;
+            color: #333;
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+
+        .member-name {
+            font-weight: 600;
+            color: #005a33;
+        }
+
+        .member-email {
+            font-size: 0.85em;
+            color: #666;
+            font-style: italic;
+        }
+
+        .professors {
+            margin: 30px 0;
+        }
+
+        .professor-title {
+            font-size: 1.1em;
+            color: #00a651;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .professor-name {
+            font-size: 0.95em;
+            color: #333;
+            margin: 6px 0;
+        }
+
+        .cover-footer {
+            margin-top: 60px;
+        }
+
+        .university {
+            font-size: 1em;
+            font-weight: 700;
+            color: #005a33;
+            margin: 15px 0;
+        }
+
+        .university-location {
+            font-size: 0.9em;
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .year-badge {
+            display: inline-block;
+            background: #00a651;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 1em;
+            margin-top: 20px;
+        }
+
+        /* Content Page */
+        .content-page {
+            padding: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Headers */
+        h1 {
+            color: #00a651;
+            border-bottom: 3px solid #00a651;
+            padding-bottom: 10px;
+            margin: 40px 0 20px 0;
+            font-size: 2.5em;
+        }
+
+        h2 {
+            color: #00a651;
+            border-left: 5px solid #00a651;
+            padding-left: 15px;
+            margin: 35px 0 15px 0;
+            font-size: 1.8em;
+        }
+
+        h3 {
+            color: #005a33;
+            margin: 20px 0 10px 0;
+            font-size: 1.3em;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.95em;
+        }
+
+        th {
+            background: #00a651;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        /* Code */
+        pre {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            overflow-x: auto;
+            font-size: 0.9em;
+            line-height: 1.4;
+            margin: 15px 0;
+        }
+
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Blockquote */
+        blockquote {
+            border-left: 4px solid #00a651;
+            background: #f0f8f4;
+            padding: 15px;
+            margin: 15px 0;
+            color: #005a33;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 10px 0 10px 30px;
+        }
+
+        li {
+            margin: 6px 0;
+        }
+
+        /* Links */
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* HR */
+        hr {
+            border: none;
+            border-top: 2px solid #00a651;
+            margin: 40px 0;
+        }
+
+        /* Highlights */
+        .highlight-success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 12px;
+            margin: 12px 0;
+        }
+
+        .highlight-critical {
+            background: #fff3cd;
+            border-left: 4px solid #ff9800;
+            padding: 12px;
+            margin: 12px 0;
+        }
+
+        /* Table of Contents */
+        .toc {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .toc h2 {
+            color: #00a651;
+            border: none;
+            padding: 0;
+            margin: 0 0 15px 0;
+        }
+
+        .toc ul {
+            list-style: none;
+            margin: 0;
+        }
+
+        .toc li {
+            margin: 8px 0;
+        }
+
+        .toc a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- COVER PAGE -->
+    <div class="page cover-page">
+        <div class="cover-header">
+            <div style="font-size: 1.1em; color: #666; margin-bottom: 30px;">
+                <strong>PROYECTO FINAL</strong>
+            </div>
+
+            <div class="cover-subtitle">
+                ISIA - Ingeniería de Software Asistida por IA<br>
+                2026-1
+            </div>
+        </div>
+
+        <div>
+            <div class="cover-title">EAMS</div>
+            <div class="cover-subtitle">
+                Plataforma de Gestión de Actividades<br>
+                Extracurriculares
+            </div>
+
+            <div class="cover-subtitle" style="color: #999; font-size: 1.1em; font-weight: 400; margin-top: 20px;">
+                Reporte de Estrategia de Pruebas
+            </div>
+
+            <div class="cover-divider"></div>
+
+            <!-- Group Members -->
+            <div class="group-info">
+                <div class="group-title">GRUPO 5</div>
+                <div class="member">
+                    <div class="member-name">William Jessid Carrera Sotelo</div>
+                    <div class="member-email">iluatrawill@gmail.com</div>
+                </div>
+                <div class="member">
+                    <div class="member-name">Angelica Maria Amaya Giraldo</div>
+                    <div class="member-email">aamayagi@unal.edu.co</div>
+                </div>
+                <div class="member">
+                    <div class="member-name">Hervey Farid Castro Cortes</div>
+                    <div class="member-email">hcastroco@unal.edu.co</div>
+                </div>
+            </div>
+
+            <!-- Professors -->
+            <div class="professors">
+                <div class="professor-title">PROFESORES</div>
+                <div class="professor-name">Oscar Armando Ortiz</div>
+                <div class="professor-name">Liliana Olarte</div>
+            </div>
+        </div>
+
+        <div class="cover-footer">
+            <div class="cover-divider"></div>
+            <div class="university">Universidad Nacional de Colombia</div>
+            <div class="university-location">Bogotá, Colombia</div>
+            <div class="university-location" style="margin-top: 10px; font-size: 0.9em;">
+                Diplomado DevOps e IA para Ingeniería de Software<br>
+                ISIA - Ingeniería de Software Asistida por IA - 2026-1
+            </div>
+            <div class="year-badge">2026</div>
+        </div>
+    </div>
+
+    <!-- CONTENT PAGE STARTS HERE -->
+    <div class="page content-page">
+
+        <h1>Reporte de Estrategia de Pruebas</h1>
+
+        <div style="text-align: center; color: #666; margin: 20px 0; padding-bottom: 30px; border-bottom: 2px solid #00a651;">
+            <p><strong>Proyecto:</strong> Plataforma de Gestión de Actividades Extracurriculares (PWA)</p>
+            <p><strong>Fecha:</strong> 15 de Abril de 2026</p>
+            <p><strong>Versión:</strong> 1.0</p>
+            <p><strong>Estado:</strong> Implementación Completa (Fase 4.0-4.4)</p>
+        </div>
+
+        <h2>Tabla de Contenidos</h2>
+
+        <div class="toc">
+            <ul>
+                <li><a href="#resumen">Resumen Ejecutivo</a></li>
+                <li><a href="#unitarias">1. Pruebas Unitarias</a></li>
+                <li><a href="#integracion">2. Pruebas de Integración</a></li>
+                <li><a href="#funcionales">3. Pruebas Funcionales</a></li>
+                <li><a href="#cobertura">Cobertura y Métricas</a></li>
+                <li><a href="#trazabilidad">Matriz de Trazabilidad</a></li>
+                <li><a href="#validacion">5. Validación de Requisitos y Casos de Negocio</a></li>
+                <li><a href="#conclusiones">Conclusiones</a></li>
+            </ul>
+        </div>
+
+        <hr>
+
+        <h2 id="resumen">Resumen Ejecutivo</h2>
+
+        <p>La estrategia de pruebas para EAMS se basa en <strong>tres pilares</strong> con cobertura mínima del <strong>95%</strong> en líneas y ramas:</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Tipo de Prueba</th>
+                    <th>Objetivo</th>
+                    <th>Framework</th>
+                    <th>Cobertura</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Unitarias</strong></td>
+                    <td>Validar lógica aislada de negocio</td>
+                    <td>JUnit 5 + Mockito (Backend)<br>Jest (Gateway/Frontend)</td>
+                    <td>≥ 95%</td>
+                </tr>
+                <tr>
+                    <td><strong>Integración</strong></td>
+                    <td>Verificar flujos críticos con infraestructura real</td>
+                    <td>Spring Boot Test + Testcontainers</td>
+                    <td>4 escenarios</td>
+                </tr>
+                <tr>
+                    <td><strong>Funcionales</strong></td>
+                    <td>Validar requisitos de usuario en Gherkin</td>
+                    <td>Cucumber + Step Definitions</td>
+                    <td>5 features</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="highlight-success">
+            <strong>✓ Beneficios:</strong>
+            <ul>
+                <li>Detección temprana de defectos (unitarias)</li>
+                <li>Garantía de flujos críticos bajo concurrencia (integración)</li>
+                <li>Trazabilidad requisito → código → test (funcionales)</li>
+                <li>Gate CI/CD: PR no se mergea si cobertura &lt; 95%</li>
+            </ul>
+        </div>
+
+        <hr>
+
+        <p style="text-align: center; color: #999; font-size: 0.9em; margin-top: 40px;">
+            <strong>Nota:</strong> Para ver el contenido completo con todas las secciones,<br>
+            tablas, código y casos de negocio, consulta el documento en su versión<br>
+            Markdown (TESTING_REPORT.md) o descarga el PDF completo.
+        </p>
+
+        <p style="text-align: center; color: #999; font-size: 0.85em; margin-top: 30px;">
+            © 2026 EAMS - Sistema de Gestión de Actividades Extracurriculares<br>
+            Universidad Nacional de Colombia - Ingeniería de Software Asistida por IA<br>
+            Generado: 15 de Abril de 2026
+        </p>
+    </div>
+
+</body>
+</html>
