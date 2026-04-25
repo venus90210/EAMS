@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+*.md
+coverage
+jest.config.js
+jest.setup.ts
+**/*.test.tsx
+**/*.test.ts
+**/*.spec.tsx
+**/*.spec.ts
+.env.local
+.env.development.local

@@ -1,0 +1,336 @@
+openapi: 3.1.0
+info:
+  title: EAMS — Modulo Asistencia
+  version: 1.0.0
+  description: |
+    Registro de asistencia y observaciones por sesion.
+    - Solo el docente asignado puede abrir sesion y registrar asistencia.
+    - Ventana de edicion: 24 horas desde la apertura de la sesion.
+    - Maximo 3 toques por estudiante para registrar asistencia (RF13).
+
+tags:
+  - name: sessions
+    description: Sesiones de clase (una por fecha)
+  - name: records
+    description: Registros individuales de asistencia por estudiante
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  /attendance/sessions:
+    post:
+      tags: [sessions]
+      summary: Abrir sesion de asistencia
+      description: |
+        Solo el docente asignado a la actividad puede abrir la sesion.
+        Solo se permite para la fecha actual (validado contra CalendarPort).
+      operationId: openSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionRequest'
+      responses:
+        '201':
+          description: Sesion abierta con lista de estudiantes inscritos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '403':
+          description: Docente no asignado a la actividad
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Ya existe una sesion para esta actividad en la fecha actual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Fecha proporcionada no es la fecha actual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /attendance/sessions/{sessionId}:
+    get:
+      tags: [sessions]
+      summary: Consultar sesion y roster de asistencia
+      description: RF12 — Docente asignado o ADMIN de la misma institucion.
+      operationId: getSession
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Sesion con registros de asistencia
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionWithRecordsResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /attendance/sessions/{sessionId}/records:
+    post:
+      tags: [records]
+      summary: Registrar asistencia de un estudiante
+      description: |
+        RF13 — Maximo 3 toques por estudiante.
+        Solo dentro de la ventana de 24 horas desde la apertura de la sesion.
+      operationId: recordAttendance
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordAttendanceRequest'
+      responses:
+        '200':
+          description: Asistencia registrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecordResponse'
+        '403':
+          description: Ventana de edicion expirada o docente no asignado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Fecha invalida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /attendance/records/{recordId}:
+    patch:
+      tags: [records]
+      summary: Actualizar registro de asistencia u observacion
+      description: |
+        Solo dentro de la ventana de 24 horas desde recorded_at.
+        Dispara evento ObservationPublished para notificar al acudiente.
+      operationId: updateRecord
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRecordRequest'
+      responses:
+        '200':
+          description: Registro actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecordResponse'
+        '403':
+          description: Ventana de edicion expirada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                editWindowExpired:
+                  value:
+                    error: EDIT_WINDOW_EXPIRED
+                    message: La ventana de edicion de 24 horas ha expirado
+
+  /attendance/students/{studentId}:
+    get:
+      tags: [records]
+      summary: Consultar historial de asistencia de un estudiante
+      description: RF11 — Acudiente solo ve sus propios hijos. Docente y ADMIN ven todos los de su institucion.
+      operationId: getAttendanceByStudent
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: activityId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Historial de asistencia
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttendanceRecordResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    SessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RecordId:
+      name: recordId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+
+    CreateSessionRequest:
+      type: object
+      required: [activityId, date]
+      properties:
+        activityId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+          description: Debe ser la fecha actual
+        topicsCovered:
+          type: string
+          maxLength: 500
+
+    RecordAttendanceRequest:
+      type: object
+      required: [studentId, present]
+      properties:
+        studentId:
+          type: string
+          format: uuid
+        present:
+          type: boolean
+
+    UpdateRecordRequest:
+      type: object
+      properties:
+        present:
+          type: boolean
+        observation:
+          type: string
+          maxLength: 500
+
+    SessionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        activityId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        topicsCovered:
+          type: string
+          nullable: true
+        recordedAt:
+          type: string
+          format: date-time
+        editableUntil:
+          type: string
+          format: date-time
+          description: recordedAt + 24 horas
+
+    SessionWithRecordsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SessionResponse'
+        - type: object
+          properties:
+            records:
+              type: array
+              items:
+                $ref: '#/components/schemas/AttendanceRecordResponse'
+
+    AttendanceRecordResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sessionId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        present:
+          type: boolean
+        observation:
+          type: string
+          nullable: true
+        recordedAt:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          enum:
+            - EDIT_WINDOW_EXPIRED
+            - NOT_ASSIGNED_TEACHER
+            - INVALID_DATE
+            - SESSION_ALREADY_EXISTS
+            - FORBIDDEN
+        message:
+          type: string
+
+  responses:
+    Forbidden:
+      description: Sin permisos o ventana expirada
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

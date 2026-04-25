@@ -1,0 +1,251 @@
+openapi: 3.1.0
+info:
+  title: EAMS — Modulo Inscripciones
+  version: 1.0.0
+  description: |
+    Orquesta el flujo transaccional de asignacion y liberacion de cupos.
+    Usa bloqueo pesimista (SELECT FOR UPDATE) para garantizar 0% sobrecupos (RF05).
+    Un estudiante puede tener maximo 1 enrollment ACTIVE simultaneamente.
+
+tags:
+  - name: enrollments
+    description: Inscripcion y cancelacion de estudiantes en actividades
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  /enrollments:
+    post:
+      tags: [enrollments]
+      summary: Inscribir estudiante en una actividad
+      description: |
+        Solo el acudiente responsable del estudiante puede inscribirlo.
+        Valida:
+        - Que el acudiente sea responsable del estudiante (RF03)
+        - Disponibilidad de cupo en tiempo real con SELECT FOR UPDATE (RF04, RF05)
+        - Que el estudiante no tenga ya un enrollment ACTIVE (RF05)
+        Dispara evento EnrollmentConfirmed para notificacion por email en <60 segundos (RF07).
+      operationId: createEnrollment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEnrollmentRequest'
+      responses:
+        '201':
+          description: Inscripcion exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentResponse'
+        '403':
+          description: El acudiente no es responsable del estudiante
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Cupo agotado, inscripcion duplicada, o enrollment activo existente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                spotExhausted:
+                  value:
+                    error: SPOT_EXHAUSTED
+                    message: No hay cupos disponibles para esta actividad
+                alreadyEnrolled:
+                  value:
+                    error: ALREADY_ENROLLED
+                    message: El estudiante ya esta inscrito en esta actividad
+                activeEnrollmentExists:
+                  value:
+                    error: ACTIVE_ENROLLMENT_EXISTS
+                    message: El estudiante ya tiene una inscripcion activa
+
+  /enrollments/{enrollmentId}:
+    delete:
+      tags: [enrollments]
+      summary: Cancelar inscripcion
+      description: |
+        Cambia el estado a CANCELLED y libera el cupo en la misma transaccion.
+        Solo el acudiente responsable o un ADMIN pueden cancelar.
+      operationId: cancelEnrollment
+      parameters:
+        - $ref: '#/components/parameters/EnrollmentId'
+      responses:
+        '200':
+          description: Inscripcion cancelada y cupo liberado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /enrollments/student/{studentId}:
+    get:
+      tags: [enrollments]
+      summary: Consultar actividades inscritas por estudiante
+      description: RF11 — El acudiente solo puede consultar sus propios hijos. ADMIN ve todos.
+      operationId: getEnrollmentsByStudent
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/EnrollmentStatus'
+      responses:
+        '200':
+          description: Lista de inscripciones del estudiante
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EnrollmentResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /enrollments/activity/{activityId}:
+    get:
+      tags: [enrollments]
+      summary: Consultar inscritos por actividad
+      description: RF12 — Solo TEACHER asignado o ADMIN. Retorna la lista de estudiantes inscritos.
+      operationId: getEnrollmentsByActivity
+      parameters:
+        - name: activityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/EnrollmentStatus'
+      responses:
+        '200':
+          description: Lista de inscritos en la actividad
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EnrollmentWithStudentResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    EnrollmentId:
+      name: enrollmentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+
+    CreateEnrollmentRequest:
+      type: object
+      required: [studentId, activityId]
+      properties:
+        studentId:
+          type: string
+          format: uuid
+        activityId:
+          type: string
+          format: uuid
+
+    EnrollmentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        activityId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/EnrollmentStatus'
+        enrolledAt:
+          type: string
+          format: date-time
+        cancelledAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    EnrollmentWithStudentResponse:
+      allOf:
+        - $ref: '#/components/schemas/EnrollmentResponse'
+        - type: object
+          properties:
+            student:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                grade:
+                  type: string
+
+    EnrollmentStatus:
+      type: string
+      enum: [ACTIVE, CANCELLED]
+
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          enum:
+            - SPOT_EXHAUSTED
+            - ALREADY_ENROLLED
+            - ACTIVE_ENROLLMENT_EXISTS
+            - FORBIDDEN
+            - INSTITUTION_MISMATCH
+        message:
+          type: string
+
+  responses:
+    Forbidden:
+      description: Sin permisos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

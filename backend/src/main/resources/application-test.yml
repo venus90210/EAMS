@@ -1,0 +1,19 @@
+# Perfil de pruebas — Testcontainers sobreescribe datasource y redis dinámicamente
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/test
+  jpa:
+    show-sql: true
+
+jwt:
+  secret: test-secret-key-minimum-256-bits-long-for-hs256-algorithm
+  access-expiration-minutes: 15
+  refresh-expiration-days: 7
+
+email:
+  from: test@eams.edu.co
+
+logging:
+  level:
+    com.eams: DEBUG
+    org.testcontainers: INFO

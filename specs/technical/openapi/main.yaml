@@ -1,0 +1,144 @@
+openapi: 3.1.0
+info:
+  title: EAMS — Plataforma de Actividades Extracurriculares
+  version: 1.0.0
+  description: |
+    API principal de la Plataforma de Gestion de Actividades Extracurriculares (EAMS).
+
+    ## Arquitectura
+    - **API Gateway**: NestJS — valida JWT y RBAC antes de enrutar
+    - **Backend**: Spring Boot + Spring Modulith (Monolito Modular)
+    - **Base de datos**: PostgreSQL con Row-Level Security por institucion
+    - **Cache**: Redis (sesiones, cupos, notificaciones)
+
+    ## Autenticacion
+    Todas las rutas requieren Bearer Token JWT (excepto /auth/login y /auth/refresh).
+    Access token: 15 minutos. Refresh token: 7 dias (revocable desde Redis).
+    MFA obligatorio para roles: TEACHER, ADMIN, SUPERADMIN.
+
+    ## Roles y permisos
+    | Rol         | Descripcion                                              |
+    |-------------|----------------------------------------------------------|
+    | GUARDIAN    | Inscribe y consulta actividades de sus hijos             |
+    | TEACHER     | Crea actividades, registra asistencia                    |
+    | ADMIN       | Administra usuarios, actividades y cupos por institucion |
+    | SUPERADMIN  | Crea y configura instituciones en la plataforma          |
+
+    ## Cumplimiento legal
+    Ley 1581 de 2012 — proteccion de datos personales (Colombia).
+    Datos de menores cifrados en transito (HTTPS/TLS obligatorio).
+    Retencion: ano lectivo en curso + 1 adicional.
+
+  contact:
+    name: Equipo EAMS
+  license:
+    name: MIT
+
+servers:
+  - url: https://api.eams.edu.co/v1
+    description: Produccion
+  - url: http://localhost:3000/v1
+    description: Desarrollo local
+
+tags:
+  - name: auth
+    description: Autenticacion, MFA y gestion de sesiones
+  - name: users
+    description: Usuarios y asociacion acudiente-estudiante
+  - name: activities
+    description: Catalogo y ciclo de vida de actividades
+  - name: enrollments
+    description: Inscripcion y cancelacion de estudiantes
+  - name: attendance
+    description: Registro de asistencia y observaciones
+
+# Referencia a los specs por modulo
+# Para uso con Redocly bundle: npx @redocly/cli bundle specs/technical/openapi/main.yaml -o dist/api.yaml
+
+paths:
+
+  # ── AUTH ──────────────────────────────────────────────────────────────────
+
+  /auth/login:
+    $ref: './auth.yaml#/paths/~1auth~1login'
+
+  /auth/mfa/verify:
+    $ref: './auth.yaml#/paths/~1auth~1mfa~1verify'
+
+  /auth/refresh:
+    $ref: './auth.yaml#/paths/~1auth~1refresh'
+
+  /auth/logout:
+    $ref: './auth.yaml#/paths/~1auth~1logout'
+
+  # ── USERS ─────────────────────────────────────────────────────────────────
+
+  /users:
+    $ref: './users.yaml#/paths/~1users'
+
+  /users/{userId}:
+    $ref: './users.yaml#/paths/~1users~1{userId}'
+
+  /users/students/link:
+    $ref: './users.yaml#/paths/~1users~1students~1link'
+
+  /users/guardians/{guardianId}/students:
+    $ref: './users.yaml#/paths/~1users~1guardians~1{guardianId}~1students'
+
+  /users/bulk:
+    $ref: './users.yaml#/paths/~1users~1bulk'
+
+  # ── ACTIVITIES ────────────────────────────────────────────────────────────
+
+  /activities:
+    $ref: './activities.yaml#/paths/~1activities'
+
+  /activities/{activityId}:
+    $ref: './activities.yaml#/paths/~1activities~1{activityId}'
+
+  /activities/{activityId}/publish:
+    $ref: './activities.yaml#/paths/~1activities~1{activityId}~1publish'
+
+  /activities/{activityId}/status:
+    $ref: './activities.yaml#/paths/~1activities~1{activityId}~1status'
+
+  /activities/{activityId}/spots:
+    $ref: './activities.yaml#/paths/~1activities~1{activityId}~1spots'
+
+  # ── ENROLLMENTS ───────────────────────────────────────────────────────────
+
+  /enrollments:
+    $ref: './enrollment.yaml#/paths/~1enrollments'
+
+  /enrollments/{enrollmentId}:
+    $ref: './enrollment.yaml#/paths/~1enrollments~1{enrollmentId}'
+
+  /enrollments/student/{studentId}:
+    $ref: './enrollment.yaml#/paths/~1enrollments~1student~1{studentId}'
+
+  /enrollments/activity/{activityId}:
+    $ref: './enrollment.yaml#/paths/~1enrollments~1activity~1{activityId}'
+
+  # ── ATTENDANCE ────────────────────────────────────────────────────────────
+
+  /attendance/sessions:
+    $ref: './attendance.yaml#/paths/~1attendance~1sessions'
+
+  /attendance/sessions/{sessionId}:
+    $ref: './attendance.yaml#/paths/~1attendance~1sessions~1{sessionId}'
+
+  /attendance/sessions/{sessionId}/records:
+    $ref: './attendance.yaml#/paths/~1attendance~1sessions~1{sessionId}~1records'
+
+  /attendance/records/{recordId}:
+    $ref: './attendance.yaml#/paths/~1attendance~1records~1{recordId}'
+
+  /attendance/students/{studentId}:
+    $ref: './attendance.yaml#/paths/~1attendance~1students~1{studentId}'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

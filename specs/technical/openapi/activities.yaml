@@ -1,0 +1,351 @@
+openapi: 3.1.0
+info:
+  title: EAMS — Modulo Actividades
+  version: 1.0.0
+  description: Catalogo de actividades extracurriculares — ciclo de vida y gestion de cupos
+
+tags:
+  - name: activities
+    description: CRUD y ciclo de vida de actividades
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  /activities:
+    get:
+      tags: [activities]
+      summary: Listar actividades de la institucion
+      description: |
+        - GUARDIAN: solo ve actividades PUBLISHED de su institucion
+        - TEACHER/ADMIN: ve todas las actividades de su institucion
+        - SUPERADMIN: puede ver actividades de cualquier institucion
+      operationId: listActivities
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/ActivityStatus'
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Lista paginada de actividades
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityPage'
+
+    post:
+      tags: [activities]
+      summary: Crear actividad en estado borrador
+      description: Solo ADMIN. La actividad se crea con estado DRAFT.
+      operationId: createActivity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateActivityRequest'
+      responses:
+        '201':
+          description: Actividad creada en estado DRAFT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /activities/{activityId}:
+    get:
+      tags: [activities]
+      summary: Obtener detalle de una actividad
+      operationId: getActivity
+      parameters:
+        - $ref: '#/components/parameters/ActivityId'
+      responses:
+        '200':
+          description: Detalle de la actividad
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [activities]
+      summary: Actualizar actividad
+      description: |
+        - TEACHER: puede editar nombre y descripcion unicamente
+        - ADMIN: puede editar todos los campos incluyendo total_spots
+        - Cambio de total_spots genera entrada en AUDIT_LOG
+      operationId: updateActivity
+      parameters:
+        - $ref: '#/components/parameters/ActivityId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateActivityRequest'
+      responses:
+        '200':
+          description: Actividad actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /activities/{activityId}/publish:
+    post:
+      tags: [activities]
+      summary: Publicar actividad (DRAFT → PUBLISHED)
+      description: Solo ADMIN. Solo desde estado DRAFT.
+      operationId: publishActivity
+      parameters:
+        - $ref: '#/components/parameters/ActivityId'
+      responses:
+        '200':
+          description: Actividad publicada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+        '409':
+          description: Transicion de estado invalida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /activities/{activityId}/status:
+    patch:
+      tags: [activities]
+      summary: Cambiar estado de actividad (habilitar / deshabilitar)
+      description: |
+        Solo ADMIN de la misma institucion.
+        Al deshabilitar, invalida el cache en Redis y notifica a acudientes afectados.
+      operationId: updateActivityStatus
+      parameters:
+        - $ref: '#/components/parameters/ActivityId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  $ref: '#/components/schemas/ActivityStatus'
+      responses:
+        '200':
+          description: Estado actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Transicion de estado invalida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /activities/{activityId}/spots:
+    get:
+      tags: [activities]
+      summary: Consultar disponibilidad de cupos en tiempo real
+      description: Tiempo de respuesta maximo 1 segundo (RF04). Resultado cacheado en Redis.
+      operationId: getAvailableSpots
+      parameters:
+        - $ref: '#/components/parameters/ActivityId'
+      responses:
+        '200':
+          description: Disponibilidad actual de cupos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpotsResponse'
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    ActivityId:
+      name: activityId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+
+    CreateActivityRequest:
+      type: object
+      required: [name, totalSpots, schedule]
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: Futbol Sub-12
+        description:
+          type: string
+          maxLength: 500
+        totalSpots:
+          type: integer
+          minimum: 1
+          description: Inmutable operativamente una vez creada la actividad
+        schedule:
+          $ref: '#/components/schemas/Schedule'
+
+    UpdateActivityRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        totalSpots:
+          type: integer
+          minimum: 1
+          description: Solo ADMIN. Genera entrada en AUDIT_LOG.
+        schedule:
+          $ref: '#/components/schemas/Schedule'
+
+    ActivityResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/ActivityStatus'
+        totalSpots:
+          type: integer
+        availableSpots:
+          type: integer
+        institutionId:
+          type: string
+          format: uuid
+        schedule:
+          $ref: '#/components/schemas/Schedule'
+        createdAt:
+          type: string
+          format: date-time
+
+    ActivityPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityResponse'
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+        page:
+          type: integer
+        size:
+          type: integer
+
+    Schedule:
+      type: object
+      description: Solo informativo — no participa en validacion de conflictos
+      properties:
+        dayOfWeek:
+          type: string
+          enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY]
+        startTime:
+          type: string
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+          example: "14:00"
+        endTime:
+          type: string
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+          example: "16:00"
+        location:
+          type: string
+
+    SpotsResponse:
+      type: object
+      properties:
+        activityId:
+          type: string
+          format: uuid
+        totalSpots:
+          type: integer
+        availableSpots:
+          type: integer
+        cachedAt:
+          type: string
+          format: date-time
+
+    ActivityStatus:
+      type: string
+      enum: [DRAFT, PUBLISHED, DISABLED]
+
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          enum:
+            - INVALID_STATE_TRANSITION
+            - INSTITUTION_MISMATCH
+            - INSUFFICIENT_ROLE
+            - VALIDATION_ERROR
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Datos invalidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Sin permisos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

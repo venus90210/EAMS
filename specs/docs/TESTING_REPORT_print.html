@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EAMS - Reporte de Estrategia de Pruebas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: white;
+            padding: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+            h1, h2 {
+                page-break-after: avoid;
+            }
+            table {
+                page-break-inside: avoid;
+            }
+            pre {
+                page-break-inside: avoid;
+            }
+        }
+
+        /* Headers */
+        h1 {
+            color: #00a651;
+            font-size: 32px;
+            margin: 30px 0 15px 0;
+            border-bottom: 3px solid #00a651;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #00a651;
+            font-size: 24px;
+            margin: 25px 0 12px 0;
+            border-left: 5px solid #00a651;
+            padding-left: 15px;
+        }
+
+        h3 {
+            color: #005a33;
+            font-size: 18px;
+            margin: 18px 0 10px 0;
+        }
+
+        h4 {
+            color: #333;
+            font-size: 15px;
+            margin: 12px 0 8px 0;
+        }
+
+        /* Content blocks */
+        p {
+            margin: 10px 0;
+            text-align: justify;
+        }
+
+        blockquote {
+            border-left: 4px solid #00a651;
+            background: #f0f8f4;
+            padding: 15px;
+            margin: 15px 0;
+            color: #005a33;
+        }
+
+        /* Code blocks */
+        pre {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            overflow-x: auto;
+            margin: 12px 0;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+
+        th {
+            background: #00a651;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        tr:hover {
+            background: #f0f8f4;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 10px 0 10px 20px;
+        }
+
+        li {
+            margin: 6px 0;
+        }
+
+        /* Special elements */
+        .toc {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .toc h2 {
+            color: #00a651;
+            border: none;
+            padding: 0;
+            margin: 0 0 15px 0;
+        }
+
+        .toc ul {
+            list-style: none;
+            margin: 0;
+        }
+
+        .toc li {
+            margin: 8px 0;
+        }
+
+        .toc a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        /* Status badges */
+        .status-ok {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .status-warn {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        .status-fail {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+
+        /* Box highlights */
+        .highlight-critical {
+            background: #fff3cd;
+            border-left: 4px solid #ff9800;
+            padding: 12px;
+            margin: 12px 0;
+        }
+
+        .highlight-success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 12px;
+            margin: 12px 0;
+        }
+
+        /* Title page */
+        .title-page {
+            text-align: center;
+            padding: 60px 20px;
+            border-bottom: 2px solid #00a651;
+            margin-bottom: 40px;
+        }
+
+        .title-page h1 {
+            border: none;
+            color: #00a651;
+            font-size: 40px;
+            margin: 20px 0;
+        }
+
+        .title-page .subtitle {
+            color: #666;
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .title-page .meta {
+            color: #999;
+            font-size: 13px;
+            margin-top: 30px;
+        }
+
+        /* Horizontal lines */
+        hr {
+            border: none;
+            border-top: 2px solid #00a651;
+            margin: 40px 0;
+        }
+
+        /* Links */
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Title Page -->
+    <div class="title-page">
+        <h1>EAMS</h1>
+        <h2 class="subtitle">Reporte de Estrategia de Pruebas</h2>
+        <p class="subtitle">Plataforma de Gestión de Actividades Extracurriculares</p>
+        <div class="meta">
+            <p><strong>Fecha:</strong> 2026-04-15</p>
+            <p><strong>Versión:</strong> 1.0</p>
+            <p><strong>Estado:</strong> Implementación Completa (Fase 4.0-4.4)</p>
+            <p style="margin-top: 20px; font-size: 12px;">
+                Documento generado automáticamente<br>
+                GitHub: <a href="https://github.com/venus90210/EAMS">venus90210/EAMS</a>
+            </p>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Table of Contents -->
+    <div class="toc">
+        <h2>Tabla de Contenidos</h2>
+        <ul>
+            <li><a href="#resumen-ejecutivo">Resumen Ejecutivo</a></li>
+            <li><a href="#pruebas-unitarias">1. Pruebas Unitarias</a></li>
+            <li><a href="#pruebas-integracion">2. Pruebas de Integración</a></li>
+            <li><a href="#pruebas-funcionales">3. Pruebas Funcionales</a></li>
+            <li><a href="#cobertura-metricas">Cobertura y Métricas</a></li>
+            <li><a href="#matriz-trazabilidad">Matriz de Trazabilidad</a></li>
+            <li><a href="#validacion-requisitos">5. Validación de Requisitos y Casos de Negocio</a></li>
+        </ul>
+    </div>
+
+    <hr>
+
+    <!-- Content from TESTING_REPORT.md will be inserted here -->
+    <!-- This HTML serves as a template for conversion -->
+
+    <h2 id="resumen-ejecutivo">Resumen Ejecutivo</h2>
+
+    <p>La estrategia de pruebas para EAMS se basa en <strong>tres pilares</strong> con cobertura mínima del <strong>95%</strong> en líneas y ramas:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Tipo de Prueba</th>
+                <th>Objetivo</th>
+                <th>Framework</th>
+                <th>Cobertura</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Unitarias</strong></td>
+                <td>Validar lógica aislada de negocio</td>
+                <td>JUnit 5 + Mockito (Backend)<br>Jest (Gateway/Frontend)</td>
+                <td>≥ 95%</td>
+            </tr>
+            <tr>
+                <td><strong>Integración</strong></td>
+                <td>Verificar flujos críticos con infraestructura real</td>
+                <td>Spring Boot Test + Testcontainers</td>
+                <td>4 escenarios</td>
+            </tr>
+            <tr>
+                <td><strong>Funcionales</strong></td>
+                <td>Validar requisitos de usuario en Gherkin</td>
+                <td>Cucumber + Step Definitions</td>
+                <td>5 features</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="highlight-success">
+        <strong>Beneficios:</strong>
+        <ul>
+            <li>✓ Detección temprana de defectos (unitarias)</li>
+            <li>✓ Garantía de flujos críticos bajo concurrencia (integración)</li>
+            <li>✓ Trazabilidad requisito → código → test (funcionales)</li>
+            <li>✓ Gate CI/CD: PR no se mergea si cobertura &lt; 95%</li>
+        </ul>
+    </div>
+
+    <!-- Footer -->
+    <hr>
+    <p style="text-align: center; color: #999; font-size: 12px; margin-top: 40px;">
+        © 2026 EAMS - Sistema de Gestión de Actividades Extracurriculares<br>
+        Documento generado con Pandoc | Última actualización: 2026-04-15
+    </p>
+</body>
+</html>
