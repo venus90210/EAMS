@@ -417,8 +417,8 @@
 > **Referencia técnica**: [specs/technical/testing-strategy.md](technical/testing-strategy.md)
 > 
 > **📋 Documentación Disponible**:
-> - [specs/TESTS.md](TESTS.md) — Resumen de cobertura (unitarios, integración, componentes, hooks). ✓ Creado 2026-04-15
-> - [specs/TESTING_REPORT.md](TESTING_REPORT.md) — **Reporte Estrategia Completa** (3 pilares: unitarias 95%, integración 4 escenarios, funcionales Gherkin). ✓ Creado 2026-04-15
+> - [specs/docs/TESTS.md](docs/TESTS.md) — Resumen de cobertura (unitarios, integración, componentes, hooks). ✓ Creado 2026-04-15
+> - [specs/docs/TESTING_REPORT.md](docs/TESTING_REPORT.md) — **Reporte Estrategia Completa** (3 pilares: unitarias 95%, integración 4 escenarios, funcionales Gherkin). ✓ Creado 2026-04-15
 
 ### 4.0 Setup de pruebas de integración
 - [x] Agregar dependencias: `testcontainers-postgresql`, `testcontainers-junit-jupiter`, `wiremock-jre8`
