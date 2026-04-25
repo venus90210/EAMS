@@ -598,29 +598,30 @@ Entonces un Gherkin es 3 cosas en 1:
 
 ---
 
-### 5 Features — Especificados + Step Definitions Básicos Implementados
+### 5 Features — Completamente Especificados + Step Definitions CON INTEGRACIÓN BD
 
-Tenemos 5 features con 23+ escenarios Gherkin **completamente especificados** Y **step definitions funcionando**:
+Tenemos 5 features con 23+ escenarios Gherkin **completamente especificados** + **step definitions enriquecidos con integración real a BD**:
 
 | Feature | Requisitos | # Escenarios | Archivo .feature | Step Definitions | Estado |
 |---------|-----------|-----------|---------|---------|--------|
-| **F1** Inscripción de Estudiante | RF04-05 | 7 scenarios | `F1-inscripcion.feature` | `EnrollmentSteps.java` | ✅ |
-| **F2** Asistencia | RF13 | Multiple | `F2-asistencia.feature` | (Por implementar) | 📋 |
-| **F3** Consulta Offline | RNF08 | Multiple | `F3-consulta-offline.feature` | (Por implementar) | 📋 |
-| **F4** Autenticación y MFA | RNF04 | 11 scenarios | `F4-autenticacion.feature` | (Por implementar) | 📋 |
-| **F5** Estado de Actividad | RF01-03 | Multiple | `F5-estado-actividad.feature` | (Por implementar) | 📋 |
+| **F1** Inscripción de Estudiante | RF04-05 | 7 scenarios | `F1-inscripcion.feature` | `EnrollmentSteps.java` ✅ | **COMPLETO** |
+| **F2** Asistencia | RF13 | Multiple | `F2-asistencia.feature` | (Template listo) | 📋 |
+| **F3** Consulta Offline | RNF08 | Multiple | `F3-consulta-offline.feature` | (Template listo) | 📋 |
+| **F4** Autenticación y MFA | RNF04 | 11 scenarios | `F4-autenticacion.feature` | (Template listo) | 📋 |
+| **F5** Estado de Actividad | RF01-03 | Multiple | `F5-estado-actividad.feature` | (Template listo) | 📋 |
 
 **¿Qué significa esto?**
 
-- 📝 **Especificación ejecutable** — 23+ escenarios en Gherkin (requisitos + tests)
-- ✅ **Step definitions básicos** — F1 ya tiene pasos implementados (compilan y ejecutan)
-- 🎯 **Contrato entre stakeholders y desarrollo** — no hay ambigüedad
-- 🚀 **Listos para ejecutar en CI/CD** — Cucumber + CucumberRunner + EnrollmentSteps
+- 📝 **Especificación ejecutable** — 23+ escenarios en Gherkin (requisitos + tests verificables)
+- ✅ **Step definitions con integración BD** — F1 completo con `StudentRepository`, `ActivityRepository`, `EnrollmentRepository`
+- 🎯 **Assertions contra BD real** — No mocks, datos reales creados y verificados en la base de datos
+- 🚀 **Listos para ejecutar en CI/CD** — Cucumber + CucumberRunner + EnrollmentSteps (compilando)
+- 📊 **Logging detallado** — Cada paso logea qué hace en BD
 
 **Comandos para ejecutar:**
 ```bash
-mvn test -Dtest=CucumberRunner    # Ejecuta todos los Gherkin
-mvn test-compile                  # Verifica que compilen los steps
+mvn test-compile                  # ✅ Verifica que todo compila
+mvn test -Dtest=CucumberRunner    # Ejecuta escenarios F1 contra BD real (requiere Docker)
 ```
 
 ---
